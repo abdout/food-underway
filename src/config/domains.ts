@@ -1,55 +1,35 @@
 /**
  * Domain configuration for the multi-tenant platform
- * This file centralizes domain management for easier migration and maintenance
+ * Permanent migration to me.databayt.org completed
  */
 
-// Marketing domains that should not be treated as tenant subdomains
-export const MARKETING_DOMAINS = {
-  production: [
-    process.env.NEXT_PUBLIC_MARKETING_DOMAIN || 'me.databayt.org',
-    'ed.databayt.org' // Legacy domain - remove after migration
-  ],
-  development: [
-    'localhost:3000',
-    'localhost'
-  ]
-} as const
+// The one and only marketing domain
+export const MARKETING_DOMAIN = 'me.databayt.org'
 
-// Get all marketing domains based on environment
+// Marketing domains based on environment
 export const getMarketingDomains = (): string[] => {
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  return isDevelopment
-    ? [...MARKETING_DOMAINS.development, ...MARKETING_DOMAINS.production]
-    : MARKETING_DOMAINS.production
+  if (process.env.NODE_ENV === 'development') {
+    return [MARKETING_DOMAIN, 'localhost:3000', 'localhost']
+  }
+  return [MARKETING_DOMAIN]
 }
 
-// Check if a host is a marketing domain
+// Check if a host is the marketing domain
 export const isMarketingDomain = (host: string): boolean => {
-  const marketingDomains = getMarketingDomains()
-  return marketingDomains.some(domain =>
-    host === domain || host.startsWith(`${domain}:`) // Handle port numbers
-  )
+  return host === MARKETING_DOMAIN ||
+         host === 'localhost:3000' ||
+         host === 'localhost'
 }
 
 // Check if a subdomain should be excluded from tenant logic
 export const isExcludedSubdomain = (subdomain: string): boolean => {
-  const excludedSubdomains = ['me', 'ed', 'www', 'api', 'admin']
+  const excludedSubdomains = ['me', 'www', 'api', 'admin']
   return excludedSubdomains.includes(subdomain.toLowerCase())
 }
 
-// Get the current marketing domain
-export const getCurrentMarketingDomain = (): string => {
-  return process.env.NEXT_PUBLIC_MARKETING_DOMAIN || 'me.databayt.org'
-}
-
-// Get the legacy marketing domain (for redirect logic)
-export const getLegacyMarketingDomain = (): string => {
-  return 'ed.databayt.org'
-}
-
-// Check if domain redirect is enabled (ed.databayt.org → me.databayt.org)
-export const isDomainRedirectEnabled = (): boolean => {
-  return process.env.ENABLE_DOMAIN_REDIRECT === 'true'
+// Get the marketing domain
+export const getMarketingDomain = (): string => {
+  return MARKETING_DOMAIN
 }
 
 // Get the root domain for subdomain detection
