@@ -20,7 +20,7 @@ The migration from `ed.databayt.org` to `me.databayt.org` has been successfully 
 
 ### 4. **Environment Variables**
 - ✅ Added `NEXT_PUBLIC_MARKETING_DOMAIN=me.databayt.org`
-- ✅ Added `REDIRECT_OLD_DOMAIN=false` (set to `true` when ready to redirect)
+- ✅ Added `ENABLE_DOMAIN_REDIRECT=false` (set to `true` when ready to activate redirects)
 - ✅ Created `.env.example` with documentation
 
 ## 🧪 Testing the Migration
@@ -29,7 +29,7 @@ The migration from `ed.databayt.org` to `me.databayt.org` has been successfully 
 The application is currently running at http://localhost:3000 and:
 - Both marketing domains are recognized
 - Tenant subdomains continue to work
-- No redirects are active (REDIRECT_OLD_DOMAIN=false)
+- No redirects are active (ENABLE_DOMAIN_REDIRECT=false)
 
 ### Production Testing Steps
 
@@ -39,7 +39,7 @@ The application is currently running at http://localhost:3000 and:
    - `school.databayt.org` → Shows tenant site ✅
 
 2. **Enable Redirect (When Ready)**
-   - Set `REDIRECT_OLD_DOMAIN=true` in production
+   - Set `ENABLE_DOMAIN_REDIRECT=true` in production
    - `ed.databayt.org` → Redirects to `me.databayt.org` with 301
    - All existing links continue to work
 
@@ -51,7 +51,7 @@ The application is currently running at http://localhost:3000 and:
 - Users can access either domain
 
 ### Phase 2: Soft Redirect (When Ready)
-1. Set `REDIRECT_OLD_DOMAIN=true` in `.env`
+1. Set `ENABLE_DOMAIN_REDIRECT=true` in `.env`
 2. Deploy to production
 3. Monitor traffic and redirects
 
@@ -76,8 +76,20 @@ Before deploying to production:
 The middleware now:
 1. Checks if the host is `me.databayt.org` or `ed.databayt.org`
 2. If yes, routes to marketing pages (not tenant pages)
-3. If `REDIRECT_OLD_DOMAIN=true` and host is `ed.databayt.org`, redirects to `me.databayt.org`
+3. If `ENABLE_DOMAIN_REDIRECT=true` and host is `ed.databayt.org`, redirects to `me.databayt.org`
 4. For other `*.databayt.org` subdomains, treats them as tenant sites
+
+### Understanding ENABLE_DOMAIN_REDIRECT
+
+- **`ENABLE_DOMAIN_REDIRECT=false`** (Default)
+  - Both `ed.databayt.org` and `me.databayt.org` work independently
+  - Users can access either domain without redirects
+  - Good for parallel operation during transition
+
+- **`ENABLE_DOMAIN_REDIRECT=true`** (Migration Active)
+  - Anyone visiting `ed.databayt.org` gets automatically redirected to `me.databayt.org`
+  - Uses 301 (permanent) redirect for SEO preservation
+  - Old bookmarks and links continue to work
 
 ## 📝 Notes
 

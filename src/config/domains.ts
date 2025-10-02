@@ -47,9 +47,9 @@ export const getLegacyMarketingDomain = (): string => {
   return 'ed.databayt.org'
 }
 
-// Check if old domain redirects are enabled
-export const shouldRedirectOldDomain = (): boolean => {
-  return process.env.REDIRECT_OLD_DOMAIN === 'true'
+// Check if domain redirect is enabled (ed.databayt.org → me.databayt.org)
+export const isDomainRedirectEnabled = (): boolean => {
+  return process.env.ENABLE_DOMAIN_REDIRECT === 'true'
 }
 
 // Get the root domain for subdomain detection

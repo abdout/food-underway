@@ -178,7 +178,7 @@ export async function middleware(req: NextRequest) {
     logger.debug('MAIN DOMAIN - Marketing routes with i18n', { ...baseContext, currentLocale, host });
 
     // Handle redirect from old domain to new domain if enabled
-    if (host === "ed.databayt.org" && process.env.REDIRECT_OLD_DOMAIN === 'true') {
+    if (host === "ed.databayt.org" && process.env.ENABLE_DOMAIN_REDIRECT === 'true') {
       const newUrl = new URL(req.url);
       newUrl.host = "me.databayt.org";
       logger.info('REDIRECTING from ed.databayt.org to me.databayt.org', {
