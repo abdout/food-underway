@@ -39,7 +39,7 @@ export const getRootDomain = (): string => {
 
 // Generate full URL for marketing pages
 export const getMarketingUrl = (path: string = '/'): string => {
-  const domain = getCurrentMarketingDomain()
+  const domain = getMarketingDomain()
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
   return `${protocol}://${domain}${path}`
 }
