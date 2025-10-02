@@ -45,7 +45,7 @@
     "brandName": "داتابيت"
   },
   "auth": {
-    "signIn": "تسجيل الدخول",
+    "signIn": "تسجيل دخول",
     "signUp": "إنشاء حساب",
     "signOut": "خروج",
     "email": "البريد الإلكتروني",
@@ -53,25 +53,34 @@
     "confirmPassword": "تأكيد كلمة المرور",
     "forgotPassword": "نسيت كلمة المرور؟",
     "resetPassword": "إعادة تعيين كلمة المرور",
-    "createAccount": "إنشاء حساب",
+    "createAccount": "إنشاء حساب جديد",
     "alreadyHaveAccount": "لديك حساب بالفعل؟",
     "dontHaveAccount": "ليس لديك حساب؟",
+    "dontHaveAccountPrefix": "ليس لديك حساب؟",
     "enterEmail": "أدخل بريدك الإلكتروني",
     "enterPassword": "أدخل كلمة المرور",
     "welcomeBack": "مرحباً بعودتك",
     "createNewAccount": "إنشاء حساب جديد",
-    "orContinueWith": "أو تابع بواسطة",
+    "orContinueWith": "أو التسجيل عن طريق",
+    "phoneLabel": "رقم الجوال",
     "twoFactorCode": "رمز المصادقة الثنائية",
-    "confirm": "تأكيد"
+    "confirm": "تأكيد",
+    "phone": "رقم الجوال",
+    "enterPhone": "رقم الجوال",
+    "signInWithEmail": "البريد الإلكتروني",
+    "signInWithPhone": "رقم الجوال",
+    "loginTitle": "تسجيل الدخول",
+    "loginSubtitle": "يرجى اختيار طريقة تسجيل الدخول المفضلة لديك",
+    "phoneLoginNotAvailable": "تسجيل الدخول عبر الهاتف سيكون متاحًا قريبًا. يرجى استخدام البريد الإلكتروني حاليًا."
   },
   "marketing": {
     "hero": {
-      "title": "أتمتة التعليم،\nوإطلاق الإبداع",
-      "titleMobile": "أتمتة التعليم،\nوإطلاق الإبداع",
-      "subtitle": "نظام إدارة تعليمي متكامل يُبسط العمليات للطلاب والمعلمين وقادة المدارس. حوّل كفاءة مؤسستك التعليمية اليوم.",
-      "badge": "+700 مدرسة مؤتمتة",
+      "title": "القائمة",
+      "titleMobile": "القائمة",
+      "subtitle": "قائمة سحابية بسرعة البرق",
+      "badge": "+700 مطعم ومقهى مؤتمت",
       "appointment": "ابدأ الآن",
-      "services": "جيت هب"
+      "services": "دكومينتيشن"
     },
     "features": {
       "title": "المميزات",

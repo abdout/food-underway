@@ -61,22 +61,31 @@
     "createAccount": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
+    "dontHaveAccountPrefix": "Don't have an account?",
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
     "welcomeBack": "Welcome back",
     "createNewAccount": "Create a new account",
-    "orContinueWith": "Or continue with",
+    "orContinueWith": "Or sign in with",
+    "phoneLabel": "Phone Number",
     "twoFactorCode": "Two Factor Code",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "phone": "Phone Number",
+    "enterPhone": "Phone number",
+    "signInWithEmail": "Email",
+    "signInWithPhone": "Phone",
+    "loginTitle": "Sign In",
+    "loginSubtitle": "Please choose your preferred login method",
+    "phoneLoginNotAvailable": "Phone login will be available soon. Please use email login for now."
   },
   "marketing": {
     "hero": {
-      "title": "Automate Education,\nelevate the curiosity.",
-      "titleMobile": "Automate\nEducation\nelevate\nthe curiosity.",
-      "subtitle": "Educational management system streamlining operations for students, educators, and school leaders. Transform your institution's efficiency today.",
-      "badge": "700+ School automated",
+      "title": "Menu",
+      "titleMobile": "Menu",
+      "subtitle": "Cloud-based menu on the fly",
+      "badge": "700+ Restaurant and coffee automated",
       "appointment": "Get Started",
-      "services": "GitHub"
+      "services": "Documentation"
     },
     "features": {
       "title": "Features",
