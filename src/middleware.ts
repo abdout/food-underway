@@ -168,9 +168,28 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-  // Case 1: Main domain (ed.databayt.org) - handle i18n for marketing pages
-  if (host === "ed.databayt.org" || host === "localhost:3000" || host === "localhost") {
-    logger.debug('MAIN DOMAIN - Marketing routes with i18n', { ...baseContext, currentLocale });
+  // Case 1: Main domain (me.databayt.org or ed.databayt.org during transition) - handle i18n for marketing pages
+  const isMarketingDomain = host === "me.databayt.org" ||
+                           host === "ed.databayt.org" || // Support during transition
+                           host === "localhost:3000" ||
+                           host === "localhost";
+
+  if (isMarketingDomain) {
+    logger.debug('MAIN DOMAIN - Marketing routes with i18n', { ...baseContext, currentLocale, host });
+
+    // Handle redirect from old domain to new domain if enabled
+    if (host === "ed.databayt.org" && process.env.REDIRECT_OLD_DOMAIN === 'true') {
+      const newUrl = new URL(req.url);
+      newUrl.host = "me.databayt.org";
+      logger.info('REDIRECTING from ed.databayt.org to me.databayt.org', {
+        ...baseContext,
+        oldHost: host,
+        newHost: "me.databayt.org"
+      });
+      const response = NextResponse.redirect(newUrl, 301);
+      response.headers.set('x-request-id', requestId);
+      return response;
+    }
 
     // If locale is not in URL, redirect to include it
     if (!pathnameHasLocale) {
@@ -197,7 +216,7 @@ export async function middleware(req: NextRequest) {
   let subdomain: string | null = null;
 
   // Case 2: Production subdomains (*.databayt.org)
-  if (host.endsWith(".databayt.org") && !host.startsWith("ed.")) {
+  if (host.endsWith(".databayt.org") && !host.startsWith("me.") && !host.startsWith("ed.")) {
     subdomain = host.split(".")[0];
     logger.debug('PRODUCTION TENANT', { ...baseContext, subdomain });
   }

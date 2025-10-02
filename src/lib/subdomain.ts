@@ -30,12 +30,12 @@ export function extractSubdomain(host: string, rootDomain?: string): SubdomainRe
     if (subdomainEndIndex > 0) {
       const subdomain = host.substring(0, subdomainEndIndex)
       
-      // Special case: ed.databayt.org should show marketing, not be treated as subdomain
-      if (subdomain === 'ed') {
-        return { 
-          subdomain: null, 
-          isSpecialCase: true, 
-          reason: 'ed.databayt.org - using marketing route' 
+      // Special cases: me.databayt.org and ed.databayt.org should show marketing, not be treated as subdomain
+      if (subdomain === 'me' || subdomain === 'ed') {
+        return {
+          subdomain: null,
+          isSpecialCase: true,
+          reason: `${subdomain}.databayt.org - using marketing route`
         }
       }
       
