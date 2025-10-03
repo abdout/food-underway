@@ -616,6 +616,7 @@ export const Icons = {
 }
 
 // Export individual icons for named imports
+export const Logo = Icons.logo;
 export const Trash = Icons.trash;
 export const NextJS = Icons.nextJS;
 export const ReactIcon = Icons.react;
