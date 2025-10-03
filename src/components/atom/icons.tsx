@@ -641,3 +641,4 @@ export const AverageIcon = Icons.average;
 export const PoorIcon = Icons.poor;
 export const Patreon = Icons.patreon;
 export const Coffee = Icons.coffee;
+export const Discord = Icons.discord;
