@@ -10,19 +10,28 @@ export async function GET(
   await requireOperator();
   const tenantId = resolvedParams.tenantId;
 
-  const [owners, students, teachers, classes] = await Promise.all([
+  const [owners, orders, menuItems, staff] = await Promise.all([
     db.user.findMany({
-      where: { schoolId: tenantId, role: "ADMIN" },
+      where: { merchantId: tenantId, role: "OWNER" },
       select: { id: true, email: true },
     }),
-    db.student.count({ where: { schoolId: tenantId } }),
-    db.teacher.count({ where: { schoolId: tenantId } }),
-    db.class.count({ where: { schoolId: tenantId } }),
+    db.order.count({ where: { merchantId: tenantId } }),
+    db.menuItem.count({
+      where: {
+        menu: { merchantId: tenantId }
+      }
+    }),
+    db.user.count({
+      where: {
+        merchantId: tenantId,
+        role: { in: ["MANAGER", "CASHIER", "STAFF"] }
+      }
+    }),
   ]);
 
   return NextResponse.json({
     owners,
-    metrics: { students, teachers, classes },
+    metrics: { orders, menuItems, staff },
   });
 }
 
