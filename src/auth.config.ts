@@ -31,6 +31,16 @@ export default {
         }
       },
       profile(profile) {
+        console.log('🔍 [Google OAuth] Profile received:', {
+          sub: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          email_verified: profile.email_verified,
+          picture: profile.picture,
+          locale: profile.locale,
+          timestamp: new Date().toISOString()
+        });
+
         return {
           id: profile.sub,
           username: profile.name,

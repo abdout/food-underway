@@ -62,6 +62,20 @@ export async function middleware(req: NextRequest) {
     (locale) => url.pathname.startsWith(`/${locale}/`) || url.pathname === `/${locale}`
   );
 
+  // Special handling for root path - always default to Arabic
+  // This ensures first-time visitors and direct root access gets Arabic
+  if (url.pathname === '/' && !pathnameHasLocale) {
+    const response = NextResponse.redirect(new URL('/ar', req.url));
+    // Set Arabic as the preferred language in cookie
+    response.cookies.set('NEXT_LOCALE', 'ar', {
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    response.headers.set('x-request-id', requestId);
+    return response;
+  }
+
   // Get the current locale from the path or detect it
   let currentLocale: Locale = i18n.defaultLocale;
   if (pathnameHasLocale) {
