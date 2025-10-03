@@ -1,0 +1,155 @@
+// Menu Models
+
+model Menu {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+
+  name         String
+  nameAr       String?
+  description  String?
+  descriptionAr String?
+
+  isActive     Boolean     @default(true)
+  isDefault    Boolean     @default(false)
+
+  // Menu scheduling (e.g., breakfast, lunch, dinner)
+  startTime    String?     // e.g., "06:00"
+  endTime      String?     // e.g., "11:00"
+  availableDays String[]   // e.g., ["monday", "tuesday", ...]
+
+  categories   Category[]
+  items        MenuItem[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([restaurantId])
+}
+
+model Category {
+  id           String      @id @default(cuid())
+  menu         Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  menuId       String
+
+  name         String
+  nameAr       String?
+  description  String?
+  descriptionAr String?
+
+  image        String?
+  sortOrder    Int         @default(0)
+  isActive     Boolean     @default(true)
+
+  items        MenuItem[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([menuId])
+}
+
+model MenuItem {
+  id           String      @id @default(cuid())
+  menu         Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  menuId       String
+
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+
+  // Basic info
+  name         String
+  nameAr       String?
+  description  String?
+  descriptionAr String?
+
+  // Pricing
+  price        Float
+  discountPrice Float?
+  currency     String      @default("SAR")
+
+  // Images
+  image        String?
+  images       String[]
+
+  // Nutritional info (SFDA compliance)
+  calories     Int?
+  protein      Float?      // grams
+  carbs        Float?      // grams
+  fat          Float?      // grams
+  fiber        Float?      // grams
+  sodium       Float?      // milligrams
+
+  // Dietary tags
+  isVegetarian Boolean     @default(false)
+  isVegan      Boolean     @default(false)
+  isGlutenFree Boolean     @default(false)
+  isHalal      Boolean     @default(true)  // Default for Saudi market
+  isDairyFree  Boolean     @default(false)
+  isNutFree    Boolean     @default(false)
+
+  // Availability
+  isAvailable  Boolean     @default(true)
+  isFeatured   Boolean     @default(false)
+  sortOrder    Int         @default(0)
+
+  // Preparation time in minutes
+  prepTime     Int?
+
+  // Allergens
+  allergens    String[]
+
+  // Modifiers and options
+  modifiers    Modifier[]
+
+  // Orders
+  orderItems   OrderItem[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([menuId])
+  @@index([categoryId])
+}
+
+model Modifier {
+  id           String      @id @default(cuid())
+  menuItem     MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItemId   String
+
+  name         String
+  nameAr       String?
+
+  type         ModifierType @default(SINGLE)
+  required     Boolean     @default(false)
+  minSelection Int         @default(0)
+  maxSelection Int         @default(1)
+
+  options      ModifierOption[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([menuItemId])
+}
+
+enum ModifierType {
+  SINGLE   // Radio buttons (choose one)
+  MULTIPLE // Checkboxes (choose multiple)
+}
+
+model ModifierOption {
+  id           String      @id @default(cuid())
+  modifier     Modifier    @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+  modifierId   String
+
+  name         String
+  nameAr       String?
+  price        Float       @default(0)
+  isDefault    Boolean     @default(false)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([modifierId])
+}

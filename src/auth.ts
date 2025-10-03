@@ -149,31 +149,61 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           try {
             const dbUser = await db.user.findUnique({
               where: { id: user.id },
-              select: { role: true, schoolId: true }
+              select: {
+                role: true,
+                restaurantId: true,
+                ownedRestaurants: {
+                  select: {
+                    id: true,
+                    menuId: true,
+                    name: true
+                  }
+                }
+              }
             });
 
             if (dbUser) {
               token.role = dbUser.role || 'USER'
-              token.schoolId = dbUser.schoolId
-              console.log('🔄 [DEBUG] Fetched user from DB:', { role: dbUser.role, schoolId: dbUser.schoolId });
+              token.restaurantId = dbUser.restaurantId
+
+              // If user owns restaurants, store the first one's menuId
+              if (dbUser.ownedRestaurants && dbUser.ownedRestaurants.length > 0) {
+                token.menuId = dbUser.ownedRestaurants[0].menuId
+                token.restaurantId = dbUser.ownedRestaurants[0].id
+                console.log('🍽️ [DEBUG] Restaurant owner detected:', {
+                  restaurantId: dbUser.ownedRestaurants[0].id,
+                  menuId: dbUser.ownedRestaurants[0].menuId
+                });
+              }
+
+              console.log('🔄 [DEBUG] Fetched user from DB:', {
+                role: dbUser.role,
+                restaurantId: dbUser.restaurantId
+              });
             } else {
-              // Default role for new OAuth users
+              // Default role for new OAuth users - they need onboarding
               token.role = 'USER'
-              console.log('🆕 [DEBUG] New OAuth user - setting default role:', token.role);
+              token.needsOnboarding = true
+              console.log('🆕 [DEBUG] New OAuth user - needs onboarding:', token.role);
             }
           } catch (error) {
             console.error('❌ [DEBUG] Error fetching user from DB:', error);
             token.role = 'USER' // Fallback to USER role
+            token.needsOnboarding = true
           }
         } else {
-          // Only set role and schoolId if they exist on the user object
+          // Only set role and restaurantId if they exist on the user object
           if ('role' in user) {
             token.role = (user as any).role
             console.log('🎭 [DEBUG] Role set in token:', token.role);
           }
-          if ('schoolId' in user) {
-            token.schoolId = (user as any).schoolId
-            console.log('🏫 [DEBUG] SchoolId set in token:', token.schoolId);
+          if ('restaurantId' in user) {
+            token.restaurantId = (user as any).restaurantId
+            console.log('🍽️ [DEBUG] RestaurantId set in token:', token.restaurantId);
+          }
+          if ('menuId' in user) {
+            token.menuId = (user as any).menuId
+            console.log('📋 [DEBUG] MenuId set in token:', token.menuId);
           }
         }
         
@@ -251,13 +281,19 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           console.log('🎭 [DEBUG] Default role applied to session: USER');
         }
 
-        if (token.schoolId) {
-          (session.user as any).schoolId = token.schoolId
-          console.log('🏫 [DEBUG] SchoolId applied to session:', token.schoolId);
-        } else {
-          // SchoolId can be null for platform users
-          (session.user as any).schoolId = null
-          console.log('🏫 [DEBUG] No schoolId - platform user or needs onboarding');
+        if (token.restaurantId) {
+          (session.user as any).restaurantId = token.restaurantId
+          console.log('🍽️ [DEBUG] RestaurantId applied to session:', token.restaurantId);
+        }
+
+        if (token.menuId) {
+          (session.user as any).menuId = token.menuId
+          console.log('📋 [DEBUG] MenuId applied to session:', token.menuId);
+        }
+
+        if (token.needsOnboarding) {
+          (session.user as any).needsOnboarding = true
+          console.log('🚀 [DEBUG] User needs onboarding');
         }
         
         // Force session update if token has been updated
@@ -828,7 +864,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         isSameOrigin: url.startsWith("http") ? new URL(url).origin === baseUrl : false
       });
       
-      // Default behavior - redirect to dashboard on current domain
+      // Default behavior - check if user needs onboarding
       if (url.startsWith("/")) {
         // Special case: if URL is exactly "/" (home page), respect it (for logout)
         if (url === "/") {
@@ -843,7 +879,14 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           console.log('=====================================\n');
           return homeUrl;
         }
-        
+
+        // Check if we have a callback URL that points to onboarding
+        if (callbackUrl && callbackUrl.includes('/onboarding')) {
+          console.log('🚀 Redirecting to onboarding:', callbackUrl);
+          return callbackUrl;
+        }
+
+        // Default to dashboard (middleware will handle onboarding redirect if needed)
         const finalUrl = `${baseUrl}/dashboard`;
         console.log('📍 Relative URL - defaulting to dashboard:', {
           reason: 'URL starts with /',

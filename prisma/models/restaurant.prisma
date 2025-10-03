@@ -1,0 +1,151 @@
+// Restaurant Models for Menu Platform
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  menuId      String   @unique // Unique identifier for the restaurant's menu
+
+  // Basic Information
+  name        String
+  nameAr      String?  // Arabic name
+  description String?
+  descriptionAr String? // Arabic description
+
+  // Restaurant Type
+  type        RestaurantType @default(RESTAURANT)
+  cuisine     String?  // e.g., "Saudi", "Italian", "Coffee"
+
+  // Contact Information
+  phone       String
+  email       String?
+  website     String?
+
+  // Location
+  address     String
+  addressAr   String?
+  city        String
+  region      String?  // e.g., "Eastern Province", "Riyadh Region"
+  country     String   @default("SA")
+  latitude    Float?
+  longitude   Float?
+
+  // Business Information
+  commercialRegister String? // Saudi commercial registration
+  vatNumber   String?  // ZATCA VAT number
+  municipalityLicense String? // Balady license
+
+  // Operating Hours
+  operatingHours Json? // Flexible JSON for complex schedules
+
+  // Features & Settings
+  features    RestaurantFeature[]
+  settings    Json?    // Restaurant-specific settings
+
+  // Branding
+  logo        String?
+  coverImage  String?
+  primaryColor String?
+
+  // Subscription & Billing
+  subscriptionTier SubscriptionTier @default(STARTER)
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  subscriptionEndDate DateTime?
+
+  // Relationships
+  owner       User     @relation("RestaurantOwner", fields: [ownerId], references: [id])
+  ownerId     String
+
+  users       User[]   @relation("RestaurantUsers")
+  branches    Branch[]
+  menus       Menu[]
+  orders      Order[]
+  customers   Customer[]
+  tables      Table[]
+  reservations Reservation[]
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([menuId])
+  @@index([ownerId])
+}
+
+enum RestaurantType {
+  RESTAURANT
+  CAFE
+  COFFEE_SHOP
+  BAKERY
+  FAST_FOOD
+  FINE_DINING
+  CLOUD_KITCHEN
+  FOOD_TRUCK
+}
+
+enum SubscriptionTier {
+  STARTER       // 1 branch, 1,000 orders/month
+  PROFESSIONAL  // 3 branches, unlimited orders
+  ENTERPRISE    // Unlimited branches, priority support
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
+}
+
+model RestaurantFeature {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+
+  feature      Feature
+  enabled      Boolean     @default(true)
+
+  @@unique([restaurantId, feature])
+}
+
+enum Feature {
+  QR_MENU
+  WHATSAPP_ORDERING
+  TABLE_RESERVATIONS
+  LOYALTY_PROGRAM
+  ONLINE_PAYMENTS
+  DELIVERY
+  PICKUP
+  DINE_IN
+  MULTI_BRANCH
+  INVENTORY_TRACKING
+  STAFF_MANAGEMENT
+  ANALYTICS
+  CUSTOMER_FEEDBACK
+  MARKETING
+  POS_INTEGRATION
+}
+
+model Branch {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+
+  name         String
+  nameAr       String?
+
+  // Location
+  address      String
+  addressAr    String?
+  phone        String
+
+  // Manager
+  managerId    String?
+
+  // Settings
+  isMainBranch Boolean     @default(false)
+  isActive     Boolean     @default(true)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([restaurantId])
+}

@@ -1,13 +1,13 @@
 // Auth Models
 enum UserRole {
-  DEVELOPER // Platform admin (across all schools)
-  ADMIN // School admin
-  TEACHER
-  STUDENT
-  GUARDIAN
-  ACCOUNTANT // School accountant/finance
-  STAFF // General school staff
-  USER // General user
+  PLATFORM_ADMIN // Platform admin (MenuCloud SA team)
+  OWNER          // Restaurant owner
+  MANAGER        // Restaurant/Branch manager
+  CASHIER        // Cashier/Order taker
+  WAITER         // Waiter/Server
+  CHEF           // Kitchen staff
+  DELIVERY       // Delivery personnel
+  USER           // General user (customer)
 }
 
 model User {
@@ -19,18 +19,20 @@ model User {
   password      String?
   role          UserRole  @default(USER)
 
+  // Phone for Saudi market (WhatsApp, SMS)
+  phone         String?
+  phoneVerified Boolean   @default(false)
+
   // Multi-tenant fields
-  schoolId String? // null for DEVELOPER
-  school   School? @relation(fields: [schoolId], references: [id])
+  restaurantId String? // null for PLATFORM_ADMIN
+  restaurant   Restaurant? @relation("RestaurantUsers", fields: [restaurantId], references: [id])
+
+  // Owner relationship (for restaurant owners)
+  ownedRestaurants Restaurant[] @relation("RestaurantOwner")
 
   accounts              Account[]
   isTwoFactorEnabled    Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
-
-  // School relationships
-  student  Student?
-  teacher  Teacher?
-  guardian Guardian?
 
   // Stripe subscription fields (user-scoped for compatibility with pricing UI)
   stripeSubscriptionId   String?

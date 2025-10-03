@@ -1,0 +1,232 @@
+// Order Models
+
+model Order {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+
+  // Order number (displayed to customer)
+  orderNumber  String
+
+  // Customer info
+  customer     Customer?   @relation(fields: [customerId], references: [id])
+  customerId   String?
+
+  // For non-registered customers
+  customerName String?
+  customerPhone String?
+  customerEmail String?
+
+  // Order type
+  type         OrderType
+  status       OrderStatus @default(PENDING)
+
+  // Table for dine-in
+  table        Table?      @relation(fields: [tableId], references: [id])
+  tableId      String?
+
+  // Delivery info
+  deliveryAddress String?
+  deliveryNotes String?
+  deliveryFee  Float       @default(0)
+
+  // Pickup info
+  pickupTime   DateTime?
+
+  // Payment
+  paymentMethod PaymentMethod?
+  paymentStatus PaymentStatus @default(PENDING)
+
+  // Amounts (all in SAR)
+  subtotal     Float
+  tax          Float
+  discount     Float       @default(0)
+  tip          Float       @default(0)
+  total        Float
+
+  // Items
+  items        OrderItem[]
+
+  // Notes
+  notes        String?
+  kitchenNotes String?
+
+  // Timestamps
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  completedAt  DateTime?
+  canceledAt   DateTime?
+
+  @@index([restaurantId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderType {
+  DINE_IN
+  PICKUP
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING      // Order received
+  CONFIRMED    // Restaurant confirmed
+  PREPARING    // Kitchen preparing
+  READY        // Ready for pickup/serve
+  OUT_FOR_DELIVERY // For delivery orders
+  COMPLETED    // Delivered/Picked up
+  CANCELED     // Canceled
+}
+
+enum PaymentMethod {
+  CASH
+  MADA         // Saudi debit cards
+  CREDIT_CARD
+  STC_PAY      // Popular Saudi e-wallet
+  APPLE_PAY
+  SADAD        // Saudi payment system
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
+}
+
+model OrderItem {
+  id           String      @id @default(cuid())
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+
+  menuItem     MenuItem    @relation(fields: [menuItemId], references: [id])
+  menuItemId   String
+
+  quantity     Int
+  price        Float       // Price at time of order
+  total        Float       // price * quantity + modifiers
+
+  // Selected modifiers (JSON for flexibility)
+  modifiers    Json?
+
+  // Special requests
+  notes        String?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model Customer {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+
+  // Contact info
+  name         String
+  phone        String      @unique
+  email        String?
+
+  // Preferences
+  language     String      @default("ar") // ar or en
+  notes        String?
+
+  // Loyalty
+  loyaltyPoints Int        @default(0)
+  totalOrders  Int         @default(0)
+  totalSpent   Float       @default(0)
+
+  // Orders
+  orders       Order[]
+  reservations Reservation[]
+
+  // Timestamps
+  firstOrderAt DateTime?
+  lastOrderAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([restaurantId, phone])
+  @@index([restaurantId])
+}
+
+model Table {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId String
+
+  number       String      // Table number/name
+  qrCode       String?     // QR code for table
+  capacity     Int         // Number of seats
+
+  section      TableSection @default(MIXED)
+  status       TableStatus  @default(AVAILABLE)
+
+  orders       Order[]
+  reservations Reservation[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([restaurantId, number])
+  @@index([restaurantId])
+}
+
+enum TableSection {
+  FAMILY       // Family section
+  SINGLES      // Singles section
+  MIXED        // Mixed section
+  OUTDOOR      // Outdoor seating
+  PRIVATE      // Private room
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+model Reservation {
+  id           String      @id @default(cuid())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+
+  customer     Customer?   @relation(fields: [customerId], references: [id])
+  customerId   String?
+
+  // For non-registered customers
+  customerName String
+  customerPhone String
+
+  table        Table?      @relation(fields: [tableId], references: [id])
+  tableId      String?
+
+  date         DateTime
+  time         String      // e.g., "19:00"
+  duration     Int         @default(120) // minutes
+  partySize    Int
+
+  status       ReservationStatus @default(PENDING)
+  notes        String?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([restaurantId])
+  @@index([customerId])
+  @@index([date])
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
