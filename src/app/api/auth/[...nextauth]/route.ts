@@ -1,12 +1,12 @@
 import { GET as AuthGET, POST as AuthPOST } from "@/auth"
 import { NextRequest } from "next/server"
 
-type RouteParams = {
+type RouteContext = {
   params: Promise<{ nextauth: string[] }>
 }
 
 // Custom wrapper for GET requests with logging
-export async function GET(req: NextRequest, context: RouteParams) {
+export async function GET(req: NextRequest, context: RouteContext) {
   const params = await context.params;
 
   console.log('=====================================');
@@ -28,7 +28,8 @@ export async function GET(req: NextRequest, context: RouteParams) {
   });
 
   try {
-    const response = await AuthGET(req, { params: Promise.resolve(params) });
+    // Call the original AuthGET handler
+    const response = await AuthGET(req);
     console.log('✅ [Auth API] GET Response:', {
       status: response.status,
       headers: Object.fromEntries(response.headers.entries()),
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
 }
 
 // Custom wrapper for POST requests with logging
-export async function POST(req: NextRequest, context: RouteParams) {
+export async function POST(req: NextRequest, context: RouteContext) {
   const params = await context.params;
 
   console.log('=====================================');
@@ -81,7 +82,8 @@ export async function POST(req: NextRequest, context: RouteParams) {
   }
 
   try {
-    const response = await AuthPOST(req, { params: Promise.resolve(params) });
+    // Call the original AuthPOST handler
+    const response = await AuthPOST(req);
     console.log('✅ [Auth API] POST Response:', {
       status: response.status,
       headers: Object.fromEntries(response.headers.entries()),
