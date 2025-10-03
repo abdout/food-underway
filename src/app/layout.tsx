@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hogwarts",
-  description: "School automation",
+  title: "Menu",
+  description: "Electronic menu on the fly",
 };
 
 export default async function RootLayout({
