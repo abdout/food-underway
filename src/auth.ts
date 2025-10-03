@@ -5,6 +5,23 @@ import authConfig from "./auth.config"
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
 import { cookies } from "next/headers"
 
+// Determine the correct URL for OAuth callbacks
+const getAuthUrl = () => {
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://me.databayt.org';
+  }
+  return 'http://localhost:3000';
+};
+
+const authUrl = getAuthUrl();
+console.log('🔗 [Auth] Using auth URL:', authUrl);
+
 export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: {

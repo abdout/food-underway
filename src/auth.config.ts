@@ -20,27 +20,20 @@ console.log({
   FACEBOOK_CLIENT_SECRET: !!env.FACEBOOK_CLIENT_SECRET,
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  AUTH_SECRET: !!process.env.AUTH_SECRET,
   timestamp: new Date().toISOString()
 });
 
-// Log if Google OAuth is misconfigured
-if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
-  console.error('❌ [Auth Config] Google OAuth is NOT configured properly!', {
-    hasClientId: !!env.GOOGLE_CLIENT_ID,
-    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
-    hint: 'Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables'
-  });
-} else {
-  console.log('✅ [Auth Config] Google OAuth is configured');
-}
+// Build providers array dynamically based on available credentials
+const providers = [];
 
-export default {
-  // Ensure we have at least one provider
-  providers: [
-    // Google provider - always include if credentials exist
+// Add Google provider if credentials exist
+if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+  console.log('✅ [Auth Config] Google OAuth is configured and will be added');
+  providers.push(
     Google({
-      clientId: env.GOOGLE_CLIENT_ID || "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET || "",
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -68,18 +61,36 @@ export default {
         };
       },
       checks: [], // Disable PKCE temporarily
-    }),
-    // Facebook provider - always include if credentials exist
+    })
+  );
+} else {
+  console.error('❌ [Auth Config] Google OAuth is NOT configured!', {
+    hasClientId: !!env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
+    hint: 'Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables'
+  });
+}
+
+// Add Facebook provider if credentials exist
+if (env.FACEBOOK_CLIENT_ID && env.FACEBOOK_CLIENT_SECRET) {
+  console.log('✅ [Auth Config] Facebook OAuth is configured and will be added');
+  providers.push(
     Facebook({
-      clientId: env.FACEBOOK_CLIENT_ID || "",
-      clientSecret: env.FACEBOOK_CLIENT_SECRET || "",
+      clientId: env.FACEBOOK_CLIENT_ID,
+      clientSecret: env.FACEBOOK_CLIENT_SECRET,
       authorization: {
         params: {
-          // Pass additional parameters to Facebook
           scope: 'email',
         }
       },
       profile(profile) {
+        console.log('🔍 [Facebook OAuth] Profile received:', {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          timestamp: new Date().toISOString()
+        });
+
         return {
           id: profile.id,
           username: profile.name || "Facebook User",
@@ -89,34 +100,68 @@ export default {
         };
       },
       checks: [], // Disable PKCE temporarily
-    }),
-    Credentials({
-      async authorize(credentials) {
-        const validatedFields = LoginSchema.safeParse(credentials);
+    })
+  );
+} else {
+  console.log('⚠️ [Auth Config] Facebook OAuth is not configured');
+}
 
-        if (validatedFields.success) {
-          const { email, password } = validatedFields.data;
-          
-          const user = await getUserByEmail(email);
-          if (!user || !user.password) return null;
+// Always add Credentials provider
+providers.push(
+  Credentials({
+    async authorize(credentials) {
+      console.log('🔐 [Credentials] Login attempt');
+      const validatedFields = LoginSchema.safeParse(credentials);
 
-          const passwordsMatch = await bcrypt.compare(
-            password,
-            user.password,
-          );
+      if (validatedFields.success) {
+        const { email, password } = validatedFields.data;
 
-          if (passwordsMatch) return user;
+        const user = await getUserByEmail(email);
+        if (!user || !user.password) {
+          console.log('❌ [Credentials] User not found or no password set');
+          return null;
         }
 
-        return null;
-      }
-    })
-  ],
-} satisfies NextAuthConfig;
+        const passwordsMatch = await bcrypt.compare(
+          password,
+          user.password,
+        );
 
-// Debug logging for loaded providers
-console.log('Auth config - Providers loaded:', {
-  google: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
-  facebook: !!env.FACEBOOK_CLIENT_ID && !!env.FACEBOOK_CLIENT_SECRET,
-  credentials: true
+        if (passwordsMatch) {
+          console.log('✅ [Credentials] Login successful for:', email);
+          return user;
+        } else {
+          console.log('❌ [Credentials] Invalid password for:', email);
+        }
+      } else {
+        console.log('❌ [Credentials] Invalid login fields');
+      }
+
+      return null;
+    }
+  })
+);
+
+// Log final provider configuration
+console.log('📋 [Auth Config] Final provider configuration:', {
+  totalProviders: providers.length,
+  hasGoogle: providers.some(p => p.name === 'Google'),
+  hasFacebook: providers.some(p => p.name === 'Facebook'),
+  hasCredentials: providers.some(p => p.name === 'Credentials'),
 });
+
+// Check critical configuration
+if (!process.env.AUTH_SECRET) {
+  console.error('🚨 [Auth Config] CRITICAL: AUTH_SECRET is not set!');
+  console.error('This will cause authentication to fail. Please set AUTH_SECRET in your environment variables.');
+}
+
+if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
+  console.error('🚨 [Auth Config] CRITICAL: NEXTAUTH_URL is not set in production!');
+  console.error('This may cause OAuth callbacks to fail. Please set NEXTAUTH_URL to your production URL.');
+}
+
+export default {
+  providers,
+  trustHost: true, // Trust the host header for OAuth redirects
+} satisfies NextAuthConfig;
