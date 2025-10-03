@@ -206,6 +206,7 @@ async function main() {
     for (const catData of categories) {
       const category = await prisma.category.create({
         data: {
+          merchantId: merchant.id,
           menuId: menu.id,
           ...catData,
           isActive: true,
@@ -217,6 +218,7 @@ async function main() {
       for (let i = 0; i < itemCount; i++) {
         const menuItem = await prisma.menuItem.create({
           data: {
+            merchantId: merchant.id,
             menuId: menu.id,
             categoryId: category.id,
             name: faker.commerce.productName(),
@@ -235,6 +237,7 @@ async function main() {
         if (faker.datatype.boolean()) {
           const modifier = await prisma.modifier.create({
             data: {
+              merchantId: merchant.id,
               menuItemId: menuItem.id,
               name: "Size",
               nameAr: "الحجم",
