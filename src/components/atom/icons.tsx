@@ -635,3 +635,7 @@ export const Git = Icons.git;
 export const Prettier = Icons.prettier;
 export const Figma = Icons.figma;
 export const RIcon = Icons.r;
+export const ExcellentIcon = Icons.excellent;
+export const GoodIcon = Icons.good;
+export const AverageIcon = Icons.average;
+export const PoorIcon = Icons.poor;
