@@ -130,8 +130,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       }
       
       if (user) {
-        console.log('👤 [DEBUG] User data received:', { 
-          id: user.id, 
+        console.log('👤 [DEBUG] User data received:', {
+          id: user.id,
           email: user.email,
           hasRole: 'role' in user,
           hasSchoolId: 'schoolId' in user,
@@ -139,16 +139,42 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           userRole: (user as any).role,
           userSchoolId: (user as any).schoolId
         });
-        
+
         token.id = user.id
-        // Only set role and schoolId if they exist on the user object
-        if ('role' in user) {
-          token.role = (user as any).role
-          console.log('🎭 [DEBUG] Role set in token:', token.role);
-        }
-        if ('schoolId' in user) {
-          token.schoolId = (user as any).schoolId
-          console.log('🏫 [DEBUG] SchoolId set in token:', token.schoolId);
+        token.email = user.email
+        token.name = user.name
+
+        // For new OAuth users, fetch their data from database
+        if (account?.provider && (account.provider === 'google' || account.provider === 'facebook')) {
+          try {
+            const dbUser = await db.user.findUnique({
+              where: { id: user.id },
+              select: { role: true, schoolId: true }
+            });
+
+            if (dbUser) {
+              token.role = dbUser.role || 'USER'
+              token.schoolId = dbUser.schoolId
+              console.log('🔄 [DEBUG] Fetched user from DB:', { role: dbUser.role, schoolId: dbUser.schoolId });
+            } else {
+              // Default role for new OAuth users
+              token.role = 'USER'
+              console.log('🆕 [DEBUG] New OAuth user - setting default role:', token.role);
+            }
+          } catch (error) {
+            console.error('❌ [DEBUG] Error fetching user from DB:', error);
+            token.role = 'USER' // Fallback to USER role
+          }
+        } else {
+          // Only set role and schoolId if they exist on the user object
+          if ('role' in user) {
+            token.role = (user as any).role
+            console.log('🎭 [DEBUG] Role set in token:', token.role);
+          }
+          if ('schoolId' in user) {
+            token.schoolId = (user as any).schoolId
+            console.log('🏫 [DEBUG] SchoolId set in token:', token.schoolId);
+          }
         }
         
         // Ensure we have a proper session token
@@ -219,10 +245,19 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         if (token.role) {
           (session.user as any).role = token.role
           console.log('🎭 [DEBUG] Role applied to session:', token.role);
+        } else {
+          // Ensure we always have a role
+          (session.user as any).role = 'USER'
+          console.log('🎭 [DEBUG] Default role applied to session: USER');
         }
+
         if (token.schoolId) {
           (session.user as any).schoolId = token.schoolId
           console.log('🏫 [DEBUG] SchoolId applied to session:', token.schoolId);
+        } else {
+          // SchoolId can be null for platform users
+          (session.user as any).schoolId = null
+          console.log('🏫 [DEBUG] No schoolId - platform user or needs onboarding');
         }
         
         // Force session update if token has been updated
