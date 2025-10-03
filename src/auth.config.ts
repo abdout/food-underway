@@ -8,13 +8,31 @@ import Google from "next-auth/providers/google";
 import { env } from "@/env.mjs";
 
 // Debug logging for environment variables
-console.log('Auth config - Environment check:', {
+console.log('=====================================');
+console.log('🔧 [Auth Config] INITIALIZING');
+console.log('=====================================');
+console.log({
   GOOGLE_CLIENT_ID: !!env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_ID_LENGTH: env.GOOGLE_CLIENT_ID?.length || 0,
   GOOGLE_CLIENT_SECRET: !!env.GOOGLE_CLIENT_SECRET,
+  GOOGLE_CLIENT_SECRET_LENGTH: env.GOOGLE_CLIENT_SECRET?.length || 0,
   FACEBOOK_CLIENT_ID: !!env.FACEBOOK_CLIENT_ID,
   FACEBOOK_CLIENT_SECRET: !!env.FACEBOOK_CLIENT_SECRET,
-  NODE_ENV: process.env.NODE_ENV
+  NODE_ENV: process.env.NODE_ENV,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  timestamp: new Date().toISOString()
 });
+
+// Log if Google OAuth is misconfigured
+if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+  console.error('❌ [Auth Config] Google OAuth is NOT configured properly!', {
+    hasClientId: !!env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
+    hint: 'Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables'
+  });
+} else {
+  console.log('✅ [Auth Config] Google OAuth is configured');
+}
 
 export default {
   // Ensure we have at least one provider

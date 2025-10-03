@@ -91,6 +91,46 @@ export async function middleware(req: NextRequest) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
 
+  // Enhanced debug logging for OAuth and auth flow
+  console.log('=====================================');
+  console.log('🚦 [Middleware] REQUEST INTERCEPTED');
+  console.log('=====================================');
+  console.log({
+    requestId,
+    host,
+    pathname: url.pathname,
+    pathnameWithoutLocale,
+    currentLocale,
+    search: url.search,
+    searchParams: Object.fromEntries(url.searchParams.entries()),
+    referer,
+    isBot: userAgent.includes('bot'),
+    isLoggedIn,
+    userId: session?.user?.id,
+    userEmail: session?.user?.email,
+    schoolId: session?.user?.schoolId,
+    isAuthRoute: authRoutes.includes(pathnameWithoutLocale),
+    isPublicRoute: publicRoutes.includes(pathnameWithoutLocale),
+    isApiAuthRoute: url.pathname.startsWith(apiAuthPrefix),
+    cookies: req.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+    timestamp: new Date().toISOString()
+  });
+
+  // Special OAuth callback logging
+  if (url.pathname.includes('/api/auth/callback/')) {
+    const provider = url.pathname.match(/callback\/(\w+)/)?.[1];
+    console.log('🔐 [Middleware] OAUTH CALLBACK DETECTED:', {
+      provider,
+      hasCode: url.searchParams.has('code'),
+      hasState: url.searchParams.has('state'),
+      hasError: url.searchParams.has('error'),
+      errorDescription: url.searchParams.get('error_description'),
+      allParams: Array.from(url.searchParams.keys()),
+      host,
+      fullUrl: url.toString()
+    });
+  }
+
   // Debug logging for subdomain handling
   logger.debug('MIDDLEWARE REQUEST', {
     ...baseContext,
