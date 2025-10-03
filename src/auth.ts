@@ -24,7 +24,6 @@ console.log('🔗 [Auth] Using auth URL:', authUrl);
 
 export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
-  trustHost: true, // Important for production deployments
   session: {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
