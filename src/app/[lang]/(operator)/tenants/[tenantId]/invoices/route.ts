@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireOperator } from "@/components/operator/lib/operator-auth";
-import type { Prisma } from "@prisma/client";
 
 export async function GET(
   _req: Request,
@@ -11,24 +10,29 @@ export async function GET(
   await requireOperator();
   const tenantId = resolvedParams.tenantId;
 
-  // Operator view should use billing invoices (Stripe) table
-  const invoices = await db.invoice.findMany({
-    where: { schoolId: tenantId },
+  // TODO: Implement invoice model for merchants
+  // For now, return orders as invoice-like records
+  const orders = await db.order.findMany({
+    where: { merchantId: tenantId },
     orderBy: { createdAt: "desc" },
     take: 10,
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      total: true,
+      createdAt: true,
+      paymentStatus: true,
+    }
   });
 
-  const rows = invoices.map((i) => ({
-    id: i.id,
-    number: i.stripeInvoiceId ?? i.id.slice(0, 8),
-    status: i.status,
-    amount: i.amountPaid,
-    createdAt: i.createdAt?.toISOString?.() ?? String(i.createdAt),
+  const rows = orders.map((order) => ({
+    id: order.id,
+    number: order.orderNumber,
+    status: order.paymentStatus,
+    amount: order.total,
+    createdAt: order.createdAt?.toISOString?.() ?? String(order.createdAt),
   }));
 
   return NextResponse.json({ invoices: rows });
 }
-
-
-
-
