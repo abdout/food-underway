@@ -24,7 +24,7 @@ export async function GET(
     db.user.count({
       where: {
         merchantId: tenantId,
-        role: { in: ["MANAGER", "CASHIER", "STAFF"] }
+        role: { in: ["MANAGER", "CASHIER", "WAITER", "CHEF", "DELIVERY"] }
       }
     }),
   ]);
