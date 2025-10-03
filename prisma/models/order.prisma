@@ -2,8 +2,8 @@
 
 model Order {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
-  restaurantId String
+  restaurant   Merchant  @relation(fields: [merchantId], references: [id])
+  merchantId String
 
   // Order number (displayed to customer)
   orderNumber  String
@@ -57,7 +57,7 @@ model Order {
   completedAt  DateTime?
   canceledAt   DateTime?
 
-  @@index([restaurantId])
+  @@index([merchantId])
   @@index([customerId])
   @@index([status])
   @@index([createdAt])
@@ -71,7 +71,7 @@ enum OrderType {
 
 enum OrderStatus {
   PENDING      // Order received
-  CONFIRMED    // Restaurant confirmed
+  CONFIRMED    // Merchant confirmed
   PREPARING    // Kitchen preparing
   READY        // Ready for pickup/serve
   OUT_FOR_DELIVERY // For delivery orders
@@ -123,8 +123,8 @@ model OrderItem {
 
 model Customer {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
-  restaurantId String
+  restaurant   Merchant  @relation(fields: [merchantId], references: [id])
+  merchantId String
 
   // Contact info
   name         String
@@ -150,14 +150,14 @@ model Customer {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  @@unique([restaurantId, phone])
-  @@index([restaurantId])
+  @@unique([merchantId, phone])
+  @@index([merchantId])
 }
 
 model Table {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  restaurantId String
+  restaurant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId String
 
   number       String      // Table number/name
   qrCode       String?     // QR code for table
@@ -172,8 +172,8 @@ model Table {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  @@unique([restaurantId, number])
-  @@index([restaurantId])
+  @@unique([merchantId, number])
+  @@index([merchantId])
 }
 
 enum TableSection {
@@ -193,8 +193,8 @@ enum TableStatus {
 
 model Reservation {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
-  restaurantId String
+  restaurant   Merchant  @relation(fields: [merchantId], references: [id])
+  merchantId String
 
   customer     Customer?   @relation(fields: [customerId], references: [id])
   customerId   String?
@@ -217,7 +217,7 @@ model Reservation {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  @@index([restaurantId])
+  @@index([merchantId])
   @@index([customerId])
   @@index([date])
 }

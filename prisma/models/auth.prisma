@@ -24,11 +24,11 @@ model User {
   phoneVerified Boolean   @default(false)
 
   // Multi-tenant fields
-  restaurantId String? // null for PLATFORM_ADMIN
-  restaurant   Restaurant? @relation("RestaurantUsers", fields: [restaurantId], references: [id])
+  merchantId String? // null for PLATFORM_ADMIN
+  merchant   Merchant? @relation("MerchantUsers", fields: [merchantId], references: [id])
 
-  // Owner relationship (for restaurant owners)
-  ownedRestaurants Restaurant[] @relation("RestaurantOwner")
+  // Owner relationship (for merchant owners)
+  ownedMerchants Merchant[] @relation("MerchantOwner")
 
   accounts              Account[]
   isTwoFactorEnabled    Boolean                @default(false)
@@ -40,18 +40,13 @@ model User {
   stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
 
-  // User-scoped invoicing (standalone invoice block)
-  userInvoices         UserInvoice[]
-  userInvoiceSettings  UserInvoiceSettings?
-
-  // Legal relations
-  legalConsents        LegalConsent[]
-  complianceLogs       ComplianceLog[]
+  // Placeholder for future invoice/legal features
+  // TODO: Add invoice and legal models when needed
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([email, schoolId]) // Allow same email across different schools
+  @@unique([email, merchantId]) // Allow same email across different merchants
 }
 
 model Account {

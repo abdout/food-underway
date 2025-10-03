@@ -1,8 +1,8 @@
-// Restaurant Models for Menu Platform
+// Merchant Models for Menu Platform
+// Merchant represents any food service business (restaurant, cafe, coffee shop, bakery, etc.)
 
-model Restaurant {
+model Merchant {
   id          String   @id @default(cuid())
-  menuId      String   @unique // Unique identifier for the restaurant's menu
 
   // Basic Information
   name        String
@@ -10,8 +10,8 @@ model Restaurant {
   description String?
   descriptionAr String? // Arabic description
 
-  // Restaurant Type
-  type        RestaurantType @default(RESTAURANT)
+  // Merchant Type
+  type        MerchantType @default(RESTAURANT)
   cuisine     String?  // e.g., "Saudi", "Italian", "Coffee"
 
   // Contact Information
@@ -37,8 +37,8 @@ model Restaurant {
   operatingHours Json? // Flexible JSON for complex schedules
 
   // Features & Settings
-  features    RestaurantFeature[]
-  settings    Json?    // Restaurant-specific settings
+  features    MerchantFeature[]
+  settings    Json?    // Merchant-specific settings
 
   // Branding
   logo        String?
@@ -46,15 +46,15 @@ model Restaurant {
   primaryColor String?
 
   // Subscription & Billing
-  subscriptionTier SubscriptionTier @default(STARTER)
-  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  subscriptionTier String @default("STARTER") // STARTER, PROFESSIONAL, ENTERPRISE
+  subscriptionStatus String @default("TRIALING") // TRIALING, ACTIVE, PAST_DUE, CANCELED, PAUSED
   subscriptionEndDate DateTime?
 
   // Relationships
-  owner       User     @relation("RestaurantOwner", fields: [ownerId], references: [id])
+  owner       User     @relation("MerchantOwner", fields: [ownerId], references: [id])
   ownerId     String
 
-  users       User[]   @relation("RestaurantUsers")
+  users       User[]   @relation("MerchantUsers")
   branches    Branch[]
   menus       Menu[]
   orders      Order[]
@@ -66,11 +66,10 @@ model Restaurant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([menuId])
   @@index([ownerId])
 }
 
-enum RestaurantType {
+enum MerchantType {
   RESTAURANT
   CAFE
   COFFEE_SHOP
@@ -81,29 +80,15 @@ enum RestaurantType {
   FOOD_TRUCK
 }
 
-enum SubscriptionTier {
-  STARTER       // 1 branch, 1,000 orders/month
-  PROFESSIONAL  // 3 branches, unlimited orders
-  ENTERPRISE    // Unlimited branches, priority support
-}
-
-enum SubscriptionStatus {
-  TRIALING
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  PAUSED
-}
-
-model RestaurantFeature {
+model MerchantFeature {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  restaurantId String
+  merchant     Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
 
   feature      Feature
   enabled      Boolean     @default(true)
 
-  @@unique([restaurantId, feature])
+  @@unique([merchantId, feature])
 }
 
 enum Feature {
@@ -126,8 +111,8 @@ enum Feature {
 
 model Branch {
   id           String      @id @default(cuid())
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  restaurantId String
+  merchant     Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
 
   name         String
   nameAr       String?
@@ -147,5 +132,5 @@ model Branch {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  @@index([restaurantId])
+  @@index([merchantId])
 }

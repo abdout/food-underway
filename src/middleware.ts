@@ -117,7 +117,7 @@ export async function middleware(req: NextRequest) {
     isLoggedIn,
     userId: session?.user?.id,
     userEmail: session?.user?.email,
-    schoolId: session?.user?.schoolId,
+    restaurantId: session?.user?.restaurantId,
     isAuthRoute: authRoutes.includes(pathnameWithoutLocale),
     isPublicRoute: publicRoutes.includes(pathnameWithoutLocale),
     isApiAuthRoute: url.pathname.startsWith(apiAuthPrefix),
@@ -149,7 +149,7 @@ export async function middleware(req: NextRequest) {
     referer,
     isBot: userAgent.includes('bot'),
     userId: session?.user?.id,
-    schoolId: session?.user?.schoolId
+    restaurantId: session?.user?.restaurantId
   });
 
   // Allow auth routes to be handled normally (don't rewrite for subdomains)
@@ -176,7 +176,7 @@ export async function middleware(req: NextRequest) {
   const isDashboardRoute = pathnameWithoutLocale.startsWith('/dashboard');
 
   // Check if user needs onboarding (new restaurant owner without restaurant)
-  const needsOnboarding = session?.user && !session.user.restaurantId && !session.user.menuId && session.user.role !== 'PLATFORM_ADMIN';
+  const needsOnboarding = session?.user && !session.user.restaurantId && session.user.role !== 'PLATFORM_ADMIN';
 
   // Redirect to login if accessing protected routes without authentication
   if (!isLoggedIn && !isPublicRoute && !isDocsRoute) {

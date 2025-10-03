@@ -134,10 +134,10 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           hasRole: 'role' in user,
-          hasSchoolId: 'schoolId' in user,
+          hasRestaurantId: 'merchantId' in user,
           userKeys: Object.keys(user),
           userRole: (user as any).role,
-          userSchoolId: (user as any).schoolId
+          userRestaurantId: (user as any).merchantId
         });
 
         token.id = user.id
@@ -151,11 +151,10 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
               where: { id: user.id },
               select: {
                 role: true,
-                restaurantId: true,
-                ownedRestaurants: {
+                merchantId: true,
+                ownedMerchants: {
                   select: {
                     id: true,
-                    menuId: true,
                     name: true
                   }
                 }
@@ -164,21 +163,21 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
             if (dbUser) {
               token.role = dbUser.role || 'USER'
-              token.restaurantId = dbUser.restaurantId
+              token.merchantId = dbUser.merchantId
 
-              // If user owns restaurants, store the first one's menuId
-              if (dbUser.ownedRestaurants && dbUser.ownedRestaurants.length > 0) {
-                token.menuId = dbUser.ownedRestaurants[0].menuId
-                token.restaurantId = dbUser.ownedRestaurants[0].id
+              // If user owns restaurants, store the first one's merchantId
+              if (dbUser.ownedMerchants && dbUser.ownedMerchants.length > 0) {
+                token.merchantId = dbUser.ownedMerchants[0].id
+                token.role = 'OWNER' // Set role to OWNER if they own a restaurant
                 console.log('🍽️ [DEBUG] Restaurant owner detected:', {
-                  restaurantId: dbUser.ownedRestaurants[0].id,
-                  menuId: dbUser.ownedRestaurants[0].menuId
+                  merchantId: dbUser.ownedMerchants[0].id,
+                  name: dbUser.ownedMerchants[0].name
                 });
               }
 
               console.log('🔄 [DEBUG] Fetched user from DB:', {
                 role: dbUser.role,
-                restaurantId: dbUser.restaurantId
+                merchantId: dbUser.merchantId
               });
             } else {
               // Default role for new OAuth users - they need onboarding
@@ -192,18 +191,14 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
             token.needsOnboarding = true
           }
         } else {
-          // Only set role and restaurantId if they exist on the user object
+          // Only set role and merchantId if they exist on the user object
           if ('role' in user) {
             token.role = (user as any).role
             console.log('🎭 [DEBUG] Role set in token:', token.role);
           }
-          if ('restaurantId' in user) {
-            token.restaurantId = (user as any).restaurantId
-            console.log('🍽️ [DEBUG] RestaurantId set in token:', token.restaurantId);
-          }
-          if ('menuId' in user) {
-            token.menuId = (user as any).menuId
-            console.log('📋 [DEBUG] MenuId set in token:', token.menuId);
+          if ('merchantId' in user) {
+            token.merchantId = (user as any).merchantId
+            console.log('🍽️ [DEBUG] RestaurantId set in token:', token.merchantId);
           }
         }
         
@@ -232,9 +227,9 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       console.log('🔐 [DEBUG] JWT CALLBACK END:', {
         tokenId: token?.id,
         hasRole: !!token?.role,
-        hasSchoolId: !!token?.schoolId,
+        hasRestaurantId: !!token?.merchantId,
         tokenRole: token?.role,
-        tokenSchoolId: token?.schoolId,
+        tokenRestaurantId: token?.merchantId,
         provider: token?.provider,
         iat: token?.iat,
         exp: token?.exp,
@@ -263,7 +258,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         console.log('🔑 [DEBUG] Token data available:', {
           tokenId: token.id,
           tokenRole: token.role,
-          tokenSchoolId: token.schoolId,
+          tokenRestaurantId: token.merchantId,
           tokenUpdatedAt: token.updatedAt,
           tokenHash: token.hash
         });
@@ -281,14 +276,13 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           console.log('🎭 [DEBUG] Default role applied to session: USER');
         }
 
-        if (token.restaurantId) {
-          (session.user as any).restaurantId = token.restaurantId
-          console.log('🍽️ [DEBUG] RestaurantId applied to session:', token.restaurantId);
-        }
-
-        if (token.menuId) {
-          (session.user as any).menuId = token.menuId
-          console.log('📋 [DEBUG] MenuId applied to session:', token.menuId);
+        if (token.merchantId) {
+          (session.user as any).merchantId = token.merchantId
+          console.log('🍽️ [DEBUG] RestaurantId applied to session:', token.merchantId);
+        } else {
+          // RestaurantId can be null for platform users or users needing onboarding
+          (session.user as any).merchantId = null
+          console.log('🍽️ [DEBUG] No merchantId - platform user or needs onboarding');
         }
 
         if (token.needsOnboarding) {
@@ -311,7 +305,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         console.log('✅ [DEBUG] Token data applied to session:', {
           id: token.id,
           role: token.role,
-          schoolId: token.schoolId
+          merchantId: token.merchantId
         });
       } else {
         console.log('⚠️ [DEBUG] No token available in session callback');
@@ -321,7 +315,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       console.log('📋 [DEBUG] SESSION CALLBACK END:', {
         sessionId: session.user?.id,
         hasRole: !!(session.user as any)?.role,
-        hasSchoolId: !!(session.user as any)?.schoolId,
+        hasRestaurantId: !!(session.user as any)?.merchantId,
         tokenId: token?.id,
         sessionToken: token?.sessionToken,
         iat: token?.iat,
