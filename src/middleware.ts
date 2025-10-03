@@ -14,22 +14,16 @@ function applySecurityHeaders(response: NextResponse, request: NextRequest): Nex
 
 // Helper function to get locale from request
 function getLocale(request: NextRequest): Locale {
-  // 1. Check cookie first for user preference
+  // 1. Check cookie first for user preference - this represents user's explicit choice
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
   if (cookieLocale && i18n.locales.includes(cookieLocale as Locale)) {
     return cookieLocale as Locale;
   }
 
-  // 2. Get Accept-Language header
-  const headers = {
-    'accept-language': request.headers.get('accept-language') ?? '',
-  };
-
-  // Use negotiator to parse preferred languages
-  const languages = new Negotiator({ headers }).languages();
-
-  // Match against supported locales
-  return match(languages, i18n.locales, i18n.defaultLocale) as Locale;
+  // 2. For new users without a cookie, always use the default locale (Arabic)
+  // We're not checking Accept-Language header to ensure Arabic is truly the default
+  // This makes the site Arabic-first for all new visitors
+  return i18n.defaultLocale;
 }
 
 // Helper function to strip locale from pathname

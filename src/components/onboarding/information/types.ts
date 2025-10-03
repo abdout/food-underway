@@ -1,6 +1,6 @@
-// About School step types
+// Information step types
 
-export interface AboutSchoolData {
+export interface InformationData {
   viewed: boolean;
   viewedAt?: Date;
 }
@@ -17,7 +17,7 @@ export interface OnboardingStats {
   successfulCompletions: number;
 }
 
-export interface AboutSchoolProps {
+export interface InformationProps {
   schoolId?: string;
   onContinue?: () => void;
   showProgress?: boolean;

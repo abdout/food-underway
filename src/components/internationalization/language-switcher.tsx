@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSwitchLocaleHref, useLocale } from '@/components/internationalization/use-locale';
 import { i18n, localeConfig, type Locale } from '@/components/internationalization/config';
 import {
@@ -22,8 +22,19 @@ export function LanguageSwitcher({
   className,
   variant = "dropdown"
 }: LanguageSwitcherProps) {
+  const router = useRouter();
   const getSwitchLocaleHref = useSwitchLocaleHref();
   const { locale: currentLocale, isRTL } = useLocale();
+
+  // Function to handle language switching with cookie setting
+  const handleLanguageSwitch = (locale: Locale) => {
+    // Set the cookie for language preference
+    document.cookie = `NEXT_LOCALE=${locale}; max-age=${365 * 24 * 60 * 60}; path=/; samesite=lax${process.env.NODE_ENV === 'production' ? '; secure' : ''}`;
+
+    // Navigate to the new locale URL
+    const newUrl = getSwitchLocaleHref(locale);
+    router.push(newUrl);
+  };
 
   if (variant === "inline") {
     return (
@@ -33,9 +44,9 @@ export function LanguageSwitcher({
           const isActive = locale === currentLocale;
 
           return (
-            <Link
+            <button
               key={locale}
-              href={getSwitchLocaleHref(locale)}
+              onClick={() => handleLanguageSwitch(locale)}
               className={cn(
                 "px-3 py-1 rounded-md transition-colors",
                 isActive
@@ -45,7 +56,7 @@ export function LanguageSwitcher({
             >
               <span className="text-lg mr-2">{config.flag}</span>
               <span className="text-sm">{config.nativeName}</span>
-            </Link>
+            </button>
           );
         })}
       </div>
@@ -70,20 +81,19 @@ export function LanguageSwitcher({
           const isActive = locale === currentLocale;
 
           return (
-            <DropdownMenuItem key={locale} asChild>
-              <Link
-                href={getSwitchLocaleHref(locale)}
-                className={cn(
-                  "flex items-center gap-2 w-full",
-                  isActive && "bg-muted"
-                )}
-              >
-                <span className="text-lg">{config.flag}</span>
-                <span>{config.nativeName}</span>
-                {isActive && (
-                  <span className="ml-auto text-xs">✓</span>
-                )}
-              </Link>
+            <DropdownMenuItem
+              key={locale}
+              onClick={() => handleLanguageSwitch(locale)}
+              className={cn(
+                "flex items-center gap-2 w-full cursor-pointer",
+                isActive && "bg-muted"
+              )}
+            >
+              <span className="text-lg">{config.flag}</span>
+              <span>{config.nativeName}</span>
+              {isActive && (
+                <span className="ml-auto text-xs">✓</span>
+              )}
             </DropdownMenuItem>
           );
         })}
