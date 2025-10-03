@@ -5,22 +5,30 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Facebook from "next-auth/providers/facebook";
 import Google from "next-auth/providers/google";
-import { env } from "@/env.mjs";
+// Try to load from env.mjs first, fallback to process.env
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
+const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
 
 // Debug logging for environment variables
 console.log('=====================================');
 console.log('🔧 [Auth Config] INITIALIZING');
 console.log('=====================================');
 console.log({
-  GOOGLE_CLIENT_ID: !!env.GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_ID_LENGTH: env.GOOGLE_CLIENT_ID?.length || 0,
-  GOOGLE_CLIENT_SECRET: !!env.GOOGLE_CLIENT_SECRET,
-  GOOGLE_CLIENT_SECRET_LENGTH: env.GOOGLE_CLIENT_SECRET?.length || 0,
-  FACEBOOK_CLIENT_ID: !!env.FACEBOOK_CLIENT_ID,
-  FACEBOOK_CLIENT_SECRET: !!env.FACEBOOK_CLIENT_SECRET,
+  GOOGLE_CLIENT_ID: !!googleClientId,
+  GOOGLE_CLIENT_ID_LENGTH: googleClientId?.length || 0,
+  GOOGLE_CLIENT_ID_PREFIX: googleClientId?.substring(0, 20),
+  GOOGLE_CLIENT_SECRET: !!googleClientSecret,
+  GOOGLE_CLIENT_SECRET_LENGTH: googleClientSecret?.length || 0,
+  FACEBOOK_CLIENT_ID: !!facebookClientId,
+  FACEBOOK_CLIENT_SECRET: !!facebookClientSecret,
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   AUTH_SECRET: !!process.env.AUTH_SECRET,
+  AUTH_SECRET_LENGTH: process.env.AUTH_SECRET?.length || 0,
+  VERCEL: process.env.VERCEL,
+  VERCEL_ENV: process.env.VERCEL_ENV,
   timestamp: new Date().toISOString()
 });
 
@@ -28,12 +36,12 @@ console.log({
 const providers = [];
 
 // Add Google provider if credentials exist
-if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+if (googleClientId && googleClientSecret) {
   console.log('✅ [Auth Config] Google OAuth is configured and will be added');
   providers.push(
     Google({
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
       authorization: {
         params: {
           prompt: "consent",
@@ -65,19 +73,20 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
   );
 } else {
   console.error('❌ [Auth Config] Google OAuth is NOT configured!', {
-    hasClientId: !!env.GOOGLE_CLIENT_ID,
-    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
+    hasClientId: !!googleClientId,
+    hasClientSecret: !!googleClientSecret,
+    clientIdValue: googleClientId?.substring(0, 20),
     hint: 'Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in environment variables'
   });
 }
 
 // Add Facebook provider if credentials exist
-if (env.FACEBOOK_CLIENT_ID && env.FACEBOOK_CLIENT_SECRET) {
+if (facebookClientId && facebookClientSecret) {
   console.log('✅ [Auth Config] Facebook OAuth is configured and will be added');
   providers.push(
     Facebook({
-      clientId: env.FACEBOOK_CLIENT_ID,
-      clientSecret: env.FACEBOOK_CLIENT_SECRET,
+      clientId: facebookClientId,
+      clientSecret: facebookClientSecret,
       authorization: {
         params: {
           scope: 'email',
@@ -154,6 +163,10 @@ console.log('📋 [Auth Config] Final provider configuration:', {
 if (!process.env.AUTH_SECRET) {
   console.error('🚨 [Auth Config] CRITICAL: AUTH_SECRET is not set!');
   console.error('This will cause authentication to fail. Please set AUTH_SECRET in your environment variables.');
+} else if (process.env.AUTH_SECRET === 'secret' || process.env.AUTH_SECRET.length < 32) {
+  console.error('🚨 [Auth Config] CRITICAL: AUTH_SECRET appears to be invalid!');
+  console.error(`AUTH_SECRET should be a random string at least 32 characters long. Current length: ${process.env.AUTH_SECRET.length}`);
+  console.error('Generate a proper secret with: openssl rand -base64 32');
 }
 
 if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
