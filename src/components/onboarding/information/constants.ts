@@ -1,8 +1,8 @@
-// About School step constants
+// Information step constants
 
-export const ABOUT_SCHOOL_CONSTANTS = {
-  STEP_NAME: 'about-school',
-  STEP_TITLE: 'About Your School',
+export const INFORMATION_CONSTANTS = {
+  STEP_NAME: 'information',
+  STEP_TITLE: 'Information',
   STEP_DESCRIPTION: 'Welcome! Let\'s start building your school profile.',
   ESTIMATED_TIME: '1 minute',
 } as const;

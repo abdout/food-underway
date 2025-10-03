@@ -1,17 +1,17 @@
-import AboutSchoolContent from "@/components/onboarding/about-school/content";
+import InformationContent from "@/components/onboarding/information/content";
 import { getDictionary } from "@/components/internationalization/dictionaries";
 import { type Locale } from "@/components/internationalization/config";
 
 export const metadata = {
-  title: "About Your School",
+  title: "Information",
 };
 
-interface AboutSchoolPageProps {
+interface InformationPageProps {
   params: Promise<{ lang: Locale }>
 }
 
-export default async function AboutSchool({ params }: AboutSchoolPageProps) {
+export default async function Information({ params }: InformationPageProps) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
-  return <AboutSchoolContent dictionary={dictionary.school} />;
+  return <InformationContent dictionary={dictionary.school} />;
 }

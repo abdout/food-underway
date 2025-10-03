@@ -390,9 +390,9 @@ export async function proceedToTitle(schoolId: string) {
 
     revalidatePath(`/onboarding/${schoolId}`);
   } catch (error) {
-    logger.error("Error proceeding to about-school:", error);
+    logger.error("Error proceeding to information:", error);
     throw error;
   }
 
-  redirect(`/onboarding/${schoolId}/about-school`);
+  redirect(`/onboarding/${schoolId}/information`);
 }

@@ -2,9 +2,9 @@ import type { OnboardingStep, OnboardingStepGroup, StepConfig, SchoolTemplate } 
 
 // Onboarding step configuration
 export const ONBOARDING_STEPS: Record<OnboardingStep, StepConfig> = {
-  'about-school': {
-    step: 'about-school',
-    title: 'About Your School',
+  'information': {
+    step: 'information',
+    title: 'Information',
     description: 'Welcome! Let\'s start building your school profile.',
     group: 'basic',
     isRequired: false,

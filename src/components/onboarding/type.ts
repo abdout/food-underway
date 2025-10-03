@@ -1,6 +1,6 @@
 // Core onboarding types following standardized patterns
 
-export type OnboardingStep = 
+export type OnboardingStep =
   | 'title'
   | 'description'
   | 'location'
@@ -12,7 +12,7 @@ export type OnboardingStep =
   | 'price'
   | 'discount'
   | 'legal'
-  | 'about-school'
+  | 'information'
   | 'stand-out'
   | 'finish-setup'
   | 'subdomain';

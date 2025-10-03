@@ -26,7 +26,7 @@ interface HostFooterProps {
 // Define the step order for the hosting flow
 const HOSTING_STEPS = [
   // Stage 1: Tell us about your place
-  'about-school',
+  'information',
   // 'title',
   // 'description',
   // 'location',
@@ -48,7 +48,7 @@ const HOSTING_STEPS = [
 
 // Original full steps (commented for future reactivation)
 // const HOSTING_STEPS = [
-//   'about-school',
+//   'information',
 //   'title',
 //   'description',
 //   'location',
@@ -67,12 +67,12 @@ const HOSTING_STEPS = [
 // Group steps into 3 main categories
 const STEP_GROUPS = {
   // Simplified version - one step per stage
-  1: ['about-school'],
+  1: ['information'],
   2: ['capacity'],
   3: ['join']
 
   // Original full grouping (commented for future reactivation)
-  // 1: ['about-school', 'title', 'description', 'location', 'stand-out'],
+  // 1: ['information', 'title', 'description', 'location', 'stand-out'],
   // 2: ['capacity', 'branding', 'import', 'finish-setup'],
   // 3: ['join', 'visibility', 'price', 'discount', 'legal']
 };

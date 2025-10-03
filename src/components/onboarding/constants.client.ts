@@ -31,8 +31,8 @@ export const ERROR_MESSAGES = {
 
 // Step navigation mapping
 export const STEP_NAVIGATION: Record<string, { next?: string; previous?: string }> = {
-  'about-school': { next: 'title' },
-  'title': { next: 'subdomain', previous: 'about-school' },
+  'information': { next: 'title' },
+  'title': { next: 'subdomain', previous: 'information' },
   'subdomain': { next: 'admin-account', previous: 'title' },
   'admin-account': { next: 'school-info', previous: 'subdomain' },
   'school-info': { next: 'academic-setup', previous: 'admin-account' },

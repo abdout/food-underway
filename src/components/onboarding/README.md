@@ -16,7 +16,7 @@ src/
 │   │   └── page.tsx                # Overview dashboard
 │   └── [id]/                       # Dynamic school ID routes
 │       ├── layout.tsx              # Shared layout with ListingProvider
-│       ├── about-school/           # Static intro step
+│       ├── information/            # Static intro step
 │       ├── title/                  # School name
 │       ├── description/            # School details
 │       ├── location/               # Address & location

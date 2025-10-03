@@ -84,7 +84,7 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
     if (schoolId) {
       console.log('✅ [DEBUG] Using existing schoolId, redirecting...');
       // Use the real school ID that was just created
-      router.push(`/${lang}/onboarding/${schoolId}/about-school`);
+      router.push(`/${lang}/onboarding/${schoolId}/information`);
     } else {
       console.log('🏗️ [DEBUG] No schoolId, creating new school...');
       // Create a new school record first
@@ -108,7 +108,7 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
           console.log('✅ [DEBUG] School created successfully, preparing redirect:', {
             schoolId: result.data.id,
             schoolName: result.data.name,
-            redirectTarget: `/${lang}/onboarding/${result.data.id}/about-school`,
+            redirectTarget: `/${lang}/onboarding/${result.data.id}/information`,
             waitingBeforeRedirect: true,
             waitTime: '2000ms'
           });
@@ -116,14 +116,14 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
           // Wait longer for the database update and session refresh to propagate
           await new Promise(resolve => setTimeout(resolve, 2000));
 
-          console.log('🔄 [DEBUG] Executing redirect to about-school page:', {
-            targetUrl: `/${lang}/onboarding/${result.data.id}/about-school`,
+          console.log('🔄 [DEBUG] Executing redirect to information page:', {
+            targetUrl: `/${lang}/onboarding/${result.data.id}/information`,
             redirectMethod: 'window.location.href',
             redirectTimestamp: new Date().toISOString()
           });
 
           // Force a full page refresh to ensure session is updated
-          window.location.href = `/${lang}/onboarding/${result.data.id}/about-school`;
+          window.location.href = `/${lang}/onboarding/${result.data.id}/information`;
         } else {
           console.error('❌ [DEBUG] Failed to create school:', {
             error: result.error,
@@ -136,17 +136,17 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
           const tempId = `draft-${Date.now()}`;
           console.log('🔄 [DEBUG] Using fallback draft redirect:', {
             tempId,
-            redirectTarget: `/${lang}/onboarding/${tempId}/about-school`,
+            redirectTarget: `/${lang}/onboarding/${tempId}/information`,
             fallbackTimestamp: new Date().toISOString()
           });
-          router.push(`/${lang}/onboarding/${tempId}/about-school`);
+          router.push(`/${lang}/onboarding/${tempId}/information`);
         }
       } catch (error) {
         console.error('❌ [DEBUG] Exception in handleGetStarted:', error);
         // Fallback to temporary ID if there's an error
         const tempId = `draft-${Date.now()}`;
         console.log('🔄 [DEBUG] Exception fallback redirect to draft:', tempId);
-        router.push(`/${lang}/onboarding/${tempId}/about-school`);
+        router.push(`/${lang}/onboarding/${tempId}/information`);
       } finally {
         console.log('🏁 [DEBUG] Setting isCreating to false');
         setIsCreating(false);

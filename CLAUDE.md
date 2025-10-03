@@ -253,7 +253,7 @@ The platform supports full multi-language with RTL/LTR:
 ## School Onboarding Flow
 
 The onboarding follows this exact sequence (defined in `host-footer.tsx`):
-1. about-school → 2. title → 3. description → 4. location → 5. stand-out →
+1. information → 2. title → 3. description → 4. location → 5. stand-out →
 6. capacity → 7. branding → 8. import → 9. finish-setup → 10. join →
 11. visibility → 12. price → 13. discount → 14. legal
 

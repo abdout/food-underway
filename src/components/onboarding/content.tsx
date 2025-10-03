@@ -43,7 +43,7 @@ export default function OnboardingContent({ dictionary }: OnboardingContentProps
   };
 
   const handleSchoolClick = (id: string) => {
-    router.push(`/onboarding/${id}/about-school`);
+    router.push(`/onboarding/${id}/information`);
   };
 
   const handleCreateNew = async () => {

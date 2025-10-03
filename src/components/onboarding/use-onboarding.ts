@@ -31,7 +31,7 @@ export function useOnboarding(schoolId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const currentSchoolId = schoolId || (params?.id as string);
-  const currentStep = params?.step as OnboardingStep || 'about-school';
+  const currentStep = params?.step as OnboardingStep || 'information';
 
   // Load school data and progress
   const loadSchoolData = useCallback(async () => {
