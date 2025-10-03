@@ -609,3 +609,29 @@ export const Icons = {
     </svg>
   ),
 }
+
+// Export individual icons for named imports
+export const Trash = Icons.trash;
+export const NextJS = Icons.nextJS;
+export const ReactIcon = Icons.react;
+export const TypeScript = Icons.typeScript;
+export const TailwindCSS = Icons.tailwindCSS;
+export const ShadcnUI = Icons.shadcnUI;
+export const PlanetScale = Icons.planetScale;
+export const PrismaIcon = Icons.prisma;
+export const ZodIcon = Icons.zod;
+export const ReactHookForm = Icons.reactHookForm;
+export const Claude = Icons.claude;
+export const MCPIcon = Icons.mcpIcon;
+export const RustIcon = Icons.rust;
+export const PythonIcon = Icons.python;
+export const GitHub = Icons.gitHub;
+export const Cursor = Icons.cursor;
+export const Authentication = Icons.authentication;
+export const Subscription = Icons.subscription;
+export const Triangle = Icons.triangle;
+export const Framer = Icons.framer;
+export const Git = Icons.git;
+export const Prettier = Icons.prettier;
+export const Figma = Icons.figma;
+export const RIcon = Icons.r;
