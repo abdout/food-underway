@@ -303,7 +303,7 @@ export async function reserveSubdomainForSchool(
     await requireSchoolOwnership(schoolId);
 
     // Import the subdomain actions
-    const { reserveSubdomain } = await import('@/lib/subdomain-actions');
+    const { reserveSubdomain } = await import('@/components/platform/dashboard/actions');
     
     // Reserve the subdomain
     const result = await reserveSubdomain(subdomain, schoolId);

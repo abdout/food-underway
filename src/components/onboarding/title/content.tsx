@@ -8,7 +8,7 @@ import { useTitle } from './use-title';
 import { TitleForm, type TitleFormRef } from './form';
 import { TitleCard } from './card';
 import { FORM_LIMITS } from '@/components/onboarding/constants.client';
-import { generateSubdomain } from '@/lib/subdomain';
+import { generateSubdomain } from '@/components/platform/dashboard/subdomain';
 import { Badge } from '@/components/ui/badge';
 import { Globe } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';

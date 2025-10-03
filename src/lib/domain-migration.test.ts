@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { extractSubdomain } from './subdomain';
+import { extractSubdomain } from '../components/platform/dashboard/subdomain';
 
 describe('Domain Migration Tests', () => {
   describe('extractSubdomain', () => {

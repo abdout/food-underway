@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { titleSchema, type TitleFormData } from "./validation";
 import { updateSchoolTitle } from "./actions";
 import { FORM_LIMITS } from "../constants.client";
-import { generateSubdomain } from "@/lib/subdomain";
+import { generateSubdomain } from "@/components/platform/dashboard/subdomain";
 import { useLocale } from '@/components/internationalization/use-locale';
 
 interface TitleFormProps {

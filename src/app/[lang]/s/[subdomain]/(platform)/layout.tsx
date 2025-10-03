@@ -2,8 +2,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { ModalProvider } from "@/components/atom/modal/context";
 import PlatformHeader from "@/components/template/platform-header/content";
 import PlatformSidebar from "@/components/template/platform-sidebar/content";
-import { SchoolProvider } from "@/components/platform/context/school-context";
-import { getSchoolBySubdomain } from "@/lib/subdomain-actions";
+import { SchoolProvider } from "@/components/platform/context";
+import { getSchoolBySubdomain } from "@/components/platform/dashboard/actions";
 import { notFound } from "next/navigation";
 
 interface PlatformLayoutProps {

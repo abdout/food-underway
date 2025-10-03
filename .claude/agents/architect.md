@@ -167,7 +167,7 @@ Each feature directory follows these naming conventions:
 - Missing type-safety chain (Zod validations, TypeScript types)
 - Files not following standardized naming conventions
 - Features with tight coupling preventing independent deployment
-- Hardcoded values instead of using constants.ts
+- Hardcoded values instead of using config.ts
 - Direct database queries instead of using action.ts patterns
 - Page.tsx files that don't follow the minimal import pattern
 

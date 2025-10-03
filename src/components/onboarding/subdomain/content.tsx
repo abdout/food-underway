@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useHostValidation } from '@/components/onboarding/host-validation-context';
 import { useListing } from '@/components/onboarding/use-listing';
-import { generateSubdomain, generateSubdomainSuggestions, isValidSubdomain, normalizeSubdomain } from '@/lib/subdomain';
-import { checkSubdomainAvailability } from '@/lib/subdomain-actions';
+import { generateSubdomain, generateSubdomainSuggestions, isValidSubdomain, normalizeSubdomain } from '@/components/platform/dashboard/subdomain';
+import { checkSubdomainAvailability } from '@/components/platform/dashboard/actions';
 import { reserveSubdomainForSchool } from '@/components/onboarding/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

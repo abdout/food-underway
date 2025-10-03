@@ -1,5 +1,5 @@
 import SiteHeader from "@/components/template/site-header/content";
-import { getSchoolBySubdomain } from "@/lib/subdomain-actions";
+import { getSchoolBySubdomain } from "@/components/platform/dashboard/actions";
 import { notFound } from "next/navigation";
 
 // import { SiteFooter } from "@/components/site-footer";

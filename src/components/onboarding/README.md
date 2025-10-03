@@ -34,7 +34,7 @@ src/
 │
 └── components/onboarding/
     ├── actions.ts                  # Server actions (CRUD)
-    ├── constants.ts                # Step configurations
+    ├── config.ts                # Step configurations
     ├── types.ts                    # TypeScript definitions
     ├── use-listing.tsx             # Context & state management
     ├── use-onboarding.ts           # Navigation & validation

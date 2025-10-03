@@ -1,0 +1,15 @@
+// Domain request/management
+model DomainRequest {
+  id         String    @id @default(cuid())
+  merchantId   String
+  domain     String
+  status     String    @default("pending") // pending|approved|rejected|verified
+  notes      String?
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, domain])
+}
