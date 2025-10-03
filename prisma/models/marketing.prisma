@@ -1,0 +1,217 @@
+// Marketing and Loyalty Models
+
+model LoyaltyProgram {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String      @unique // One program per merchant
+
+  name         String
+  nameAr       String?
+  description  String?
+  descriptionAr String?
+
+  type         LoyaltyType @default(POINTS)
+
+  // Points configuration
+  pointsPerSAR Float       @default(1) // Points earned per SAR spent
+  pointValue   Float       @default(0.1) // SAR value per point
+
+  // Tier configuration
+  tiers        LoyaltyTier[]
+
+  isActive     Boolean     @default(true)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([merchantId])
+}
+
+enum LoyaltyType {
+  POINTS       // Points-based system
+  STAMPS       // Digital stamp card
+  TIERED       // Bronze/Silver/Gold tiers
+  CASHBACK     // Percentage cashback
+}
+
+model LoyaltyTier {
+  id           String      @id @default(cuid())
+  program      LoyaltyProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId    String
+
+  name         String
+  nameAr       String?
+
+  minPoints    Int         // Minimum points to reach tier
+  multiplier   Float       @default(1) // Points multiplier for this tier
+
+  benefits     String[]    // List of tier benefits
+  benefitsAr   String[]    // Arabic benefits
+
+  color        String?     // Tier color for UI
+  icon         String?     // Tier icon
+
+  sortOrder    Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([programId])
+}
+
+model Campaign {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  // Campaign details
+  name         String
+  nameAr       String?
+  description  String?
+  descriptionAr String?
+
+  type         CampaignType
+  status       CampaignStatus @default(DRAFT)
+
+  // Targeting
+  targetSegment String?     // Customer segment to target
+
+  // Schedule
+  startDate    DateTime
+  endDate      DateTime
+
+  // Content
+  message      String      // SMS/WhatsApp message
+  messageAr    String?
+  imageUrl     String?
+
+  // Offer details (if applicable)
+  offerCode    String?
+  discount     Float?      // Percentage or fixed discount
+  discountType DiscountType?
+
+  // Tracking
+  sentCount    Int         @default(0)
+  openCount    Int         @default(0)
+  redeemCount  Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+enum CampaignType {
+  SMS
+  WHATSAPP
+  PUSH_NOTIFICATION
+  EMAIL
+  IN_APP
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_ONE_GET_ONE
+  FREE_ITEM
+}
+
+model Coupon {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  code         String      // Coupon code (e.g., "SAVE20")
+
+  // Discount details
+  discount     Float       // Amount or percentage
+  discountType DiscountType
+
+  // Validity
+  validFrom    DateTime
+  validUntil   DateTime
+
+  // Usage limits
+  maxUses      Int?        // Total uses allowed (null = unlimited)
+  maxUsesPerCustomer Int   @default(1)
+  currentUses  Int         @default(0)
+
+  // Conditions
+  minOrderAmount Float?    // Minimum order value
+  applicableItems String[] // Menu item IDs (empty = all items)
+
+  isActive     Boolean     @default(true)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([merchantId, code])
+  @@index([merchantId])
+  @@index([code])
+  @@index([validFrom])
+  @@index([validUntil])
+}
+
+model Review {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  // Branch specific review
+  branch       Branch?     @relation(fields: [branchId], references: [id])
+  branchId     String?
+
+  // Order association
+  order        Order       @relation(fields: [orderId], references: [id])
+  orderId      String      @unique // One review per order
+
+  // Customer info
+  customer     Customer?   @relation(fields: [customerId], references: [id])
+  customerId   String?
+  customerName String
+
+  // Ratings (1-5 stars)
+  overallRating Int
+  foodRating   Int?
+  serviceRating Int?
+  ambianceRating Int?
+  valueRating  Int?
+
+  // Review content
+  comment      String?
+  commentAr    String?
+
+  // Response from merchant
+  merchantResponse String?
+  merchantResponseAr String?
+  respondedAt  DateTime?
+  respondedBy  String?
+
+  // Moderation
+  isPublished  Boolean     @default(true)
+  isFlagged    Boolean     @default(false)
+
+  // Helpful votes
+  helpfulCount Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([merchantId])
+  @@index([branchId])
+  @@index([customerId])
+  @@index([overallRating])
+  @@index([createdAt])
+}

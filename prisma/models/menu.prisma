@@ -2,8 +2,8 @@
 
 model Menu {
   id           String      @id @default(cuid())
-  restaurant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  merchantId String
+  merchant     Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
 
   name         String
   nameAr       String?
@@ -18,17 +18,27 @@ model Menu {
   endTime      String?     // e.g., "11:00"
   availableDays String[]   // e.g., ["monday", "tuesday", ...]
 
+  // Branch-specific menu (optional)
+  branch       Branch?    @relation(fields: [branchId], references: [id])
+  branchId     String?
+
   categories   Category[]
   items        MenuItem[]
 
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@unique([merchantId, name]) // Ensure menu names are unique per merchant
   @@index([merchantId])
+  @@index([branchId])
 }
 
 model Category {
   id           String      @id @default(cuid())
+
+  // Multi-tenant relationship
+  merchantId   String      // Denormalized for query efficiency
+
   menu         Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
   menuId       String
 
@@ -46,11 +56,17 @@ model Category {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@unique([menuId, name]) // Unique category names per menu
+  @@index([merchantId])
   @@index([menuId])
 }
 
 model MenuItem {
   id           String      @id @default(cuid())
+
+  // Multi-tenant relationship
+  merchantId   String      // Denormalized for query efficiency
+
   menu         Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
   menuId       String
 
@@ -62,6 +78,7 @@ model MenuItem {
   nameAr       String?
   description  String?
   descriptionAr String?
+  sku          String?     // Stock keeping unit
 
   // Pricing
   price        Float
@@ -99,21 +116,35 @@ model MenuItem {
   // Allergens
   allergens    String[]
 
+  // Inventory tracking
+  stockQuantity Int?       // null means unlimited
+  lowStockAlert Int?       // Alert threshold
+
   // Modifiers and options
   modifiers    Modifier[]
 
   // Orders
   orderItems   OrderItem[]
 
+  // Analytics
+  stats        MenuItemStat[]
+  inventoryLogs InventoryLog[]
+
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@unique([merchantId, sku]) // Ensure SKU is unique per merchant if provided
+  @@index([merchantId])
   @@index([menuId])
   @@index([categoryId])
 }
 
 model Modifier {
   id           String      @id @default(cuid())
+
+  // Multi-tenant relationship
+  merchantId   String      // Denormalized for query efficiency
+
   menuItem     MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   menuItemId   String
 
@@ -127,9 +158,12 @@ model Modifier {
 
   options      ModifierOption[]
 
+  sortOrder    Int         @default(0)
+
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@index([merchantId])
   @@index([menuItemId])
 }
 

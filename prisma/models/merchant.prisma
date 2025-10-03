@@ -62,6 +62,19 @@ model Merchant {
   tables      Table[]
   reservations Reservation[]
 
+  // Marketing & Loyalty
+  loyaltyProgram LoyaltyProgram?
+  campaigns   Campaign[]
+  coupons     Coupon[]
+  reviews     Review[]
+
+  // Analytics
+  dailyStats  DailyStat[]
+  menuItemStats MenuItemStat[]
+  customerStats CustomerStat[]
+  inventoryLogs InventoryLog[]
+  auditLogs   AuditLog[]
+
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -120,17 +133,32 @@ model Branch {
   // Location
   address      String
   addressAr    String?
+  city         String?
   phone        String
+  latitude     Float?
+  longitude    Float?
 
   // Manager
   managerId    String?
+
+  // Operating hours (can be different from main branch)
+  operatingHours Json?
 
   // Settings
   isMainBranch Boolean     @default(false)
   isActive     Boolean     @default(true)
 
+  // Relationships
+  menus        Menu[]      // Branch-specific menus
+  orders       Order[]     // Branch-specific orders
+  tables       Table[]     // Branch-specific tables
+  reservations Reservation[] // Branch-specific reservations
+  reviews      Review[]    // Branch-specific reviews
+  dailyStats   DailyStat[] // Branch-specific stats
+
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@unique([merchantId, name]) // Unique branch names per merchant
   @@index([merchantId])
 }

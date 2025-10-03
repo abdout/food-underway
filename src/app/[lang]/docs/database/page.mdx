@@ -1,12 +1,12 @@
 ## Database
 
-**Menu** (منيو) uses a multi-tenant architecture with complete data isolation per restaurant using `restaurantId`. Built on PostgreSQL with Prisma ORM, optimized for Saudi Arabia's restaurant market.
+**Menu** (منيو) uses a multi-tenant architecture with complete data isolation per merchant using `merchantId`. Built on PostgreSQL with Prisma ORM, optimized for Saudi Arabia's restaurant market.
 
 ### Core Principles
 
 Our database design ensures scalability, security, and Saudi market compliance:
 
-- **Row-Level Security** – Every model includes `restaurantId` field ensuring complete data isolation
+- **Row-Level Security** – Every business model includes `merchantId` field ensuring complete data isolation
 - **Arabic-First Design** – Native Arabic support with proper RTL collation
 - **Saudi Compliance** – ZATCA e-invoicing, SFDA nutrition, Municipality requirements
 - **WhatsApp Native** – Built-in WhatsApp Business API integration
@@ -15,13 +15,13 @@ Our database design ensures scalability, security, and Saudi market compliance:
 
 ### Multi-Tenant Architecture
 
-Every table includes `restaurantId` for complete data isolation:
+Every business table includes `merchantId` for complete data isolation. Some lookup tables (like modifiers) also denormalize merchantId for query efficiency:
 
 ```typescript
 // ✅ Correct - Tenant isolated
 const orders = await db.order.findMany({
   where: {
-    restaurantId: session.restaurantId,
+    merchantId: session.merchantId,
     status: "PENDING"
   }
 })
@@ -34,136 +34,238 @@ const orders = await db.order.findMany({
 
 ### Core Schema Design
 
-#### Restaurant Entity
+#### Merchant Entity
 
 ```prisma
-model Restaurant {
+model Merchant {
   id            String   @id @default(cuid())
 
   // Business identifiers (Saudi)
-  nameAr        String   // Required Arabic name
-  nameEn        String?  // Optional English name
-  crNumber      String   @unique // Commercial Registration (السجل التجاري)
-  vatNumber     String   // VAT registration (رقم ضريبة القيمة المضافة)
-
-  // Digital presence
-  subdomain     String   @unique // restaurant.menu.sa
-  customDomain  String?  // Optional: restaurant.com.sa
-
-  // Location (Saudi format)
-  cityAr        String   // الرياض، جدة، الدمام
-  cityEn        String?
-  addressAr     String   // العنوان الوطني السعودي
-  addressEn     String?
+  name          String   // Business name
+  nameAr        String?  // Arabic name
+  type          MerchantType @default(RESTAURANT)
+  cuisine       String?  // e.g., "Saudi", "Italian", "Coffee"
 
   // Contact
   phone         String   // 05XXXXXXXX format
-  whatsapp      String   // WhatsApp Business number
   email         String?
+  website       String?
 
-  // Settings
-  timezone      String   @default("Asia/Riyadh")
-  currency      String   @default("SAR")
-  language      String   @default("ar")
+  // Location (Saudi format)
+  address       String   // العنوان الوطني السعودي
+  addressAr     String?
+  city          String
+  region        String?  // e.g., "Eastern Province"
+  country       String   @default("SA")
+  latitude      Float?
+  longitude     Float?
+
+  // Business Information
+  commercialRegister String? // Saudi commercial registration
+  vatNumber     String?  // ZATCA VAT number
+  municipalityLicense String? // Balady license
+
+  // Operating Hours
+  operatingHours Json?   // Flexible schedule
+
+  // Branding
+  logo          String?
+  coverImage    String?
+  primaryColor  String?
 
   // Subscription
-  plan          PlanType @default(BASIC)
-  planExpiresAt DateTime?
+  subscriptionTier String @default("STARTER")
+  subscriptionStatus String @default("TRIALING")
+  subscriptionEndDate DateTime?
 
-  // Features
-  features      Json     // Enabled features based on plan
+  // Owner
+  owner         User     @relation("MerchantOwner")
+  ownerId       String
 
-  // Compliance
-  municipality  String?  // Municipality license
-  zatcaEnabled  Boolean  @default(true)
-  sfdaEnabled   Boolean  @default(true)
+  // Relations
+  branches      Branch[]
+  menus         Menu[]
+  orders        Order[]
+  customers     Customer[]
+  tables        Table[]
+}
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+enum MerchantType {
+  RESTAURANT
+  CAFE
+  COFFEE_SHOP
+  BAKERY
+  FAST_FOOD
+  FINE_DINING
+  CLOUD_KITCHEN
+  FOOD_TRUCK
+}
+```
 
-  @@index([subdomain])
-  @@index([crNumber])
+#### Branch Management
+
+```prisma
+model Branch {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+
+  name          String
+  nameAr        String?
+
+  // Location
+  address       String
+  addressAr     String?
+  city          String?
+  phone         String
+  latitude      Float?
+  longitude     Float?
+
+  // Manager
+  managerId     String?
+
+  // Operating hours (branch-specific)
+  operatingHours Json?
+
+  // Settings
+  isMainBranch  Boolean  @default(false)
+  isActive      Boolean  @default(true)
+
+  // Branch-specific entities
+  menus         Menu[]
+  orders        Order[]
+  tables        Table[]
+  reservations  Reservation[]
+  reviews       Review[]
+  dailyStats    DailyStat[]
+
+  @@unique([merchantId, name])
 }
 ```
 
 #### Menu Management
 
 ```prisma
-model MenuCategory {
+model Menu {
   id            String   @id @default(cuid())
-  restaurantId  String   // Tenant isolation
+  merchantId    String   // Tenant isolation
+  branchId      String?  // Optional branch-specific menu
 
-  nameAr        String   // مقبلات، أطباق رئيسية، مشروبات، حلويات
+  name          String
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+
+  isActive      Boolean  @default(true)
+  isDefault     Boolean  @default(false)
+
+  // Menu scheduling
+  startTime     String?  // e.g., "06:00"
+  endTime       String?  // e.g., "11:00"
+  availableDays String[] // ["monday", "tuesday", ...]
+
+  categories    Category[]
+  items         MenuItem[]
+
+  @@unique([merchantId, name])
+}
+
+model Category {
+  id            String   @id @default(cuid())
+  merchantId    String   // Denormalized for efficiency
+  menuId        String
+
+  nameAr        String   // مقبلات، أطباق رئيسية، مشروبات
   nameEn        String?
   descriptionAr String?
   descriptionEn String?
 
-  icon          String?  // Category icon
-  imageUrl      String?  // Category banner
-
+  image         String?
   sortOrder     Int      @default(0)
   isActive      Boolean  @default(true)
 
-  // Availability (prayer time aware)
-  availableFrom String?  // "08:00"
-  availableTo   String?  // "23:00"
-  pauseDuringPrayer Boolean @default(true)
+  items         MenuItem[]
 
-  // Ramadan settings
-  isRamadanSpecial Boolean @default(false)
-  ramadanFrom   String?  // Iftar time
-  ramadanTo     String?  // Suhoor time
-
-  @@unique([restaurantId, nameAr])
-  @@index([restaurantId])
+  @@unique([menuId, name])
 }
 
 model MenuItem {
   id            String   @id @default(cuid())
-  restaurantId  String   // Tenant isolation
-  categoryId    String
+  merchantId    String   // Denormalized for efficiency
+  menuId        String
+  categoryId    String?
 
-  // Names (Arabic required)
-  nameAr        String
-  nameEn        String?
+  // Names (Arabic support)
+  name          String
+  nameAr        String?
+  description   String?
   descriptionAr String?
-  descriptionEn String?
+  sku           String?  // Stock keeping unit
 
   // Pricing
-  price         Decimal  @db.Decimal(10, 2) // SAR
-  cost          Decimal? @db.Decimal(10, 2) // For profit calculation
+  price         Float
+  discountPrice Float?
+  currency      String   @default("SAR")
 
   // Media
-  images        String[] // Multiple images
+  image         String?
+  images        String[]
 
   // SFDA Nutrition Compliance
   calories      Int?     // Required for SFDA
-  protein       Decimal? @db.Decimal(5, 2) // grams
-  carbs         Decimal? @db.Decimal(5, 2)
-  fat           Decimal? @db.Decimal(5, 2)
-  sodium        Decimal? @db.Decimal(5, 2) // mg
+  protein       Float?   // grams
+  carbs         Float?
+  fat           Float?
+  fiber         Float?
+  sodium        Float?   // mg
 
   // Dietary & Allergens
   isHalal       Boolean  @default(true)
-  allergens     String[] // SFDA allergen codes
   isVegetarian  Boolean  @default(false)
   isVegan       Boolean  @default(false)
   isGlutenFree  Boolean  @default(false)
+  isDairyFree   Boolean  @default(false)
+  isNutFree     Boolean  @default(false)
+  allergens     String[]
 
   // Availability
   isAvailable   Boolean  @default(true)
-  preparationTime Int?   // Minutes
-  maxDailyQuantity Int?  // Inventory limit
+  isFeatured    Boolean  @default(false)
+  prepTime      Int?     // Minutes
+  sortOrder     Int      @default(0)
 
-  // Special flags
-  isPopular     Boolean  @default(false)
-  isNew         Boolean  @default(false)
-  isSpicy       Boolean  @default(false)
-  spicyLevel    Int?     // 1-5 scale
+  // Inventory
+  stockQuantity Int?     // null = unlimited
+  lowStockAlert Int?
 
-  @@unique([restaurantId, categoryId, nameAr])
-  @@index([restaurantId])
-  @@index([categoryId])
+  // Relations
+  modifiers     Modifier[]
+  orderItems    OrderItem[]
+  stats         MenuItemStat[]
+  inventoryLogs InventoryLog[]
+
+  @@unique([merchantId, sku])
+}
+
+model Modifier {
+  id            String   @id @default(cuid())
+  merchantId    String   // Denormalized for efficiency
+  menuItemId    String
+
+  name          String
+  nameAr        String?
+
+  type          ModifierType @default(SINGLE)
+  required      Boolean  @default(false)
+  minSelection  Int      @default(0)
+  maxSelection  Int      @default(1)
+  sortOrder     Int      @default(0)
+
+  options       ModifierOption[]
+}
+
+enum ModifierType {
+  SINGLE   // Radio buttons (choose one)
+  MULTIPLE // Checkboxes (choose multiple)
 }
 ```
 
@@ -172,58 +274,103 @@ model MenuItem {
 ```prisma
 model Order {
   id            String   @id @default(cuid())
-  restaurantId  String   // Tenant isolation
-  branchId      String?
+  merchantId    String   // Tenant isolation
+  branchId      String?  // Branch tracking
 
   // Order identifiers
   orderNumber   String   // Human-readable: #1234
-  type          OrderType // DINE_IN, DELIVERY, PICKUP
-  status        OrderStatus
+  type          OrderType
+  status        OrderStatus @default(PENDING)
 
   // Customer
   customerId    String?
-  customerName  String
-  customerPhone String   // 05XXXXXXXX
+  customerName  String?
+  customerPhone String?  // 05XXXXXXXX
+  customerEmail String?
 
   // Dine-in details
-  tableNumber   String?
-  section       TableSection? // FAMILY, SINGLES, VIP
+  tableId       String?
+  table         Table?
 
   // Delivery (Saudi address)
-  deliveryAddress Json?  // National address format
-  deliveryZone  String?
-  deliveryFee   Decimal? @db.Decimal(10, 2)
+  deliveryAddress String?
+  deliveryNotes String?
+  deliveryFee   Float    @default(0)
+  deliveryTime  DateTime? // Estimated
 
-  // Pricing (SAR)
-  subtotal      Decimal  @db.Decimal(10, 2)
-  discount      Decimal  @default(0) @db.Decimal(10, 2)
-  tax           Decimal  @db.Decimal(10, 2) // 15% VAT
-  total         Decimal  @db.Decimal(10, 2)
+  // Pickup
+  pickupTime    DateTime?
 
   // Payment
-  paymentMethod PaymentMethod
-  paymentStatus PaymentStatus
+  paymentMethod PaymentMethod?
+  paymentStatus PaymentStatus @default(PENDING)
+  transactionId String?  // Gateway transaction ID
 
-  // ZATCA Invoice
-  invoiceNumber String?
-  invoiceQR     String?  // ZATCA-compliant QR
-  zatcaUUID     String?  // ZATCA transaction ID
+  // Pricing (SAR)
+  subtotal      Float
+  tax           Float    // 15% VAT
+  discount      Float    @default(0)
+  discountCode  String?
+  tip           Float    @default(0)
+  total         Float
 
-  // WhatsApp
-  whatsappNotified Boolean @default(false)
-  whatsappMessageId String?
+  // Items
+  items         OrderItem[]
+
+  // Review
+  review        Review?
+
+  // Notes
+  notes         String?
+  kitchenNotes  String?
+
+  // Staff tracking
+  cashierId     String?  // Who took the order
+  preparerId    String?  // Who prepared
 
   // Timestamps
-  orderedAt     DateTime @default(now())
-  confirmedAt   DateTime?
+  createdAt     DateTime @default(now())
+  acceptedAt    DateTime?
   preparingAt   DateTime?
   readyAt       DateTime?
   completedAt   DateTime?
+  canceledAt    DateTime?
+  cancelReason  String?
 
-  @@unique([restaurantId, orderNumber])
-  @@index([restaurantId])
-  @@index([status])
-  @@index([orderedAt])
+  @@unique([merchantId, orderNumber])
+}
+
+enum OrderType {
+  DINE_IN
+  PICKUP
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING      // Order received
+  CONFIRMED    // Merchant confirmed
+  PREPARING    // Kitchen preparing
+  READY        // Ready for pickup/serve
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentMethod {
+  CASH
+  MADA         // Saudi debit cards
+  CREDIT_CARD
+  STC_PAY      // Saudi e-wallet
+  APPLE_PAY
+  SADAD        // Saudi payment system
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
 }
 ```
 
@@ -232,193 +379,137 @@ model Order {
 ```prisma
 model Customer {
   id            String   @id @default(cuid())
-  restaurantId  String   // Tenant isolation
+  merchantId    String   // Tenant isolation
 
   // Primary identifier (Saudi phone)
+  name          String
   phone         String   // 05XXXXXXXX
-  name          String?
   email         String?
 
   // Preferences
-  preferredLanguage String @default("ar")
-  receiveWhatsApp Boolean @default(true)
-  receiveSMS    Boolean  @default(false)
+  language      String   @default("ar")
+  notes         String?
 
-  // Loyalty (Saudi-focused)
+  // Loyalty
   loyaltyPoints Int      @default(0)
-  loyaltyTier   LoyaltyTier @default(BRONZE)
-  totalSpent    Decimal  @default(0) @db.Decimal(10, 2) // SAR
-  orderCount    Int      @default(0)
+  totalOrders   Int      @default(0)
+  totalSpent    Float    @default(0)
 
-  // Family rewards
-  familySize    Int?
-  familyPoints  Int      @default(0)
+  // Relations
+  orders        Order[]
+  reservations  Reservation[]
+  reviews       Review[]
+  customerStat  CustomerStat?
 
-  // Demographics
-  birthDate     DateTime?
-  gender        Gender?
-
-  // Special dates
-  anniversaryDate DateTime?
-
-  // Stats
+  // Timestamps
   firstOrderAt  DateTime?
   lastOrderAt   DateTime?
-  averageOrderValue Decimal? @db.Decimal(10, 2)
 
-  @@unique([restaurantId, phone])
-  @@index([restaurantId])
-  @@index([phone])
+  @@unique([merchantId, phone])
 }
-```
 
-#### Reservations (Saudi-specific)
-
-```prisma
-model Reservation {
+model LoyaltyProgram {
   id            String   @id @default(cuid())
-  restaurantId  String   // Tenant isolation
-  branchId      String?
+  merchantId    String   @unique
 
-  customerId    String
-  reservationNumber String // #R1234
+  name          String
+  nameAr        String?
+  description   String?
+  descriptionAr String?
 
-  date          DateTime
-  time          String   // "19:30"
-  duration      Int      @default(120) // Minutes
+  type          LoyaltyType @default(POINTS)
 
-  partySize     Int
-  section       TableSection // FAMILY, SINGLES, VIP
+  // Points configuration
+  pointsPerSAR  Float    @default(1)
+  pointValue    Float    @default(0.1) // SAR per point
 
-  // Saudi cultural support
-  occasion      String?  // عيد ميلاد، ذكرى زواج
-  isIftar       Boolean  @default(false)
-  isSuhoor      Boolean  @default(false)
+  // Tiers
+  tiers         LoyaltyTier[]
 
-  // Special requests
-  specialNotes  String?  // Arabic/English
-  highChairs    Int      @default(0)
+  isActive      Boolean  @default(true)
+}
 
-  status        ReservationStatus
-
-  // Confirmation
-  confirmationCode String
-  whatsappConfirmed Boolean @default(false)
-  smsConfirmed  Boolean  @default(false)
-
-  @@unique([restaurantId, reservationNumber])
-  @@index([restaurantId])
-  @@index([date])
+enum LoyaltyType {
+  POINTS       // Points-based
+  STAMPS       // Digital stamp card
+  TIERED       // Bronze/Silver/Gold
+  CASHBACK     // Percentage cashback
 }
 ```
 
-### Saudi-Specific Tables
-
-#### Prayer Times Integration
+#### Tables & Reservations
 
 ```prisma
-model PrayerTimeSettings {
+model Table {
   id            String   @id @default(cuid())
-  restaurantId  String   @unique
+  merchantId    String   // Tenant isolation
+  branchId      String?  // Branch association
 
-  pauseForPrayer Boolean @default(true)
-  pauseDuration Int      @default(30) // Minutes
+  number        String   // Table number/name
+  qrCode        String?  // QR code for table
+  capacity      Int      // Number of seats
 
-  // Auto-pause settings
-  pauseFajr     Boolean  @default(false)
-  pauseDhuhr    Boolean  @default(true)
-  pauseAsr      Boolean  @default(true)
-  pauseMaghrib  Boolean  @default(true)
-  pauseIsha     Boolean  @default(true)
+  floor         Int      @default(1)
+  section       TableSection @default(MIXED)
+  status        TableStatus @default(AVAILABLE)
 
-  // Custom messages
-  prayerMessageAr String @default("نعتذر، سنعود بعد الصلاة")
-  prayerMessageEn String @default("We'll be back after prayer")
-}
-```
+  // Visual floor plan
+  positionX     Int?
+  positionY     Int?
 
-#### ZATCA Compliance
+  orders        Order[]
+  reservations  Reservation[]
 
-```prisma
-model ZatcaInvoice {
-  id            String   @id @default(cuid())
-  restaurantId  String
-  orderId       String   @unique
-
-  // ZATCA fields
-  invoiceNumber String
-  uuid          String   @unique
-  qrCode        String   // Base64 QR
-  hash          String
-
-  // Invoice details
-  sellerName    String
-  sellerVAT     String
-  invoiceDate   DateTime
-  totalAmount   Decimal  @db.Decimal(10, 2)
-  vatAmount     Decimal  @db.Decimal(10, 2)
-
-  // Submission status
-  submitted     Boolean  @default(false)
-  submittedAt   DateTime?
-  responseCode  String?
-
-  @@index([restaurantId])
-}
-```
-
-### Enums
-
-```prisma
-enum PlanType {
-  BASIC        // 749 SAR/year
-  PROFESSIONAL // 1,499 SAR/year
-  ENTERPRISE   // 2,499 SAR/year
-}
-
-enum OrderType {
-  DINE_IN
-  DELIVERY
-  PICKUP
-  CATERING
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  OUT_FOR_DELIVERY
-  COMPLETED
-  CANCELLED
-}
-
-enum PaymentMethod {
-  CASH
-  MADA         // Most popular in Saudi
-  STC_PAY
-  APPLE_PAY
-  SADAD
-  CREDIT_CARD
+  @@unique([merchantId, branchId, number])
 }
 
 enum TableSection {
   FAMILY       // العائلات
   SINGLES      // العزاب
-  VIP
+  MIXED
   OUTDOOR
+  PRIVATE      // Private room
 }
 
-enum LoyaltyTier {
-  BRONZE       // 0-999 points
-  SILVER       // 1000-4999 points
-  GOLD         // 5000-9999 points
-  PLATINUM     // 10000+ points
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
 }
 
-enum Gender {
-  MALE
-  FEMALE
+model Reservation {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  branchId      String?
+
+  customerId    String?
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  tableId       String?
+  date          DateTime
+  time          String   // "19:00"
+  duration      Int      @default(120) // Minutes
+  partySize     Int
+
+  status        ReservationStatus @default(PENDING)
+
+  // Special requests
+  specialRequests String?
+  notes         String?
+
+  // Confirmation
+  confirmationCode String?
+  confirmedBy   String?
+  confirmedAt   DateTime?
+
+  // Timestamps
+  seatedAt      DateTime?
+  completedAt   DateTime?
+
+  @@unique([merchantId, confirmationCode])
 }
 
 enum ReservationStatus {
@@ -426,8 +517,306 @@ enum ReservationStatus {
   CONFIRMED
   SEATED
   COMPLETED
-  CANCELLED
+  CANCELED
   NO_SHOW
+}
+```
+
+#### Marketing & Campaigns
+
+```prisma
+model Campaign {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+
+  name          String
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+
+  type          CampaignType
+  status        CampaignStatus @default(DRAFT)
+
+  // Schedule
+  startDate     DateTime
+  endDate       DateTime
+
+  // Content
+  message       String   // SMS/WhatsApp message
+  messageAr     String?
+  imageUrl      String?
+
+  // Offer details
+  offerCode     String?
+  discount      Float?
+  discountType  DiscountType?
+
+  // Tracking
+  sentCount     Int      @default(0)
+  openCount     Int      @default(0)
+  redeemCount   Int      @default(0)
+}
+
+enum CampaignType {
+  SMS
+  WHATSAPP
+  PUSH_NOTIFICATION
+  EMAIL
+  IN_APP
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+
+  code          String   // e.g., "SAVE20"
+
+  // Discount
+  discount      Float
+  discountType  DiscountType
+
+  // Validity
+  validFrom     DateTime
+  validUntil    DateTime
+
+  // Usage limits
+  maxUses       Int?     // null = unlimited
+  maxUsesPerCustomer Int @default(1)
+  currentUses   Int      @default(0)
+
+  // Conditions
+  minOrderAmount Float?
+  applicableItems String[] // Menu item IDs
+
+  isActive      Boolean  @default(true)
+
+  @@unique([merchantId, code])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_ONE_GET_ONE
+  FREE_ITEM
+}
+```
+
+#### Reviews & Feedback
+
+```prisma
+model Review {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  branchId      String?
+
+  orderId       String   @unique // One review per order
+  customerId    String?
+  customerName  String
+
+  // Ratings (1-5 stars)
+  overallRating Int
+  foodRating    Int?
+  serviceRating Int?
+  ambianceRating Int?
+  valueRating   Int?
+
+  // Content
+  comment       String?
+  commentAr     String?
+
+  // Merchant response
+  merchantResponse String?
+  merchantResponseAr String?
+  respondedAt   DateTime?
+  respondedBy   String?
+
+  // Moderation
+  isPublished   Boolean  @default(true)
+  isFlagged     Boolean  @default(false)
+
+  helpfulCount  Int      @default(0)
+}
+```
+
+#### Analytics & Reporting
+
+```prisma
+model DailyStat {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  branchId      String?
+
+  date          DateTime @db.Date
+
+  // Order metrics
+  totalOrders   Int      @default(0)
+  completedOrders Int    @default(0)
+  canceledOrders Int     @default(0)
+
+  // Revenue metrics (SAR)
+  totalRevenue  Float    @default(0)
+  cashRevenue   Float    @default(0)
+  cardRevenue   Float    @default(0)
+  onlineRevenue Float    @default(0)
+
+  // Average metrics
+  avgOrderValue Float    @default(0)
+  avgPrepTime   Int      @default(0) // minutes
+
+  // Customer metrics
+  uniqueCustomers Int    @default(0)
+  newCustomers  Int      @default(0)
+  repeatCustomers Int    @default(0)
+
+  // Item metrics
+  totalItemsSold Int     @default(0)
+  topSellingItems Json?  // Array of top items
+
+  // Peak hours
+  peakHour      Int?     // Hour of day (0-23)
+  peakOrders    Int?
+
+  @@unique([merchantId, branchId, date])
+}
+
+model MenuItemStat {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  menuItemId    String
+
+  period        StatPeriod
+  date          DateTime @db.Date
+
+  // Sales metrics
+  quantitySold  Int      @default(0)
+  revenue       Float    @default(0)
+
+  // Performance
+  viewCount     Int      @default(0)
+  orderCount    Int      @default(0)
+  conversionRate Float   @default(0)
+
+  // Rating
+  avgRating     Float?
+  reviewCount   Int      @default(0)
+
+  @@unique([menuItemId, period, date])
+}
+
+enum StatPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model CustomerStat {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  customerId    String
+
+  // Lifetime metrics
+  totalOrders   Int      @default(0)
+  totalSpent    Float    @default(0)
+  avgOrderValue Float    @default(0)
+
+  // Frequency
+  firstOrderDate DateTime?
+  lastOrderDate DateTime?
+  daysSinceLastOrder Int?
+
+  // Preferences
+  favoriteItems Json?    // Most ordered items
+  preferredOrderType String?
+  preferredPayment String?
+
+  // Segmentation
+  segment       CustomerSegment?
+  churnRisk     ChurnRisk?
+
+  @@unique([merchantId, customerId])
+}
+
+enum CustomerSegment {
+  NEW           // First-time customer
+  REGULAR       // 2-5 orders
+  LOYAL         // 6-20 orders
+  VIP           // 20+ orders
+  DORMANT       // No orders in 30+ days
+  LOST          // No orders in 90+ days
+}
+
+enum ChurnRisk {
+  LOW           // Ordered recently
+  MEDIUM        // 2-4 weeks ago
+  HIGH          // 4-8 weeks ago
+  CHURNED       // 8+ weeks ago
+}
+```
+
+#### Inventory Management
+
+```prisma
+model InventoryLog {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+  menuItemId    String
+
+  type          InventoryLogType
+  quantity      Int      // +/- for additions/deductions
+  previousQuantity Int
+  newQuantity   Int
+
+  reason        String?
+  reference     String?  // Order ID, etc.
+  performedBy   String?
+
+  createdAt     DateTime @default(now())
+}
+
+enum InventoryLogType {
+  SALE          // Deducted due to sale
+  RESTOCK       // Added through restocking
+  ADJUSTMENT    // Manual adjustment
+  WASTE         // Loss due to waste/expiry
+  TRANSFER      // Transfer between branches
+}
+```
+
+#### Audit Trail
+
+```prisma
+model AuditLog {
+  id            String   @id @default(cuid())
+  merchantId    String   // Tenant isolation
+
+  userId        String
+  userRole      String
+  userName      String
+
+  action        AuditAction
+  entityType    String   // Model name
+  entityId      String   // Entity ID
+
+  oldData       Json?    // Previous state
+  newData       Json?    // New state
+
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime @default(now())
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  EXPORT
+  LOGIN
+  LOGOUT
+  PAYMENT
+  REFUND
 }
 ```
 
@@ -436,42 +825,52 @@ enum ReservationStatus {
 #### Critical Indexes
 
 ```sql
--- Tenant isolation (most important)
-CREATE INDEX idx_all_tables_restaurant_id ON all_tables(restaurant_id);
+-- Tenant isolation (most critical)
+CREATE INDEX idx_all_tables_merchant_id ON all_tables(merchant_id);
 
 -- Frequent queries
-CREATE INDEX idx_orders_status ON orders(restaurant_id, status);
-CREATE INDEX idx_orders_date ON orders(restaurant_id, ordered_at DESC);
-CREATE INDEX idx_customers_phone ON customers(restaurant_id, phone);
+CREATE INDEX idx_orders_status ON orders(merchant_id, status);
+CREATE INDEX idx_orders_date ON orders(merchant_id, created_at DESC);
+CREATE INDEX idx_customers_phone ON customers(merchant_id, phone);
+
+-- Branch-specific queries
+CREATE INDEX idx_orders_branch ON orders(merchant_id, branch_id);
+CREATE INDEX idx_tables_branch ON tables(merchant_id, branch_id);
 
 -- Arabic text search
 CREATE INDEX idx_menu_items_name_ar ON menu_items USING gin(name_ar gin_trgm_ops);
 
--- Composite indexes
-CREATE INDEX idx_orders_customer ON orders(restaurant_id, customer_id);
-CREATE INDEX idx_reservations_date ON reservations(restaurant_id, date);
+-- Analytics queries
+CREATE INDEX idx_daily_stats ON daily_stats(merchant_id, date DESC);
+CREATE INDEX idx_menu_item_stats ON menu_item_stats(menu_item_id, period, date);
 ```
 
 #### Query Optimization
 
 ```typescript
 // Efficient menu query with caching
-const menu = await db.menuCategory.findMany({
+const menu = await db.menu.findFirst({
   where: {
-    restaurantId,
-    isActive: true
+    merchantId,
+    isActive: true,
+    isDefault: true
   },
   include: {
-    items: {
-      where: { isAvailable: true },
+    categories: {
+      where: { isActive: true },
+      include: {
+        items: {
+          where: { isAvailable: true },
+          orderBy: { sortOrder: 'asc' }
+        }
+      },
       orderBy: { sortOrder: 'asc' }
     }
-  },
-  orderBy: { sortOrder: 'asc' }
+  }
 })
 
 // Cache in Redis (1 hour)
-await redis.set(`menu:${restaurantId}`, JSON.stringify(menu), 'EX', 3600)
+await redis.set(`menu:${merchantId}`, JSON.stringify(menu), 'EX', 3600)
 ```
 
 ### Migration Strategy
@@ -509,17 +908,32 @@ pnpm db:seed              # Seed Saudi demo data
 
 ```typescript
 // middleware/tenant.ts
-export async function getTenantId(req: Request) {
-  const subdomain = extractSubdomain(req.headers.host)
-  const restaurant = await db.restaurant.findUnique({
-    where: { subdomain }
-  })
+export async function getMerchantId(req: Request) {
+  const session = await auth()
 
-  if (!restaurant) throw new Error('Restaurant not found')
+  if (!session?.user?.merchantId) {
+    throw new Error('No merchant context')
+  }
 
   // Attach to all queries
-  req.restaurantId = restaurant.id
-  return restaurant.id
+  req.merchantId = session.user.merchantId
+  return session.user.merchantId
+}
+
+// In server actions
+export async function createOrder(data: FormData) {
+  const session = await auth()
+  const merchantId = session?.user?.merchantId
+
+  if (!merchantId) throw new Error('Unauthorized')
+
+  // Always include merchantId in queries
+  const order = await db.order.create({
+    data: {
+      ...validatedData,
+      merchantId // CRITICAL for tenant isolation
+    }
+  })
 }
 ```
 
@@ -531,7 +945,12 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tenant_isolation ON orders
   FOR ALL
-  USING (restaurant_id = current_setting('app.restaurant_id'));
+  USING (merchant_id = current_setting('app.merchant_id'));
+
+-- Apply to all business tables
+ALTER TABLE menus ENABLE ROW LEVEL SECURITY;
+ALTER TABLE menu_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ```
 
 ### Backup & Disaster Recovery
@@ -548,5 +967,16 @@ CREATE POLICY tenant_isolation ON orders
 - **RTO**: 2 hours maximum downtime
 - **RPO**: 15 minutes maximum data loss
 - **Availability**: 99.95% uptime SLA
+
+### Multi-Tenant Best Practices
+
+1. **Always include merchantId** in all business model queries
+2. **Denormalize merchantId** in frequently queried tables for performance
+3. **Use composite unique constraints** with merchantId to ensure uniqueness within tenant
+4. **Index merchantId** as the first column in composite indexes
+5. **Validate merchantId** in server actions before database operations
+6. **Never expose merchantId** in client-side code or URLs
+7. **Use session-based tenant context** for all operations
+8. **Implement audit logging** for all tenant data modifications
 
 This database architecture provides a robust, Saudi-compliant foundation for the Menu platform with complete multi-tenant isolation and cultural considerations.

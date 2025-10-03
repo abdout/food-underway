@@ -1,0 +1,217 @@
+// Analytics and Reporting Models
+
+model DailyStat {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  // Branch specific stats
+  branch       Branch?     @relation(fields: [branchId], references: [id])
+  branchId     String?
+
+  date         DateTime    @db.Date
+
+  // Order metrics
+  totalOrders  Int         @default(0)
+  completedOrders Int      @default(0)
+  canceledOrders Int       @default(0)
+
+  // Revenue metrics (in SAR)
+  totalRevenue Float       @default(0)
+  cashRevenue  Float       @default(0)
+  cardRevenue  Float       @default(0)
+  onlineRevenue Float      @default(0)
+
+  // Average metrics
+  avgOrderValue Float      @default(0)
+  avgPrepTime  Int         @default(0) // minutes
+
+  // Customer metrics
+  uniqueCustomers Int      @default(0)
+  newCustomers Int         @default(0)
+  repeatCustomers Int      @default(0)
+
+  // Item metrics
+  totalItemsSold Int       @default(0)
+  topSellingItems Json?    // Array of {itemId, name, quantity, revenue}
+
+  // Peak hours
+  peakHour     Int?        // Hour of day with most orders (0-23)
+  peakOrders   Int?        // Number of orders in peak hour
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([merchantId, branchId, date])
+  @@index([merchantId])
+  @@index([branchId])
+  @@index([date])
+}
+
+model MenuItemStat {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  menuItem     MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItemId   String
+
+  period       StatPeriod  // Daily, Weekly, Monthly
+  date         DateTime    @db.Date // Start date of period
+
+  // Sales metrics
+  quantitySold Int         @default(0)
+  revenue      Float       @default(0)
+
+  // Performance metrics
+  viewCount    Int         @default(0) // Times viewed in menu
+  orderCount   Int         @default(0) // Times ordered
+  conversionRate Float     @default(0) // orderCount / viewCount
+
+  // Rating
+  avgRating    Float?      // Average rating for this item
+  reviewCount  Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([menuItemId, period, date])
+  @@index([merchantId])
+  @@index([menuItemId])
+  @@index([period])
+  @@index([date])
+}
+
+enum StatPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model CustomerStat {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  customer     Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId   String
+
+  // Lifetime metrics
+  totalOrders  Int         @default(0)
+  totalSpent   Float       @default(0)
+  avgOrderValue Float      @default(0)
+
+  // Frequency metrics
+  firstOrderDate DateTime?
+  lastOrderDate DateTime?
+  daysSinceLastOrder Int?
+
+  // Preferences
+  favoriteItems Json?      // Array of most ordered items
+  preferredOrderType String? // Most used order type
+  preferredPayment String?  // Most used payment method
+
+  // Segmentation
+  segment      CustomerSegment?
+  churnRisk    ChurnRisk?
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([merchantId, customerId])
+  @@index([merchantId])
+  @@index([customerId])
+  @@index([segment])
+  @@index([churnRisk])
+}
+
+enum CustomerSegment {
+  NEW           // First-time customer
+  REGULAR       // 2-5 orders
+  LOYAL         // 6-20 orders
+  VIP           // 20+ orders
+  DORMANT       // No orders in 30+ days
+  LOST          // No orders in 90+ days
+}
+
+enum ChurnRisk {
+  LOW           // Ordered recently
+  MEDIUM        // Haven't ordered in 2-4 weeks
+  HIGH          // Haven't ordered in 4-8 weeks
+  CHURNED       // Haven't ordered in 8+ weeks
+}
+
+model InventoryLog {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  menuItem     MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItemId   String
+
+  type         InventoryLogType
+  quantity     Int         // Positive for additions, negative for deductions
+  previousQuantity Int
+  newQuantity  Int
+
+  reason       String?
+  reference    String?     // Order ID, adjustment ID, etc.
+
+  performedBy  String?     // User who made the change
+
+  createdAt    DateTime    @default(now())
+
+  @@index([merchantId])
+  @@index([menuItemId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum InventoryLogType {
+  SALE          // Deducted due to sale
+  RESTOCK       // Added through restocking
+  ADJUSTMENT    // Manual adjustment
+  WASTE         // Loss due to waste/expiry
+  TRANSFER      // Transfer between branches
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  merchant     Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+
+  userId       String      // User who performed the action
+  userRole     String
+  userName     String
+
+  action       AuditAction
+  entityType   String      // Model name (Order, MenuItem, etc.)
+  entityId     String      // ID of the affected entity
+
+  oldData      Json?       // Previous state
+  newData      Json?       // New state
+
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt    DateTime    @default(now())
+
+  @@index([merchantId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  EXPORT
+  LOGIN
+  LOGOUT
+  PAYMENT
+  REFUND
+}
