@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireOperator } from "@/components/operator/lib/operator-auth";
-type InvoiceRowLite = { amount: number | null };
 
 export async function GET(
   _req: Request,
@@ -11,23 +10,24 @@ export async function GET(
   await requireOperator();
   const tenantId = resolvedParams.tenantId;
 
-  const [school, openInvoices] = await Promise.all([
-    db.school.findUnique({ where: { id: tenantId }, select: { planType: true } }),
-    (db as unknown as { invoice: { findMany: (args: unknown) => Promise<InvoiceRowLite[]> } }).invoice.findMany({ where: { schoolId: tenantId, status: "open" }, select: { amount: true } }),
-  ]);
+  // Updated for merchant model
+  const merchant = await db.merchant.findUnique({
+    where: { id: tenantId },
+    select: {
+      subscriptionTier: true,
+      subscriptionStatus: true,
+      subscriptionEndDate: true
+    }
+  });
 
-  const outstandingCents = Array.isArray(openInvoices)
-    ? openInvoices.reduce((sum: number, i) => sum + (i.amount ?? 0), 0)
-    : 0;
+  // TODO: Implement invoice model for merchants if needed
+  const outstandingCents = 0;
 
   return NextResponse.json({
-    planType: school?.planType ?? "basic",
-    trialEndsAt: null as string | null,
+    planType: merchant?.subscriptionTier ?? "STARTER",
+    status: merchant?.subscriptionStatus ?? "TRIALING",
+    trialEndsAt: merchant?.subscriptionEndDate?.toISOString() ?? null,
     nextInvoiceDate: null as string | null,
     outstandingCents,
   });
 }
-
-
-
-

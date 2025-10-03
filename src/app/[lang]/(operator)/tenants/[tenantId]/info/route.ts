@@ -5,8 +5,15 @@ import { requireOperator } from "@/components/operator/lib/operator-auth";
 export async function GET(_req: Request, { params }: { params: Promise<{ tenantId: string }> }) {
   const resolvedParams = await params;
   await requireOperator();
-  const school = await db.school.findUnique({ where: { id: resolvedParams.tenantId }, select: { name: true, domain: true } });
-  return NextResponse.json({ name: school?.name ?? null, domain: school?.domain ?? null });
+  const merchant = await db.merchant.findUnique({
+    where: { id: resolvedParams.tenantId },
+    select: { name: true, id: true, type: true }
+  });
+  return NextResponse.json({
+    name: merchant?.name ?? null,
+    domain: merchant?.id ?? null,
+    type: merchant?.type ?? null
+  });
 }
 
 
