@@ -4,12 +4,14 @@ import Link from 'next/link'
 import React from 'react'
 import { buttonVariants } from '../ui/button'
 import type { Dictionary } from '@/components/internationalization/dictionaries'
+import type { Locale } from '@/components/internationalization/config'
 
 interface HeroProps {
-  dictionary?: Dictionary
+  dictionary?: Dictionary;
+  lang?: Locale;
 }
 
-const Hero = ({ dictionary }: HeroProps) => {
+const Hero = ({ dictionary, lang }: HeroProps) => {
   const heroDict = dictionary?.marketing?.hero || {
     title: "Automate Education,\nelevate the curiosity.",
     subtitle: "Educational management system streamlining operations for students, educators, and school leaders. Transform your institution's efficiency today.",
@@ -39,7 +41,7 @@ const Hero = ({ dictionary }: HeroProps) => {
               {heroDict.appointment}
             </Link>
             <Link
-              href={`/${dictionary?.lang || 'en'}/docs`}
+              href={`/${lang || 'en'}/docs`}
               className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full sm:w-auto")}
             >
               {dictionary?.navigation?.documentation || 'Documentation'}

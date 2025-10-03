@@ -13,15 +13,17 @@ import Hero from "./hero";
 // import LogoCloud from "./logo-cloud";
 // import { Gallery } from "@/components/landing/gallery";
 import type { Dictionary } from '@/components/internationalization/dictionaries';
+import type { Locale } from '@/components/internationalization/config';
 
 interface HomeContentProps {
-  dictionary?: Dictionary
+  dictionary?: Dictionary;
+  lang?: Locale;
 }
 
-export default function HomeContent({ dictionary }: HomeContentProps) {
+export default function HomeContent({ dictionary, lang }: HomeContentProps) {
   return (
     <main className="flex flex-col">
-      <Hero dictionary={dictionary} />
+      <Hero dictionary={dictionary} lang={lang} />
       {/*<Gallery />*/}
       {/*<Stack />*/}
       {/*<Automated />*/}
