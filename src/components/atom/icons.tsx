@@ -639,3 +639,5 @@ export const ExcellentIcon = Icons.excellent;
 export const GoodIcon = Icons.good;
 export const AverageIcon = Icons.average;
 export const PoorIcon = Icons.poor;
+export const Patreon = Icons.patreon;
+export const Coffee = Icons.coffee;
