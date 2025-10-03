@@ -1,0 +1,21 @@
+/* RTL Sidebar Transitions */
+.rtl-sidebar-content {
+  transition: margin-right 200ms ease, margin-left 200ms ease;
+}
+
+/* When sidebar is collapsed in RTL, shift content to the right */
+[dir="rtl"] .peer-data-\[state\=collapsed\] ~ .rtl-sidebar-content {
+  margin-right: 3rem !important;
+  margin-left: 0 !important;
+}
+
+/* Override default LTR margins for RTL */
+[dir="rtl"] .rtl-sidebar-content.md\:peer-data-\[variant\=inset\]\:ml-0 {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+[dir="rtl"] .rtl-sidebar-content.md\:peer-data-\[variant\=inset\]\:peer-data-\[state\=collapsed\]\:ml-2 {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}

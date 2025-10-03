@@ -16,9 +16,34 @@ import {
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { docsConfig } from "@/components/template/docs-sidebar/constant"
+import type { Dictionary } from "@/components/internationalization/dictionaries"
+import type { Locale } from "@/components/internationalization/config"
+
+// Translation mapping for navigation items
+function translateNavTitle(title: string, dictionary?: Dictionary): string {
+  if (!dictionary?.docs) return title
+
+  const translationMap: Record<string, keyof typeof dictionary.docs> = {
+    'Introduction': 'introduction',
+    'Requirements': 'requirements',
+    'Roadmap': 'roadmap',
+    'Architecture': 'architecture',
+    'Pattern': 'pattern',
+    'Stack': 'stack',
+    'Database': 'database',
+    'Getting Started': 'gettingStarted',
+  }
+
+  const key = translationMap[title]
+  if (key && dictionary.docs[key]) {
+    return dictionary.docs[key] as string
+  }
+
+  return title
+}
 
 // Flatten the sidebar navigation to a single list
-function flattenSidebarNav(items: typeof docsConfig.sidebarNav) {
+function flattenSidebarNav(items: typeof docsConfig.sidebarNav, dictionary?: Dictionary) {
   const flatItems: Array<{
     title: string
     href: string
@@ -29,7 +54,7 @@ function flattenSidebarNav(items: typeof docsConfig.sidebarNav) {
     section.items.forEach((item) => {
       if (item.href) {
         flatItems.push({
-          title: item.title,
+          title: translateNavTitle(item.title, dictionary),
           href: item.href,
         })
       }
@@ -38,7 +63,7 @@ function flattenSidebarNav(items: typeof docsConfig.sidebarNav) {
         item.items.forEach((subItem) => {
           if (subItem.href) {
             flatItems.push({
-              title: subItem.title,
+              title: translateNavTitle(subItem.title, dictionary),
               href: subItem.href,
             })
           }
@@ -50,27 +75,38 @@ function flattenSidebarNav(items: typeof docsConfig.sidebarNav) {
   return flatItems
 }
 
-export function DocsSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface DocsSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  dictionary?: Dictionary
+  lang?: Locale
+  side?: "left" | "right"
+}
+
+export function DocsSidebar({ dictionary, lang, side = "left", ...props }: DocsSidebarProps) {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
-  const flatNavItems = React.useMemo(() => flattenSidebarNav(docsConfig.sidebarNav), [])
+  const flatNavItems = React.useMemo(() => flattenSidebarNav(docsConfig.sidebarNav, dictionary), [dictionary])
+  const isRtl = lang === 'ar'
 
   const handleLinkClick = React.useCallback(() => {
     setOpenMobile(false)
   }, [setOpenMobile])
 
   return (
-    <Sidebar 
-      {...props} 
-      className="w-56 "
+    <Sidebar
+      {...props}
+      side={side}
+      className="w-56"
+      dir={isRtl ? "rtl" : "ltr"}
     >
       <SidebarHeader className=" ">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/docs" className="flex items-center" onClick={handleLinkClick}>
+              <Link href={`/${lang || 'en'}/docs`} className={`flex items-center ${isRtl ? 'justify-end' : 'justify-start'}`} onClick={handleLinkClick}>
                 <div className="flex flex-col leading-none">
-                  <span className="font-medium text-foreground -ml-1">Documentation</span>
+                  <span className="font-medium text-foreground">
+                    {dictionary?.docs?.title || 'Documentation'}
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -78,16 +114,28 @@ export function DocsSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="border-0 bg-transparent">
-        <ScrollArea className="h-full">
-          <SidebarGroup className="p-2">
+        <ScrollArea
+          className="h-full"
+          dir={isRtl ? "rtl" : "ltr"}
+        >
+          <SidebarGroup className={`${isRtl ? 'pr-2 pl-3' : 'p-2'}`}>
             <SidebarMenu className="space-y-1">
               {flatNavItems.map((item) => {
-                const isActive = pathname === item.href
+                // Prepend language to href if not already present
+                const localizedHref = item.href.startsWith('/docs')
+                  ? `/${lang || 'en'}${item.href}`
+                  : item.href
+                const isActive = pathname === localizedHref
+
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={isActive} size="sm">
-                      <Link href={item.href} className="muted" onClick={handleLinkClick}>
-                        {item.title}
+                      <Link href={localizedHref} className={`flex items-center ${isRtl ? 'justify-end' : 'justify-start'}`} onClick={handleLinkClick}>
+                        <div className="flex flex-col leading-none">
+                          <span className="muted">
+                            {item.title}
+                          </span>
+                        </div>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

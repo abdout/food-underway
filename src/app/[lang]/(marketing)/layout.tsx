@@ -1,4 +1,4 @@
-// import MarketingHeader from "@/components/template/marketing-header/content";
+import MarketingHeader from "@/components/template/marketing-header/content";
 // import { MarketingFooter } from "@/components/template/marketing-footer/content";
 import { getDictionary } from "@/components/internationalization/dictionaries";
 import { type Locale } from "@/components/internationalization/config";
@@ -17,7 +17,7 @@ export default async function MarketingLayout({
 
   return (
     <div data-slot="site-layout">
-      {/*<MarketingHeader dictionary={dictionary} />*/}
+      <MarketingHeader dictionary={dictionary} />
       <main
         data-slot="main-content"
         role="main"

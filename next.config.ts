@@ -49,6 +49,10 @@ const nextConfig: NextConfig = {
       'react-hook-form',
       '@hookform/resolvers',
     ],
+    // Disable tracing to fix Windows EPERM errors with .next/trace file
+    turbo: {
+      trace: false,
+    },
   },
 
   // Turbopack configuration (moved from experimental as it's now stable)

@@ -52,8 +52,13 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   }
 };
 
-export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `${domain}/new-verification?token=${token}`;
+export const sendVerificationEmail = async (email: string, token: string, callbackUrl?: string | null) => {
+  let confirmLink = `${domain}/new-verification?token=${token}`;
+
+  // Include callbackUrl if provided
+  if (callbackUrl) {
+    confirmLink += `&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  }
 
   // Debugging: Log the confirmation link to ensure it's correctly built
   console.log("Email confirmation link:", confirmLink);

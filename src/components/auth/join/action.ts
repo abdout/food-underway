@@ -10,7 +10,7 @@ import { generateVerificationToken } from "@/components/auth/tokens";
 import { RegisterSchema } from "../validation";
 import { getUserByEmail } from "../user";
 
-export const register = async (values: z.infer<typeof RegisterSchema>) => {
+export const register = async (values: z.infer<typeof RegisterSchema>, callbackUrl?: string | null) => {
   const validatedFields = RegisterSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -38,6 +38,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   await sendVerificationEmail(
     verificationToken.email,
     verificationToken.token,
+    callbackUrl
   );
 
   return { success: "Confirmation email sent!" };

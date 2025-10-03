@@ -1,0 +1,196 @@
+## Requirements
+
+**Menu** (منيو) requirements specification for Saudi Arabia's leading digital menu platform.
+
+### Functional Requirements
+
+#### Menu Management
+- **Digital Menu Creation**: Multi-category support (مقبلات، أطباق رئيسية، مشروبات، حلويات)
+- **Item Details**: High-quality photos, Arabic/English descriptions, ingredients, prices in SAR
+- **Nutritional Information**: SFDA-compliant calorie counts and allergen warnings
+- **Variations & Modifiers**: Size options (صغير، وسط، كبير), add-ons, customizations
+- **Availability Control**: Mark items as unavailable, Ramadan specials, prayer time adjustments
+- **Multi-language**: Arabic-first with English translations, RTL layout support
+- **QR Code Generation**: Custom-designed QR codes with restaurant branding
+
+#### Order Management
+- **Order Types**:
+  - Dine-in with table number selection
+  - Delivery with Saudi address format support
+  - Pickup with SMS/WhatsApp notifications
+  - Catering for events and large orders
+- **WhatsApp Integration**: Receive orders and send updates via WhatsApp Business API
+- **Real-time Updates**: Live order status tracking for kitchen and customers
+- **Payment Processing**:
+  - Saudi payment methods: Mada, STC Pay, Apple Pay, SADAD
+  - Cash on delivery with change calculator
+  - Split payment for group dining
+- **Order History**: Complete records with ZATCA-compliant invoicing
+
+#### Table & Reservation Management
+- **Floor Plan**: Visual table layout with sections (family, singles, VIP)
+- **Online Reservations**: With WhatsApp confirmation
+- **Saudi Cultural Support**:
+  - Family section management
+  - Prayer time blocking
+  - Ramadan iftar/suhoor bookings
+  - Eid special arrangements
+- **Waitlist Management**: SMS notifications when table is ready
+- **Table Status Tracking**: Available, occupied, reserved, cleaning
+
+#### Customer Management
+- **Customer Profiles**: Phone-based registration (Saudi mobile format)
+- **Loyalty Programs**:
+  - Points system with SAR value
+  - Digital stamps for repeat visits
+  - Family rewards and group benefits
+  - Birthday and special occasion offers
+- **Feedback System**: Arabic/English reviews with ratings
+- **Marketing Campaigns**: WhatsApp broadcast lists, SMS campaigns
+- **Customer Analytics**: Order patterns, preferences, frequency
+
+#### Inventory & Kitchen
+- **Stock Management**: Real-time ingredient tracking
+- **Recipe Costing**: Calculate profit margins in SAR
+- **Supplier Database**: Local Saudi supplier contacts
+- **Low Stock Alerts**: WhatsApp notifications to managers
+- **Waste Tracking**: Reduce food waste with analytics
+- **Kitchen Display System**: Order queue management
+
+#### Multi-Branch Operations
+- **Central Management**: Control all branches from one dashboard
+- **Menu Sync**: Push menu updates to all locations
+- **Shared Inventory**: Transfer stock between branches
+- **Consolidated Reporting**: Chain-wide analytics
+- **Branch Comparison**: Performance benchmarking
+
+#### Marketing & Promotions
+- **Discount System**:
+  - Percentage and fixed amount discounts
+  - Promo codes for online orders
+  - Happy hour and time-based offers
+  - Student discounts with verification
+- **Social Media Integration**: Instagram, Twitter, Snapchat ordering
+- **Referral Program**: Customer acquisition rewards
+- **Event Management**: Ramadan, Eid, National Day campaigns
+
+#### Staff Management
+- **Role-based Access**:
+  - Owner: Full system access
+  - Manager: Operations and reports
+  - Cashier: Orders and payments
+  - Waiter: Table and order management
+  - Kitchen: Order preparation
+- **Arabic Interface**: Full Arabic support for staff portal
+- **Performance Tracking**: Orders handled, customer ratings
+- **Shift Management**: Schedule and attendance
+
+### Non-Functional Requirements
+
+#### Performance
+- **Page Load**: < 1.5 seconds on 4G networks
+- **Order Processing**: < 300ms response time
+- **Concurrent Users**: Support 5000+ simultaneous connections
+- **Image Optimization**: WebP format with CDN delivery
+- **Database Performance**: Optimized queries with proper indexing
+
+#### Security
+- **Data Protection**: AES-256 encryption for sensitive data
+- **Payment Security**: PCI DSS compliance for card processing
+- **Authentication**: SMS OTP for customer login
+- **Authorization**: Role-based access control (RBAC)
+- **Audit Logs**: Track all financial transactions
+
+#### Availability
+- **Uptime**: 99.95% availability SLA
+- **Backup**: Every 6 hours with point-in-time recovery
+- **Disaster Recovery**: < 2 hour RTO, < 15 minute RPO
+- **Geographic Redundancy**: Multiple Saudi data centers
+- **Monitoring**: 24/7 system health monitoring
+
+#### Scalability
+- **Multi-tenant Architecture**: Complete data isolation per restaurant
+- **Auto-scaling**: Handle peak hours (lunch, dinner, Ramadan)
+- **Database Sharding**: Distribute load by restaurantId
+- **Caching**: Redis for menu and frequently accessed data
+- **CDN**: CloudFlare with Saudi edge locations
+
+#### Usability
+- **Mobile-First**: Optimized for Saudi smartphone usage (95% penetration)
+- **Arabic UI/UX**: Right-to-left layout, Arabic typography
+- **Minimal Training**: Intuitive interface for all user types
+- **Accessibility**: Support for users with disabilities
+- **Offline Mode**: View menu without internet connection
+
+#### Integration
+- **POS Systems**: Foodics, Marn, Revel (Saudi market leaders)
+- **Payment Gateways**: Moyasar, Tap, PayTabs, Checkout
+- **Delivery Platforms**: Jahez, HungerStation, Careem Now, ToYou
+- **Accounting**: Integration with Saudi accounting systems
+- **WhatsApp Business**: Official API integration
+- **Google**: Maps for delivery, Business Profile for discovery
+
+### Compliance Requirements
+
+#### Saudi Regulations
+- **ZATCA E-invoicing**: Phase 2 compliance with QR codes
+- **SFDA Requirements**:
+  - Nutritional information display
+  - Allergen warnings in Arabic/English
+  - Calorie counts for all items
+- **Data Localization**: Store Saudi data within Kingdom
+- **Saudization**: Support for Saudi employment requirements
+- **Municipality Licenses**: Digital license verification
+
+#### Food Safety
+- **HACCP Compliance**: Temperature logging features
+- **Halal Certification**: Display and verification
+- **Expiry Tracking**: Automated alerts for ingredients
+- **Supplier Verification**: Documentation management
+- **Health Inspections**: Digital record keeping
+
+#### Business Compliance
+- **VAT Management**: 15% VAT calculation and reporting
+- **Commercial Registration**: CR number validation
+- **Labor Law**: Working hours and break compliance
+- **Consumer Protection**: Clear pricing and policies
+- **Municipality Requirements**: Menu and pricing transparency
+
+### System Requirements
+
+#### Infrastructure
+- **Cloud Hosting**: AWS with Middle East (Bahrain) region
+- **Database**: PostgreSQL with read replicas
+- **File Storage**: S3-compatible with Saudi CDN
+- **Message Queue**: SQS for order processing
+- **Real-time**: WebSockets for live updates
+
+#### Client Requirements
+- **Browsers**: Chrome 90+, Safari 14+, Edge 88+
+- **Mobile OS**: iOS 13+, Android 8+
+- **Internet**: Minimum 1 Mbps for operations
+- **Hardware**:
+  - Tablet for waiters (iPad recommended)
+  - Thermal printer for receipts
+  - Kitchen display screen (optional)
+
+### Success Criteria
+
+#### Business Metrics
+- **Restaurant Adoption**: 500+ restaurants Year 1
+- **Order Volume**: 100,000+ monthly orders
+- **Customer Satisfaction**: 4.6+ star rating
+- **System Reliability**: 99.95% uptime achieved
+
+#### Restaurant Impact
+- **Revenue Growth**: 30% increase within 6 months
+- **Order Accuracy**: 99.5% correct orders
+- **Table Turnover**: 20% improvement
+- **Customer Retention**: 65% repeat rate
+- **Cost Savings**: 40% reduction vs commission-based platforms
+
+#### Market Position
+- **Market Share**: 10% of Saudi digital menu market by 2026
+- **Geographic Coverage**: All 13 Saudi regions
+- **Customer Base**: 1M+ registered users
+- **Brand Recognition**: Top 3 in Saudi restaurant tech

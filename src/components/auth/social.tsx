@@ -290,8 +290,8 @@ export const Social = () => {
   return (
     <div className="w-full">
       <Button
-        size="lg"
-        className="w-full h-[48px] rounded-lg border-[#e2e8f0] bg-white hover:bg-[#f8f9fa] transition-colors"
+        type="button"
+        className="w-full"
         variant="outline"
         onClick={() => onClick("google")}
       >
@@ -313,7 +313,7 @@ export const Social = () => {
             fill="#EA4335"
           />
         </svg>
-        <span className="text-[15px] font-medium text-[#2c3e50]">حساب جوجل</span>
+        حساب جوجل
       </Button>
       {/* Facebook button - temporarily disabled
       <Button

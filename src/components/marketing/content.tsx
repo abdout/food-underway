@@ -20,7 +20,7 @@ interface HomeContentProps {
 
 export default function HomeContent({ dictionary }: HomeContentProps) {
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="flex flex-col">
       <Hero dictionary={dictionary} />
       {/*<Gallery />*/}
       {/*<Stack />*/}

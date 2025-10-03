@@ -16,7 +16,7 @@ export function useActiveSection(): string {
 /**
  * Documentation Table of Contents component
  */
-export function DocsTableOfContents() {
+export function DocsTableOfContents({ isRtl = false }: { isRtl?: boolean }) {
   const [activeSection, setActiveSection] = useState<string>("");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [headings, setHeadings] = useState<Array<{id: string, text: string, level: number}>>([]);
@@ -111,17 +111,17 @@ export function DocsTableOfContents() {
   if (headings.length === 0) return null;
 
   return (
-    <div 
-      className={`hidden xl:block fixed top-20 right-1 w-44 z-20 ${
+    <div
+      className={`hidden xl:block fixed top-20 ${isRtl ? 'left-1' : 'right-1'} w-44 z-20 ${
         sidebarOpen ? 'hidden' : 'lg:block'
       }`}
     >
       <ActiveSectionContext.Provider value={activeSection}>
-        <div className="relative pl-1">
-          {/* Thinner vertical line aligned with left border */}
-          <div className="absolute left-[4px] top-8 bottom-0 w-[0.5px] bg-border/70"></div>
-          
-          <div className="flex gap-2 items-center pb-2">
+        <div className={`relative ${isRtl ? 'pr-1' : 'pl-1'}`}>
+          {/* Thinner vertical line aligned with border */}
+          <div className={`absolute ${isRtl ? 'right-[4px]' : 'left-[4px]'} top-8 bottom-0 w-[0.5px] bg-border/70`}></div>
+
+          <div className={`flex gap-2 items-center pb-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-text size-4">
               <path d="M17 6.1H3"></path>
               <path d="M21 12.1H3"></path>
@@ -138,11 +138,13 @@ export function DocsTableOfContents() {
                 onMouseEnter={() => setHoveredItem(heading.id)}
                 onMouseLeave={() => setHoveredItem(null)}
               >
-                <button 
+                <button
                   data-heading-id={heading.id}
                   onClick={() => scrollToSection(heading.id)}
-                  className={`w-full text-sm text-left border-l-2 transition-all duration-300 ${
-                    heading.level === 3 ? 'pl-6 py-1' : 'px-4 py-1.5'
+                  className={`w-full text-sm ${isRtl ? 'text-right border-r-2' : 'text-left border-l-2'} transition-all duration-300 ${
+                    heading.level === 3
+                      ? (isRtl ? 'pr-6 py-1' : 'pl-6 py-1')
+                      : (isRtl ? 'px-4 py-1.5' : 'px-4 py-1.5')
                   } ${
                     activeSection === heading.id
                       ? "text-primary border-primary" 

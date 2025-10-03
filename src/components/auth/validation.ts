@@ -42,6 +42,17 @@ export const ResetSchema = z.object({
   }),
 });
 
+export const PhoneLoginSchema = z.object({
+  phone: z.string()
+    .min(9, {
+      message: "Phone number must be at least 9 digits",
+    })
+    .regex(/^[0-9]+$/, {
+      message: "Phone number must contain only digits",
+    }),
+  code: z.optional(z.string()), // For future OTP implementation
+});
+
 export const LoginSchema = z.object({
   email: z.string().email({
     message: "Email is required",
@@ -51,6 +62,32 @@ export const LoginSchema = z.object({
   }),
   code: z.optional(z.string()),
 });
+
+// Combined schema for flexible login (will be used in future phases)
+export const FlexibleLoginSchema = z.discriminatedUnion('loginMethod', [
+  z.object({
+    loginMethod: z.literal('email'),
+    email: z.string().email({
+      message: "Email is required",
+    }),
+    password: z.string().min(1, {
+      message: "Password is required",
+    }),
+    code: z.optional(z.string()),
+  }),
+  z.object({
+    loginMethod: z.literal('phone'),
+    phone: z.string()
+      .min(9, {
+        message: "Phone number must be at least 9 digits",
+      })
+      .regex(/^[0-9]+$/, {
+        message: "Phone number must contain only digits",
+      }),
+    countryCode: z.string().default('+966'),
+    code: z.optional(z.string()),
+  }),
+]);
 
 export const RegisterSchema = z.object({
   email: z.string().email({

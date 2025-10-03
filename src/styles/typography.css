@@ -22,7 +22,7 @@
   }
 
   h6 {
-    @apply scroll-m-20 text-base font-semibold tracking-tight;
+    @apply scroll-m-20 text-sm font-semibold tracking-tight;
   }
 
   /* Paragraph */

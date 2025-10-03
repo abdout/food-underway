@@ -5,7 +5,13 @@
       "Bash(pnpm dev:*)",
       "WebFetch(domain:github.com)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "Bash(claude mcp list:*)",
+      "Bash(curl -X POST http://127.0.0.1:3845/mcp -H \"Content-Type: application/json\" -d \"{\"\"jsonrpc\"\":\"\"2.0\"\",\"\"method\"\":\"\"tools/list\"\",\"\"id\"\":1}\")",
+      "mcp__figma-dev-mode-mcp-server__get_screenshot",
+      "mcp__figma-dev-mode-mcp-server__get_code",
+      "Bash(curl -s http://127.0.0.1:3845/mcp/health)",
+      "WebFetch(domain:yallaqrcodes.com)"
     ],
     "deny": [],
     "ask": []

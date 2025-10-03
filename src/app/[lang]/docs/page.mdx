@@ -1,73 +1,143 @@
 
+import { AR, EN } from '@/components/docs/multilingual-content'
 
+<EN>
 ## Introduction
 
-**Hogwarts** is school automation. Cloud based. One central database and logic, many schools — each with its own domain and theme.
+**Menu** is Saudi Arabia's premier cloud-based electronic menu platform. Designed specifically for Saudi restaurants and cafes to create stunning digital menus, manage orders efficiently, and grow their business—all with zero commission fees.
+</EN>
 
+<AR>
+## مقدمة
+
+**منيو** هي المنصة الإلكترونية الرائدة للقوائم السحابية في المملكة العربية السعودية. مصممة خصيصاً للمطاعم والمقاهي السعودية لإنشاء قوائم رقمية مذهلة، وإدارة الطلبات بكفاءة، وتنمية أعمالهم - كل ذلك بدون عمولات.
+</AR>
+
+<EN>
 ### Highlights
+</EN>
 
-- Multi-tenant by design: every record is scoped by `schoolId`
-- Custom subdomains per school (e.g., `school.hogwarts.app`)
-- Role-based access: Owner, Admin, Teacher, Student, Parent, Accountant
-- Core features: attendance, timetable (basic), announcements, settings, billing (manual-friendly)
-- Arabic‑first (RTL) with English alongside it
-- Low-bandwidth UX: light pages and assets
-- Secure authentication, permissions, and auditability
+<AR>
+### النقاط البارزة
+</AR>
 
+<EN>
+- Multi-tenant by design: every record is scoped by `restaurantId`
+- Custom subdomains per restaurant (e.g., `restaurant.menu.sa`)
+- Arabic-first design with full RTL support and English localization
+- Zero commission model: Keep 100% of your revenue
+- WhatsApp Business API integration (70% of Saudi customers prefer WhatsApp)
+- ZATCA-compliant e-invoicing and SFDA nutrition labeling
+- Core features: QR menus, order management, table reservations, loyalty programs, customer analytics
+- Saudi payment methods: Mada, STC Pay, Apple Pay, SADAD, cash on delivery
+- Real-time order tracking and kitchen display system
+- Advanced analytics with AI-powered insights
+</EN>
 
+<AR>
+- متعدد المستأجرين بالتصميم: كل سجل محدد بـ `restaurantId`
+- نطاقات فرعية مخصصة لكل مطعم (مثل: `restaurant.menu.sa`)
+- تصميم عربي أولاً مع دعم كامل للـ RTL والترجمة الإنجليزية
+- نموذج بدون عمولة: احتفظ بـ 100% من إيراداتك
+- تكامل WhatsApp Business API (70% من العملاء السعوديين يفضلون واتساب)
+- متوافق مع هيئة الزكاة والضريبة والجمارك (ZATCA) والهيئة العامة للغذاء والدواء (SFDA)
+- الميزات الأساسية: قوائم QR، إدارة الطلبات، حجوزات الطاولات، برامج الولاء، تحليلات العملاء
+- طرق الدفع السعودية: مدى، STC Pay، Apple Pay، سداد، الدفع عند الاستلام
+- تتبع الطلبات في الوقت الفعلي ونظام عرض المطبخ
+- تحليلات متقدمة مدعومة بالذكاء الاصطناعي
+</AR>
+
+<EN>
 ## What You'll Find Here
 
 ### For Developers
 
-* [Requirements](/docs/requeriments) – Functional and non-functional requirements
-* [Architecture](/docs/architecture) – System design and technical specs
-* [Stack](/docs/stack) – Technology used
+* [Requirements](/docs/requirements) – Functional and non-functional requirements
+* [Architecture](/docs/architecture) – System design and technical specifications
+* [Stack](/docs/stack) – Technology stack (Next.js 15, Prisma, PostgreSQL)
 * [Pattern](/docs/pattern) – Best practices and coding standards
-* [Contributing Guide](/docs/contribute) – How to get involved in development
-* [Issues](/docs/issues) – Open Issues
-* [Inspiration](/docs/inspiration) – Source of inspiration
+* [Database](/docs/database) – Multi-tenant schema with restaurantId isolation
+* [Contributing Guide](/docs/contribute) – How to contribute to development
+* [API Documentation](/docs/api) – RESTful endpoints and real-time events
+</EN>
+
+<AR>
+## ما ستجده هنا
+
+### للمطورين
+
+* [المتطلبات](/ar/docs/requirements) – المتطلبات الوظيفية وغير الوظيفية
+* [البنية](/ar/docs/architecture) – تصميم النظام والمواصفات التقنية
+* [المكدس التقني](/ar/docs/stack) – المكدس التقني (Next.js 15، Prisma، PostgreSQL)
+* [الأنماط](/ar/docs/pattern) – أفضل الممارسات ومعايير البرمجة
+* [قاعدة البيانات](/ar/docs/database) – مخطط متعدد المستأجرين مع عزل restaurantId
+* [دليل المساهمة](/ar/docs/contribute) – كيفية المساهمة في التطوير
+* [توثيق API](/ar/docs/api) – نقاط النهاية RESTful والأحداث في الوقت الفعلي
+</AR>
 
 ---
 
-### For Stakeholders
+### For Restaurant Owners
 
-* [Business Model](/docs/business/earning) – Revenue streams and value creation
-* [Roadmap](/docs/business/roadmap) – Product development plans and strategic goals
-* [Sales Process](/docs/business/sales) – Customer acquisition and revenue generation
-* [Stock Sharing](/docs/governance/stock-sharing) – Equity distribution and governance
-
----
-
-### For Community
-
-* [Code of Conduct](/docs/governance/code-of-conduct) – Community standards and expectations
-* [Issues & Support](/docs/community/issues) – Bug reporting and assistance
-* [Discussions](/docs/community/discussions) – Forums and knowledge sharing
+* [Business Model](/docs/business/model) – Subscription plans (Basic, Professional, Enterprise)
+* [Roadmap](/docs/roadmap) – Feature development timeline 2025-2027
+* [ROI Calculator](/docs/business/roi) – Calculate your savings vs competitors
+* [Success Stories](/docs/business/cases) – Saudi restaurant success stories
 
 ---
 
-### For Clients
+### For Partners
 
-* Understand our [Business Model](/docs/business/earning)
-* See what's ahead in the [Roadmap](/docs/business/roadmap)
-* [Contact Sales](/docs/business/sales) to discuss your needs
-* Access [Support Options](/docs/community/support) when needed
+* [Integration Guide](/docs/partners/integrations) – Connect with Saudi POS systems
+* [Delivery Partners](/docs/partners/delivery) – Integration with Jahez, HungerStation, Careem Now
+* [Payment Gateway](/docs/partners/payment) – Moyasar, Tap, PayTabs integration
+* [Marketing Tools](/docs/partners/marketing) – Social media and WhatsApp campaigns
 
 ---
 
-### For Legal
+### For Restaurants
 
-* [Open Source Licenses](/docs/legal/licenses) – Usage terms and compliance
-* [Terms of Service](/docs/legal/terms) – Legal policies
-* [Privacy Policy](/docs/legal/privacy) – Data protection commitments
+* [Menu Management](/docs/features/menu) – Digital menu creation with photos and descriptions
+* [QR Code System](/docs/features/qr) – Table-specific QR codes with custom designs
+* [Order Management](/docs/features/orders) – Handle dine-in, delivery, and pickup orders
+* [Table Reservations](/docs/features/reservations) – Online booking with Ramadan/Eid support
+* [Loyalty Programs](/docs/features/loyalty) – Points, stamps, and family rewards
+* [Analytics Dashboard](/docs/features/analytics) – Sales insights and customer behavior
+* [Multi-Branch](/docs/features/branches) – Central management for restaurant chains
+
+---
+
+### For Support
+
+* [Help Center](/docs/support/help) – Frequently asked questions in Arabic/English
+* [Training Videos](/docs/support/videos) – Step-by-step tutorials in Arabic
+* [WhatsApp Support](/docs/support/whatsapp) – 24/7 Saudi-based support team
+* [System Status](/docs/support/status) – Service availability and updates
 
 ---
 
 ## Getting Started
 
-New comer? Start with the essentials:
+Ready to digitize your restaurant? Start here:
 
-* Review the [Code of Conduct](/docs/code-of-conduct)
-* Explore the [Architecture](/docs/architecture)
-* Check the [Contributing Guide](/docs/contributing)
-* Join [Community Discussions](/docs/community)
+* [Quick Setup Guide](/docs/setup) – Launch your digital menu in 15 minutes
+* [Menu Builder](/docs/menu-builder) – Create beautiful menus with Arabic/English support
+* [Order Configuration](/docs/order-setup) – Configure delivery zones and Saudi payment methods
+* [Staff Training](/docs/training) – Train your team with Arabic video tutorials
+
+## Saudi Market Focus
+
+### Why Choose Menu?
+
+* **Zero Commission**: Unlike competitors charging 15-30% per order
+* **30% Cheaper**: Than YallaQRCodes (our plans: 749-2,499 SAR/year)
+* **WhatsApp First**: 70% of Saudi customers prefer WhatsApp ordering
+* **Local Compliance**: ZATCA e-invoicing and SFDA nutrition requirements
+* **Saudi Support**: 24/7 Arabic-speaking support team based in Saudi Arabia
+
+### Target Market
+
+* **500+ restaurants** by end of 2025
+* **10,000+ restaurants** by 2027
+* Focus cities: Riyadh, Jeddah, Dammam, expanding to all 13 regions
+* Restaurant types: Fine dining, cafes, fast food, food trucks, cloud kitchens

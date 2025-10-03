@@ -1,184 +1,552 @@
 ## Database
 
-The database is engineered as a **multi-tenant school management system** that supports multiple schools in a single database with complete data isolation. Built on PostgreSQL with Prisma ORM, it provides a robust foundation for educational institutions while maintaining strict security boundaries between tenants.
+**Menu** (منيو) uses a multi-tenant architecture with complete data isolation per restaurant using `restaurantId`. Built on PostgreSQL with Prisma ORM, optimized for Saudi Arabia's restaurant market.
 
 ### Core Principles
 
-Our database design is guided by fundamental principles that ensure scalability, security, and maintainability:
+Our database design ensures scalability, security, and Saudi market compliance:
 
-- **Row-Level Security** – Every model includes a `schoolId` field ensuring complete data isolation between schools
-- **Shared Schema Architecture** – All schools use the same database schema, optimizing resource utilization
-- **Domain-Based Tenant Identification** – Schools are uniquely identified by subdomain (e.g., `hogwarts.hogwarts.app`), with optional custom domains via CNAME
-- **Type-Safe Database Operations** – Prisma ORM provides end-to-end type safety from database to frontend
-- **Multi-File Schema Organization** – Schema is organized into logical domains for better maintainability
+- **Row-Level Security** – Every model includes `restaurantId` field ensuring complete data isolation
+- **Arabic-First Design** – Native Arabic support with proper RTL collation
+- **Saudi Compliance** – ZATCA e-invoicing, SFDA nutrition, Municipality requirements
+- **WhatsApp Native** – Built-in WhatsApp Business API integration
+- **Multi-Branch Support** – Central management for restaurant chains
+- **Prayer Time Aware** – Automatic order pausing during prayer times
 
-### Database Design
+### Multi-Tenant Architecture
 
-The database follows a comprehensive relational design that captures all aspects of school management from core infrastructure to daily operations.
-
-![Database Schema Diagram](/database.png)
-
-The entity relationship diagram above illustrates the interconnected nature of our school management system, showing how entities relate through foreign key relationships while maintaining multi-tenant isolation through the `schoolId` field present in every table.
-
-### Multi-Tenant Isolation Strategy
-
-The tenant isolation strategy ensures that each school's data remains completely separate while sharing the same database infrastructure.
-
-#### Tenant Entity (School Model)
+Every table includes `restaurantId` for complete data isolation:
 
 ```typescript
-model School {
-  id          String  @id @default(cuid())
-  name        String
-  domain      String  @unique // e.g., "hogwarts"
-  logoUrl     String?
-  address     String?
-  phoneNumber String?
-  email       String?
-  timezone    String  @default("UTC")
-  
-  // Subscription/billing
-  planType    String  @default("basic")
-  maxStudents Int     @default(100)
-  maxTeachers Int     @default(10)
-  isActive    Boolean @default(true)
-}
-```
-
-#### Data Isolation Example
-
-```typescript
-// Correct - Always include schoolId
-const students = await prisma.student.findMany({
-  where: { schoolId: "school_123" }
+// ✅ Correct - Tenant isolated
+const orders = await db.order.findMany({
+  where: {
+    restaurantId: session.restaurantId,
+    status: "PENDING"
+  }
 })
 
-// Wrong - Missing schoolId (security risk)
-const students = await prisma.student.findMany()
+// ❌ Wrong - Security risk
+const orders = await db.order.findMany({
+  where: { status: "PENDING" }
+})
 ```
 
+### Core Schema Design
 
+#### Restaurant Entity
 
-### Directory Structure
+```prisma
+model Restaurant {
+  id            String   @id @default(cuid())
 
-The Prisma directory follows a well-organized structure that supports both development and production scenarios with clear separation of concerns.
+  // Business identifiers (Saudi)
+  nameAr        String   // Required Arabic name
+  nameEn        String?  // Optional English name
+  crNumber      String   @unique // Commercial Registration (السجل التجاري)
+  vatNumber     String   // VAT registration (رقم ضريبة القيمة المضافة)
 
-import { DirectoryStructure } from './directory-structure'
+  // Digital presence
+  subdomain     String   @unique // restaurant.menu.sa
+  customDomain  String?  // Optional: restaurant.com.sa
 
-<DirectoryStructure />
+  // Location (Saudi format)
+  cityAr        String   // الرياض، جدة، الدمام
+  cityEn        String?
+  addressAr     String   // العنوان الوطني السعودي
+  addressEn     String?
 
-### Schema Tables
+  // Contact
+  phone         String   // 05XXXXXXXX format
+  whatsapp      String   // WhatsApp Business number
+  email         String?
 
-Each model contains realistic sample data that demonstrates the relationships and data structure of our multi-tenant school management system.
+  // Settings
+  timezone      String   @default("Asia/Riyadh")
+  currency      String   @default("SAR")
+  language      String   @default("ar")
 
-import { ModelTables } from './model-tables'
-import { SubscriptionTables } from './subscription-tables'
-import { LegalTables } from './legal-tables'
+  // Subscription
+  plan          PlanType @default(BASIC)
+  planExpiresAt DateTime?
 
-<ModelTables />
+  // Features
+  features      Json     // Enabled features based on plan
 
-### Subscription & Pricing
+  // Compliance
+  municipality  String?  // Municipality license
+  zatcaEnabled  Boolean  @default(true)
+  sfdaEnabled   Boolean  @default(true)
 
-The subscription system supports tiered pricing plans with flexible discounting capabilities:
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-<SubscriptionTables />
-
-### Legal & Compliance
-
-The legal system provides comprehensive consent tracking and compliance logging:
-
-<LegalTables />
-
-### Authentication & User Roles
-
-The system supports **8 distinct user roles** with varying levels of access and school-specific constraints:
-
-import { UserRolesTable } from './user-roles-table'
-
-<UserRolesTable />
-
-### Security & Data Protection
-
-#### Automatic Tenant Filtering
-Every database query must include the `schoolId` to ensure proper data isolation:
-
-```typescript
-// Server action with tenant context
-export async function getStudents() {
-  const schoolId = getSchoolId() // From middleware context
-  
-  return await prisma.student.findMany({
-    where: { schoolId }
-  })
+  @@index([subdomain])
+  @@index([crNumber])
 }
 ```
 
-#### Unique Constraints with School Scope
-All unique constraints include `schoolId` to allow data duplication across schools:
+#### Menu Management
 
-```typescript
-// Teachers can have same email across different schools
-@@unique([schoolId, emailAddress])
+```prisma
+model MenuCategory {
+  id            String   @id @default(cuid())
+  restaurantId  String   // Tenant isolation
 
-// Departments can have same names across schools
-@@unique([schoolId, departmentName])
+  nameAr        String   // مقبلات، أطباق رئيسية، مشروبات، حلويات
+  nameEn        String?
+  descriptionAr String?
+  descriptionEn String?
+
+  icon          String?  // Category icon
+  imageUrl      String?  // Category banner
+
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+
+  // Availability (prayer time aware)
+  availableFrom String?  // "08:00"
+  availableTo   String?  // "23:00"
+  pauseDuringPrayer Boolean @default(true)
+
+  // Ramadan settings
+  isRamadanSpecial Boolean @default(false)
+  ramadanFrom   String?  // Iftar time
+  ramadanTo     String?  // Suhoor time
+
+  @@unique([restaurantId, nameAr])
+  @@index([restaurantId])
+}
+
+model MenuItem {
+  id            String   @id @default(cuid())
+  restaurantId  String   // Tenant isolation
+  categoryId    String
+
+  // Names (Arabic required)
+  nameAr        String
+  nameEn        String?
+  descriptionAr String?
+  descriptionEn String?
+
+  // Pricing
+  price         Decimal  @db.Decimal(10, 2) // SAR
+  cost          Decimal? @db.Decimal(10, 2) // For profit calculation
+
+  // Media
+  images        String[] // Multiple images
+
+  // SFDA Nutrition Compliance
+  calories      Int?     // Required for SFDA
+  protein       Decimal? @db.Decimal(5, 2) // grams
+  carbs         Decimal? @db.Decimal(5, 2)
+  fat           Decimal? @db.Decimal(5, 2)
+  sodium        Decimal? @db.Decimal(5, 2) // mg
+
+  // Dietary & Allergens
+  isHalal       Boolean  @default(true)
+  allergens     String[] // SFDA allergen codes
+  isVegetarian  Boolean  @default(false)
+  isVegan       Boolean  @default(false)
+  isGlutenFree  Boolean  @default(false)
+
+  // Availability
+  isAvailable   Boolean  @default(true)
+  preparationTime Int?   // Minutes
+  maxDailyQuantity Int?  // Inventory limit
+
+  // Special flags
+  isPopular     Boolean  @default(false)
+  isNew         Boolean  @default(false)
+  isSpicy       Boolean  @default(false)
+  spicyLevel    Int?     // 1-5 scale
+
+  @@unique([restaurantId, categoryId, nameAr])
+  @@index([restaurantId])
+  @@index([categoryId])
+}
+```
+
+#### Order Management
+
+```prisma
+model Order {
+  id            String   @id @default(cuid())
+  restaurantId  String   // Tenant isolation
+  branchId      String?
+
+  // Order identifiers
+  orderNumber   String   // Human-readable: #1234
+  type          OrderType // DINE_IN, DELIVERY, PICKUP
+  status        OrderStatus
+
+  // Customer
+  customerId    String?
+  customerName  String
+  customerPhone String   // 05XXXXXXXX
+
+  // Dine-in details
+  tableNumber   String?
+  section       TableSection? // FAMILY, SINGLES, VIP
+
+  // Delivery (Saudi address)
+  deliveryAddress Json?  // National address format
+  deliveryZone  String?
+  deliveryFee   Decimal? @db.Decimal(10, 2)
+
+  // Pricing (SAR)
+  subtotal      Decimal  @db.Decimal(10, 2)
+  discount      Decimal  @default(0) @db.Decimal(10, 2)
+  tax           Decimal  @db.Decimal(10, 2) // 15% VAT
+  total         Decimal  @db.Decimal(10, 2)
+
+  // Payment
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus
+
+  // ZATCA Invoice
+  invoiceNumber String?
+  invoiceQR     String?  // ZATCA-compliant QR
+  zatcaUUID     String?  // ZATCA transaction ID
+
+  // WhatsApp
+  whatsappNotified Boolean @default(false)
+  whatsappMessageId String?
+
+  // Timestamps
+  orderedAt     DateTime @default(now())
+  confirmedAt   DateTime?
+  preparingAt   DateTime?
+  readyAt       DateTime?
+  completedAt   DateTime?
+
+  @@unique([restaurantId, orderNumber])
+  @@index([restaurantId])
+  @@index([status])
+  @@index([orderedAt])
+}
+```
+
+#### Customer & Loyalty
+
+```prisma
+model Customer {
+  id            String   @id @default(cuid())
+  restaurantId  String   // Tenant isolation
+
+  // Primary identifier (Saudi phone)
+  phone         String   // 05XXXXXXXX
+  name          String?
+  email         String?
+
+  // Preferences
+  preferredLanguage String @default("ar")
+  receiveWhatsApp Boolean @default(true)
+  receiveSMS    Boolean  @default(false)
+
+  // Loyalty (Saudi-focused)
+  loyaltyPoints Int      @default(0)
+  loyaltyTier   LoyaltyTier @default(BRONZE)
+  totalSpent    Decimal  @default(0) @db.Decimal(10, 2) // SAR
+  orderCount    Int      @default(0)
+
+  // Family rewards
+  familySize    Int?
+  familyPoints  Int      @default(0)
+
+  // Demographics
+  birthDate     DateTime?
+  gender        Gender?
+
+  // Special dates
+  anniversaryDate DateTime?
+
+  // Stats
+  firstOrderAt  DateTime?
+  lastOrderAt   DateTime?
+  averageOrderValue Decimal? @db.Decimal(10, 2)
+
+  @@unique([restaurantId, phone])
+  @@index([restaurantId])
+  @@index([phone])
+}
+```
+
+#### Reservations (Saudi-specific)
+
+```prisma
+model Reservation {
+  id            String   @id @default(cuid())
+  restaurantId  String   // Tenant isolation
+  branchId      String?
+
+  customerId    String
+  reservationNumber String // #R1234
+
+  date          DateTime
+  time          String   // "19:30"
+  duration      Int      @default(120) // Minutes
+
+  partySize     Int
+  section       TableSection // FAMILY, SINGLES, VIP
+
+  // Saudi cultural support
+  occasion      String?  // عيد ميلاد، ذكرى زواج
+  isIftar       Boolean  @default(false)
+  isSuhoor      Boolean  @default(false)
+
+  // Special requests
+  specialNotes  String?  // Arabic/English
+  highChairs    Int      @default(0)
+
+  status        ReservationStatus
+
+  // Confirmation
+  confirmationCode String
+  whatsappConfirmed Boolean @default(false)
+  smsConfirmed  Boolean  @default(false)
+
+  @@unique([restaurantId, reservationNumber])
+  @@index([restaurantId])
+  @@index([date])
+}
+```
+
+### Saudi-Specific Tables
+
+#### Prayer Times Integration
+
+```prisma
+model PrayerTimeSettings {
+  id            String   @id @default(cuid())
+  restaurantId  String   @unique
+
+  pauseForPrayer Boolean @default(true)
+  pauseDuration Int      @default(30) // Minutes
+
+  // Auto-pause settings
+  pauseFajr     Boolean  @default(false)
+  pauseDhuhr    Boolean  @default(true)
+  pauseAsr      Boolean  @default(true)
+  pauseMaghrib  Boolean  @default(true)
+  pauseIsha     Boolean  @default(true)
+
+  // Custom messages
+  prayerMessageAr String @default("نعتذر، سنعود بعد الصلاة")
+  prayerMessageEn String @default("We'll be back after prayer")
+}
+```
+
+#### ZATCA Compliance
+
+```prisma
+model ZatcaInvoice {
+  id            String   @id @default(cuid())
+  restaurantId  String
+  orderId       String   @unique
+
+  // ZATCA fields
+  invoiceNumber String
+  uuid          String   @unique
+  qrCode        String   // Base64 QR
+  hash          String
+
+  // Invoice details
+  sellerName    String
+  sellerVAT     String
+  invoiceDate   DateTime
+  totalAmount   Decimal  @db.Decimal(10, 2)
+  vatAmount     Decimal  @db.Decimal(10, 2)
+
+  // Submission status
+  submitted     Boolean  @default(false)
+  submittedAt   DateTime?
+  responseCode  String?
+
+  @@index([restaurantId])
+}
+```
+
+### Enums
+
+```prisma
+enum PlanType {
+  BASIC        // 749 SAR/year
+  PROFESSIONAL // 1,499 SAR/year
+  ENTERPRISE   // 2,499 SAR/year
+}
+
+enum OrderType {
+  DINE_IN
+  DELIVERY
+  PICKUP
+  CATERING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  MADA         // Most popular in Saudi
+  STC_PAY
+  APPLE_PAY
+  SADAD
+  CREDIT_CARD
+}
+
+enum TableSection {
+  FAMILY       // العائلات
+  SINGLES      // العزاب
+  VIP
+  OUTDOOR
+}
+
+enum LoyaltyTier {
+  BRONZE       // 0-999 points
+  SILVER       // 1000-4999 points
+  GOLD         // 5000-9999 points
+  PLATINUM     // 10000+ points
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
 ```
 
 ### Performance Optimization
 
-#### Recommended Database Indexes
+#### Critical Indexes
+
 ```sql
--- Critical indexes for multi-tenant queries
-CREATE INDEX idx_students_school_id ON students(school_id);
-CREATE INDEX idx_teachers_school_id ON teachers(school_id);
-CREATE INDEX idx_classes_school_id ON classes(school_id);
-CREATE INDEX idx_attendance_school_id ON attendance(school_id);
+-- Tenant isolation (most important)
+CREATE INDEX idx_all_tables_restaurant_id ON all_tables(restaurant_id);
+
+-- Frequent queries
+CREATE INDEX idx_orders_status ON orders(restaurant_id, status);
+CREATE INDEX idx_orders_date ON orders(restaurant_id, ordered_at DESC);
+CREATE INDEX idx_customers_phone ON customers(restaurant_id, phone);
+
+-- Arabic text search
+CREATE INDEX idx_menu_items_name_ar ON menu_items USING gin(name_ar gin_trgm_ops);
+
+-- Composite indexes
+CREATE INDEX idx_orders_customer ON orders(restaurant_id, customer_id);
+CREATE INDEX idx_reservations_date ON reservations(restaurant_id, date);
 ```
 
-#### Query Performance Guidelines
-- Always filter by `schoolId` first in WHERE clauses
-- Use composite indexes for frequently queried field combinations
-- Implement connection pooling for high-traffic scenarios
-- Consider read replicas for reporting and analytics
+#### Query Optimization
 
-### Deployment Configuration
+```typescript
+// Efficient menu query with caching
+const menu = await db.menuCategory.findMany({
+  where: {
+    restaurantId,
+    isActive: true
+  },
+  include: {
+    items: {
+      where: { isAvailable: true },
+      orderBy: { sortOrder: 'asc' }
+    }
+  },
+  orderBy: { sortOrder: 'asc' }
+})
 
-#### Environment Variables
-```env
-# Database Connection
-DATABASE_URL="postgresql://username:password@host:port/database"
-
-# Multi-tenancy Configuration
-DEFAULT_SCHOOL_DOMAIN="demo"
-ALLOW_SCHOOL_SIGNUP="true"
-
-# Subscription Limits
-BASIC_MAX_STUDENTS=100
-PREMIUM_MAX_STUDENTS=500
-ENTERPRISE_MAX_STUDENTS=2000
+// Cache in Redis (1 hour)
+await redis.set(`menu:${restaurantId}`, JSON.stringify(menu), 'EX', 3600)
 ```
 
-#### Migration Commands
+### Migration Strategy
+
+#### Initial Setup
+
 ```bash
-# Generate Prisma Client
-pnpm prisma generate
+# Set Arabic collation
+ALTER DATABASE menu_production SET lc_collate = 'ar_SA.UTF-8';
 
-# Create and apply migrations
-pnpm prisma migrate dev --name init
+# Enable extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm"; -- For Arabic search
 
-# Deploy to production
-pnpm prisma migrate deploy
-
-# Seed sample data
-pnpm prisma db seed
+# Configure timezone
+SET timezone = 'Asia/Riyadh';
 ```
 
-### Sample Schools & Test Data
+#### Prisma Commands
 
-The seeding system creates **three sample schools** with complete datasets:
+```bash
+# Development
+pnpm prisma generate       # Generate client
+pnpm prisma migrate dev    # Create migration
+pnpm prisma studio        # Visual editor
 
-import { SampleSchoolsTable } from './sample-schools-table'
+# Production
+pnpm prisma migrate deploy # Apply migrations
+pnpm db:seed              # Seed Saudi demo data
+```
 
-<SampleSchoolsTable />
+### Security Best Practices
 
-This comprehensive database architecture provides the foundation for building scalable, secure, and feature-rich educational management systems.
+#### Tenant Isolation Middleware
+
+```typescript
+// middleware/tenant.ts
+export async function getTenantId(req: Request) {
+  const subdomain = extractSubdomain(req.headers.host)
+  const restaurant = await db.restaurant.findUnique({
+    where: { subdomain }
+  })
+
+  if (!restaurant) throw new Error('Restaurant not found')
+
+  // Attach to all queries
+  req.restaurantId = restaurant.id
+  return restaurant.id
+}
+```
+
+#### Row-Level Security Rules
+
+```sql
+-- PostgreSQL RLS
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON orders
+  FOR ALL
+  USING (restaurant_id = current_setting('app.restaurant_id'));
+```
+
+### Backup & Disaster Recovery
+
+#### Backup Strategy
+
+- **Real-time**: Streaming replication to standby
+- **Hourly**: Incremental backups
+- **Daily**: Full backup at 2 AM Riyadh time
+- **Weekly**: Offsite backup to different region
+
+#### Recovery Targets
+
+- **RTO**: 2 hours maximum downtime
+- **RPO**: 15 minutes maximum data loss
+- **Availability**: 99.95% uptime SLA
+
+This database architecture provides a robust, Saudi-compliant foundation for the Menu platform with complete multi-tenant isolation and cultural considerations.

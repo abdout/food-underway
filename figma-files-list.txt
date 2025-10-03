@@ -1,0 +1,261 @@
+__الأعمدة___ - __رقم الخصم___ رقم الخصم الفريد. - __تاريخ الاستخدام___ تاريخ استخدام الخصم. - __اسم العميل___ اسم العميل الذي استفاد من الخصم. -.png
+Activity Log.png
+add user info.png
+all users (1).png
+all users info.png
+all users.png
+appearance Dark.png
+appearance drop list.png
+appearance light.png
+appearance spc.png
+branch info.png
+Card 4.png
+Dashboard mobile Screen (1).png
+Dashboard mobile Screen.png
+date.png
+domain info (1).png
+domain info.png
+drop lists content.png
+edit the user info (1).png
+edit the user info.png
+edit user info.png
+Email.png
+Emailw.png
+empty state.png
+Error message.png
+fill.png
+filtter by stars number list.png
+Frame 1000009202.png
+Frame 1000009232.png
+Frame 1171277075.png
+Frame 1171277076.png
+Frame 1171277140.png
+Group 1000008150.png
+Group 202.png
+hamburger menu (1).png
+hamburger menu.png
+History.png
+language.png
+list of menus (1).png
+list of menus (2).png
+list of menus options.png
+list of menus.png
+log (1).png
+log.png
+menu link.png
+mobile.png
+Nav Links Dashboard.png
+options.png
+orders actions.png
+owner info.png
+QR Code (1).png
+QR Code (2).png
+QR Code (3).png
+QR Code (4).png
+QR Code (5).png
+QR Code.png
+Rating.png
+Reset Password after enter a new password.png
+Reset Password after send the link (1).png
+Reset Password after send the link.png
+Reset Password.png
+rest name.png
+Restaurant mobile Screen (1).png
+Restaurant mobile Screen (2).png
+Restaurant mobile Screen (3).png
+Restaurant mobile Screen.png
+Restaurant screen after entering data.png
+Restaurant screen before entering data.png
+Sign in By Email.png
+Sign in By phone number.png
+sign in info.png
+sign in info2.png
+Sign up by email (1).png
+Sign up by email (2).png
+Sign up by email (3).png
+Sign up by email.png
+Sign up by phone number.png
+sort rating list.png
+user actions.png
+users.png
+users2.png
+users3.png
+users4.png
+اجراءات الباقات.png
+اجراءات الثيمات.png
+اجراءات الطلب.png
+اجراءات طلبات العميل.png
+اجراءات على الحجوزات الملغية.png
+اجراءات على الحجوزات المؤكدة وغير المؤكدة.png
+اجراءات فترة الحجز (1).png
+اجراءات فترة الحجز.png
+احصائيات اداء المطعم.png
+اختيار أشكال مختلفة للـ QR Code وتغيير ألوانه.png
+ادارة اشتراكات باقة معينة.png
+إدارة أقسام وتصنيفات المطعم.png
+ادارة الاشتراك في الباقات ( اعدادت الحساب).png
+ادارة الثيمات.png
+إدارة الخصومات (خصومات متعددة).png
+ادارة الطلبات.png
+ادارة العملاء.png
+إدارة العملاء.png
+إدارة الفروع وإنشاء حسابات للفروع.png
+ادارة الفروع.png
+ادارة القائمة (1).png
+ادارة القائمة.png
+إدارة المستخدمين.png
+إدارة طرق الدفع (1).png
+إدارة طرق الدفع (2).png
+إدارة طرق الدفع.png
+ادخال سبب الغاء الطلب.png
+ارسال اشعار للعميل.png
+اضافة اشكال QR code جديد.png
+اضافة الصنف.png
+اضافة باقة (1).png
+اضافة باقة.png
+اضافة برنامج ولاء.png
+إضافة بنر إعلاني.png
+اضافة حجز.png
+اضافة صنف للطلب.png
+اضافة صنف معين (1).png
+اضافة صنف معين (2).png
+اضافة صنف معين (3).png
+اضافة صنف معين.png
+اضافة طلب.png
+إضافة عرض دعائي.png
+اضافة عميل جديد.png
+اضافة فترة حجز جديدة.png
+اضافة فترة حجز جديدة+ اضافة العناصر (1).png
+اضافة فترة حجز جديدة+ اضافة العناصر.png
+اضافة فرع 2.png
+اضافة فرع جديد دون نسخ بيانات من حساب سابق.png
+اضافة فرع جديد.png
+اضافة فرع.png
+اضافة قسم (1).png
+اضافة قسم بوقت محدد.png
+اضافة قسم.png
+اضافة مستخدم.png
+اعدادت اللغة.png
+الإجراءات لكل عميل.png
+الاشتراكات (1).png
+الاشتراكات.png
+الاشعارات.png
+الاصناف 2.png
+الاصناف.png
+الاصناف2.png
+الاقسام الرئيسية.png
+الاقسام الرئيسية2.png
+الباقات.png
+الباقة الاساسية.png
+الباقة المميزة.png
+التحكم في مظهر المنيو.png
+التصنيفات.png
+التقييمات (1).png
+التقييمات (2).png
+التقييمات (3).png
+التقييمات (4).png
+التقييمات.png
+الثيم.png
+الحجوزات (1).png
+الحجوزات.png
+الخصومات.png
+الخصومات2.png
+الخصومات22.png
+الدعم الفني.png
+الدفع.png
+اللغة.png
+المدفوعات والخصومات.png
+المدفوعات.png
+المستخدمين 2.png
+المستخدمين 3.png
+المستخدمين 4.png
+المستخدمين 5.png
+المستخدمين 6.png
+المستخدمين 7.png
+المستخدمين 8.png
+المستخدمين.png
+المظهر (1).png
+المظهر.png
+الملف الشخصي.png
+انشاء تذكرة جديدة.png
+باقة 1.png
+برامج الولاء (1).png
+برامج الولاء.png
+بطاقة.png
+بيانات البرنامج.png
+بيانات الفترة.png
+تاريخ إنتهاء البطاقة.png
+تأكيد إزالة العميل.png
+تأكيد الدفع.png
+تأكيد الغاء الحجز، هذا عندنا يؤكد الغاء حجز مؤكد او غير مؤكد.png
+تأكيد إلغاء تنشيط بطاقة الولاء.png
+تأكيد تفعيل حساب العميل.png
+تأكيد حذف البطاقة.png
+تأكيد نسخ بطاقة الولاء (1).png
+تأكيد نسخ بطاقة الولاء.png
+تتبع طلبات العملاء وإدارتها (1).png
+تتبع طلبات العملاء وإدارتها.png
+تخصيص ثيم.png
+تصميم البطاقة.png
+تصميم وإضافة بطاقات الولاء.png
+تعديل  طريقة دفع.png
+تعديل الطلب (1).png
+تعديل الطلب (2).png
+تعديل الطلب.png
+تعديل بروفايل وبيانات المطعم.png
+تعديل بيانات الصنف.png
+تعديل بيانات ثيم معين.png
+تعديل بيانات مستخدم.png
+تعديل.png
+تفاصيل الطلب- قيد الانتظار.png
+تفاصيل الطلب- مكتمل، ملغي.png
+تفاصيل الطلب.png
+تفاصيل بطاقة معينة (1).png
+تفاصيل بطاقة معينة (2).png
+تفاصيل بطاقة معينة.png
+تفاصيل عناصر القائمة (1).png
+تفاصيل عناصر القائمة.png
+تقييمات العملاء.png
+تم إنشاء رمز QR لقائمتك (1).png
+تم إنشاء رمز QR لقائمتك (2).png
+تم إنشاء رمز QR لقائمتك.png
+توليد QR Code وتصميمه.png
+جزئية ادارة العملاء الخاصين بالبطاقة (1).png
+جزئية ادارة العملاء الخاصين بالبطاقة.png
+حالة البطاقة.png
+حالة العميل.png
+حجوزات العميل.png
+حذف اضافة.png
+حذف ثيم.png
+حذف طريقة دفع.png
+خاصية  ادارة الحجوزات.png
+خصم ثابت - خصم كود - خصم توصيل - خصم منتج - خصم موسمي - خصم ترويجي.png
+خيارات ادارة الاضافات.png
+دعم اللغة العربية والإنجليزية.png
+رسائل الدعم الفني (1).png
+رسائل الدعم الفني.png
+رؤية سبب الغاء الطلب.png
+شاشة إدارة برامج الولاء.png
+شاشة إدارة عملاء الولاء (1).png
+شاشة إدارة عملاء الولاء (2).png
+شاشة إدارة عملاء الولاء (3).png
+شاشة إدارة عملاء الولاء.png
+طرق الدفع.png
+طلب توصيل.png
+طلب محلي.png
+طلب من الفرع 2.png
+طلب من الفرع.png
+طلبات العميل.png
+طلبات توصيل (1).png
+طلبات توصيل.png
+طلبات محلية.png
+عرض سبب الالغاء.png
+عرض قائمة عناصر الحجز.png
+عرض كل الاشعارات.png
+عمر الختم.png
+قائمة العملاء.png
+محدد.png
+مدفوعات الحجوزات (1).png
+مدفوعات الحجوزات.png
+مدفوعات الخصومات.png
+مدفوعات الطلبات.png
