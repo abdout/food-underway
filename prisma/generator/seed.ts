@@ -73,36 +73,44 @@ async function main() {
   console.log("🌱 Starting seed...");
 
   // 1. Create Platform Admin
-  const platformAdmin = await prisma.user.upsert({
-    where: { email: "admin@menucloud.sa" },
-    update: {},
-    create: {
-      email: "admin@menucloud.sa",
-      username: "platform_admin",
-      password: await bcrypt.hash("Admin123!", 10),
-      emailVerified: new Date(),
-      role: "PLATFORM_ADMIN",
-    },
+  let platformAdmin = await prisma.user.findFirst({
+    where: { email: "admin@menucloud.sa" }
   });
+
+  if (!platformAdmin) {
+    platformAdmin = await prisma.user.create({
+      data: {
+        email: "admin@menucloud.sa",
+        username: "platform_admin",
+        password: await bcrypt.hash("Admin123!", 10),
+        emailVerified: new Date(),
+        role: "PLATFORM_ADMIN",
+      },
+    });
+  }
 
   console.log("✅ Platform admin created");
 
   // 2. Create Merchants with Owners
   for (const merchantData of SAUDI_MERCHANTS) {
     // Create owner user
-    const owner = await prisma.user.upsert({
-      where: { email: merchantData.email },
-      update: {},
-      create: {
-        email: merchantData.email,
-        username: merchantData.domain + "_owner",
-        password: await bcrypt.hash("Owner123!", 10),
-        emailVerified: new Date(),
-        role: "OWNER",
-        phone: merchantData.phone,
-        phoneVerified: true,
-      },
+    let owner = await prisma.user.findFirst({
+      where: { email: merchantData.email }
     });
+
+    if (!owner) {
+      owner = await prisma.user.create({
+        data: {
+          email: merchantData.email,
+          username: merchantData.domain + "_owner",
+          password: await bcrypt.hash("Owner123!", 10),
+          emailVerified: new Date(),
+          role: "OWNER",
+          phone: merchantData.phone,
+          phoneVerified: true,
+        },
+      });
+    }
 
     // Create merchant
     const merchant = await prisma.merchant.upsert({
