@@ -127,6 +127,11 @@ export const RegisterForm = ({
     });
   };
 
+  const onPhoneSubmit = (values: z.infer<typeof PhoneLoginSchema>) => {
+    // Phone registration handler - currently shows not available message
+    ErrorToast(dictionary?.auth?.phoneRegistrationNotAvailable || "Phone registration will be available soon. Please use email registration for now.");
+  };
+
   return (
     <div className={cn("flex flex-col gap-6 min-w-[200px] md:min-w-[450px]", className)} {...props}>
       <Card className="border-0 shadow-2xl bg-white rounded-[16px]">
@@ -141,7 +146,7 @@ export const RegisterForm = ({
         <CardContent>
           {registerMethod === 'phone' ? (
             <Form {...phoneForm}>
-              <form onSubmit={phoneForm.handleSubmit(onSubmit)} className="grid gap-6">
+              <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="grid gap-6">
                 {/* Phone Registration Section */}
                 <div className="grid gap-4">
                   <div dir="rtl">
