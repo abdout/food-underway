@@ -120,7 +120,7 @@ export const RegisterForm = ({
           }
           if (data?.success) {
             form.reset();
-            SuccessToast(data.success);
+            SuccessToast();
           }
         })
         .catch(() => ErrorToast("Something went wrong"));
