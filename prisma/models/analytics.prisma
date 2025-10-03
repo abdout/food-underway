@@ -95,7 +95,7 @@ model CustomerStat {
   merchantId   String
 
   customer     Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  customerId   String
+  customerId   String      @unique
 
   // Lifetime metrics
   totalOrders  Int         @default(0)
