@@ -68,6 +68,9 @@ model Merchant {
   coupons     Coupon[]
   reviews     Review[]
 
+  // Domain Management
+  domainRequests DomainRequest[]
+
   // Analytics
   dailyStats  DailyStat[]
   menuItemStats MenuItemStat[]
