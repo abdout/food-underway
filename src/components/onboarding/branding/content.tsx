@@ -78,7 +78,7 @@ export default function BrandingContent() {
     try {
       setLogoUrl('');
       await updateListingData({
-        logo: null
+        logo: undefined
       });
       toast.success('تم إزالة الشعار');
     } catch (error) {

@@ -123,7 +123,7 @@ export async function updateListing(id: string, data: Partial<ListingFormData>):
     if (data.descriptionAr !== undefined) updateData.descriptionAr = data.descriptionAr;
     if (data.address !== undefined) updateData.address = data.address;
     if (data.addressAr !== undefined) updateData.addressAr = data.addressAr;
-    if (data.logo !== undefined) updateData.logo = data.logo;
+    if (data.logo !== undefined) updateData.logo = data.logo || null; // Allow null for removal
     if (data.subdomain !== undefined) updateData.subdomain = data.subdomain;
     if (data.phone !== undefined) updateData.phone = data.phone;
     if (data.website !== undefined) updateData.website = data.website;
