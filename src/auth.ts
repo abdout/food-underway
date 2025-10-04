@@ -53,6 +53,25 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       });
     },
   },
+  logger: {
+    error(code, ...message) {
+      console.error('=====================================');
+      console.error('❌ [NextAuth ERROR]');
+      console.error('=====================================');
+      console.error('Error code:', code);
+      console.error('Error details:', message);
+      console.error('Timestamp:', new Date().toISOString());
+      console.error('=====================================\n');
+    },
+    warn(code, ...message) {
+      console.warn('⚠️ [NextAuth WARNING]:', code, message);
+    },
+    debug(code, ...message) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [NextAuth DEBUG]:', code, message);
+      }
+    },
+  },
   cookies: {
     pkceCodeVerifier: {
       name: `authjs.pkce.code_verifier`,

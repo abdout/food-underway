@@ -49,8 +49,14 @@ if (googleClientId && googleClientSecret) {
           response_type: "code"
         }
       },
+      checks: ["state"], // Temporarily disable PKCE to test
       profile(profile) {
-        console.log('🔍 [Google OAuth] Profile received:', {
+        console.log('=====================================');
+        console.log('🔍 [Google OAuth] PROFILE CALLBACK START');
+        console.log('=====================================');
+        console.log('Raw profile object:', profile);
+        console.log('Profile keys:', Object.keys(profile || {}));
+        console.log('Profile values:', {
           sub: profile.sub,
           name: profile.name,
           email: profile.email,
@@ -60,13 +66,33 @@ if (googleClientId && googleClientSecret) {
           timestamp: new Date().toISOString()
         });
 
-        return {
+        if (!profile || !profile.sub) {
+          console.error('❌ [Google OAuth] CRITICAL: No profile or sub ID received!', {
+            hasProfile: !!profile,
+            profileType: typeof profile,
+            profileKeys: profile ? Object.keys(profile) : []
+          });
+          throw new Error('No profile data received from Google');
+        }
+
+        if (!profile.email) {
+          console.error('⚠️ [Google OAuth] WARNING: No email in profile!', profile);
+        }
+
+        const userProfile = {
           id: profile.sub,
           username: profile.name,
           email: profile.email,
           image: profile.picture,
           emailVerified: new Date(),
         };
+
+        console.log('✅ [Google OAuth] Profile processed successfully:', userProfile);
+        console.log('=====================================');
+        console.log('🔍 [Google OAuth] PROFILE CALLBACK END');
+        console.log('=====================================\n');
+
+        return userProfile;
       }
     })
   );
