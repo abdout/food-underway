@@ -67,7 +67,7 @@ export default function TitleContent() {
       try {
         await updateListingData({
           name: merchantNameAr.trim(),
-          nameEn: merchantNameEn.trim(),
+          nameAr: merchantNameEn.trim(),
           location: location.trim(),
           ownerName: ownerName.trim(),
           phone: phone.trim(),
