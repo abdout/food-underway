@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHostValidation } from '@/components/onboarding/host-validation-context';
 import { useListing } from '@/components/onboarding/use-listing';
@@ -54,17 +54,56 @@ export default function SubdomainContent() {
     }
   }, [listing?.name, subdomain]);
 
+  // Define handleCompleteSetup function
+  const handleCompleteSetup = useCallback(async () => {
+    if (isCompleting) {
+      return;
+    }
+
+    setIsCompleting(true);
+
+    try {
+      // Use a default subdomain if none is provided
+      const normalizedSubdomain = subdomain.trim() ? normalizeSubdomain(subdomain) : `restaurant-${Date.now()}`;
+
+      if (listing?.id) {
+        // Update local state with the subdomain
+        await updateListingData({
+          subdomain: normalizedSubdomain
+        });
+
+        // Complete the onboarding process
+        const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
+
+         if (completeResult.success) {
+           // Show congratulations modal
+           setShowCongratsModal(true);
+         } else {
+          toast.error(completeResult.error || 'فشل إكمال الإعداد');
+          setIsCompleting(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error completing setup:', error);
+      toast.error('حدث خطأ أثناء إكمال الإعداد');
+      setIsCompleting(false);
+    }
+  }, [isCompleting, subdomain, listing?.id, updateListingData]);
+
   // Enable/disable next button and set custom navigation
   useEffect(() => {
-    // Enable next button if we have a subdomain (even if not validated)
-    if (subdomain.trim().length > 0) {
-      enableNext();
-    }
+    // Always enable next button - subdomain is optional for completion
+    enableNext();
     setCustomNavigation({
       onNext: handleCompleteSetup,
-      nextDisabled: isCompleting
+      nextDisabled: false // Always allow proceeding
     });
-  }, [subdomain, isCompleting, enableNext, setCustomNavigation]);
+    console.log("🔧 [SUBDOMAIN] Button state updated:", {
+      isCompleting,
+      subdomain,
+      hasSubdomain: subdomain.trim().length > 0
+    });
+  }, [enableNext, setCustomNavigation, isCompleting, subdomain, handleCompleteSetup]);
 
   const validateSubdomain = async (value: string) => {
     const normalized = normalizeSubdomain(value);
@@ -127,41 +166,6 @@ export default function SubdomainContent() {
         console.error('Error reserving subdomain:', error);
         toast.error('فشل حجز الرابط');
       }
-    }
-  };
-
-  const handleCompleteSetup = async () => {
-    if (isCompleting) {
-      return;
-    }
-
-    setIsCompleting(true);
-
-    try {
-      // Use a default subdomain if none is provided
-      const normalizedSubdomain = subdomain.trim() ? normalizeSubdomain(subdomain) : `restaurant-${Date.now()}`;
-
-      if (listing?.id) {
-        // Update local state with the subdomain
-        await updateListingData({
-          subdomain: normalizedSubdomain
-        });
-
-        // Complete the onboarding process
-        const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
-
-         if (completeResult.success) {
-           // Show congratulations modal
-           setShowCongratsModal(true);
-         } else {
-          toast.error(completeResult.error || 'فشل إكمال الإعداد');
-          setIsCompleting(false);
-        }
-      }
-    } catch (error) {
-      console.error('Error completing setup:', error);
-      toast.error('حدث خطأ أثناء إكمال الإعداد');
-      setIsCompleting(false);
     }
   };
 
