@@ -111,12 +111,31 @@ export async function updateListing(id: string, data: Partial<ListingFormData>):
     // Validate user has ownership/access to this merchant
     await requireMerchantOwnership(id);
 
+    // Build update data with only valid Merchant fields
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    // Map ListingFormData fields to Merchant fields
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.nameAr !== undefined) updateData.nameAr = data.nameAr;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.descriptionAr !== undefined) updateData.descriptionAr = data.descriptionAr;
+    if (data.address !== undefined) updateData.address = data.address;
+    if (data.addressAr !== undefined) updateData.addressAr = data.addressAr;
+    if (data.logo !== undefined) updateData.logo = data.logo;
+    if (data.subdomain !== undefined) updateData.subdomain = data.subdomain;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.website !== undefined) updateData.website = data.website;
+    if (data.type !== undefined) {
+      // Convert string type to MerchantType enum
+      const merchantType = data.type.toUpperCase().replace('-', '_');
+      updateData.type = merchantType;
+    }
+
     const listing = await db.merchant.update({
       where: { id },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
+      data: updateData,
     });
 
     revalidatePath("/onboarding");
