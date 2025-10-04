@@ -24,7 +24,7 @@ export default function TitleContent() {
   useEffect(() => {
     if (listing) {
       setMerchantNameAr(listing.name || '');
-      setMerchantNameEn(listing.nameEn || '');
+      setMerchantNameEn(listing.name || '');
       setLocation(listing.location || '');
       setOwnerName(listing.ownerName || '');
       setPhone(listing.phone || '');
