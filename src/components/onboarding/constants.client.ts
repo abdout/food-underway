@@ -29,14 +29,9 @@ export const ERROR_MESSAGES = {
   INVALID_NUMBER: 'Please enter a valid number'
 } as const;
 
-// Step navigation mapping
+// Step navigation mapping - 3 STEPS
 export const STEP_NAVIGATION: Record<string, { next?: string; previous?: string }> = {
-  'information': { next: 'title' },
-  'title': { next: 'subdomain', previous: 'information' },
-  'subdomain': { next: 'admin-account', previous: 'title' },
-  'admin-account': { next: 'school-info', previous: 'subdomain' },
-  'school-info': { next: 'academic-setup', previous: 'admin-account' },
-  'academic-setup': { next: 'review', previous: 'school-info' },
-  'review': { next: 'tour', previous: 'academic-setup' },
-  'tour': { previous: 'review' }
+  'title': { next: 'subdomain' },
+  'subdomain': { next: 'finish-setup', previous: 'title' },
+  'finish-setup': { previous: 'subdomain' }
 };

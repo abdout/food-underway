@@ -1,0 +1,62 @@
+﻿
+> menu@0.1.0 build D:\repo\restaurant
+> prisma generate && next build
+
+node.exe : warn The configuration property 
+`package.json#prisma` is deprecated and will be 
+removed in Prisma 7. Please migrate to a Prisma 
+config file (e.g., `prisma.config.ts`).
+At C:\Users\pc\AppData\Roaming\npm\pnpm.ps1:24 char:5
++     & "node$exe"  
+"$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warn The 
+    config...ma.config.ts`).:String) [], RemoteExcep  
+  tion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+For more information, see: 
+https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma
+
+Γ£ö Generated Prisma Client (v6.14.0, engine=binary) to .\node_modules\.pnpm\@prisma+client@6.13.0_prism_bdfa0a116c809d1c1bb17854d7f9f700\node_modules\@prisma\client in 520ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+   Γû▓ Next.js 15.4.4
+   - Environments: .env
+   - Experiments (use with caution):
+     ┬╖ optimizePackageImports
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 20.0s
+   Skipping linting
+   Checking validity of types ...
+Failed to compile.
+
+./src/hooks/use-performance.ts:4:36
+Type error: Cannot find module 
+'@/lib/performance-monitor' or its corresponding type 
+declarations.
+
+[0m [90m 2 |[39m
+ [90m 3 |[39m [36mimport[39m { 
+useEffect[33m,[39m useCallback[33m,[39m useRef } 
+[36mfrom[39m [32m'react'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { 
+performanceMonitor } [36mfrom[39m 
+[32m'@/lib/performance-monitor'[39m[33m;[39m
+ [90m   |[39m                                    
+[31m[1m^[22m[39m
+ [90m 5 |[39m
+ [90m 6 |[39m [90m/**[39m
+ [90m 7 |[39m [90m * Hook for tracking component 
+performance and user interactions[39m[0m
+Next.js build worker exited with code: 1 and signal: 
+null
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

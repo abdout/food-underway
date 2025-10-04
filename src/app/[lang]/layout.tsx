@@ -6,9 +6,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/atom/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { AnalyticsProvider } from "@/components/monitoring/analytics-provider";
-import { ServiceWorkerProvider } from "@/components/providers/service-worker-provider";
 import "../globals.css";
 
 // Configure fonts
@@ -35,8 +32,8 @@ export async function generateMetadata({
   const config = localeConfig[lang];
 
   return {
-    title: dictionary.metadata?.title || "Hogwarts - School Management System",
-    description: dictionary.metadata?.description || "A comprehensive school management platform",
+    title: dictionary.metadata?.title || "Menu - Electronic menu on the fly",
+    description: dictionary.metadata?.description || "Electronic menu on the fly",
     other: {
       'accept-language': lang,
     },
@@ -68,14 +65,11 @@ export default async function LocaleLayout({
         className={`${isRTL ? tajawal.className : inter.className} ${inter.variable} ${tajawal.variable} antialiased`}
       >
         <SessionProvider session={session}>
-          <NuqsAdapter>
             <ThemeProvider>
               {children}
               <Toaster />
-              <AnalyticsProvider />
-              <ServiceWorkerProvider />
             </ThemeProvider>
-          </NuqsAdapter>
+         
         </SessionProvider>
       </body>
     </html>

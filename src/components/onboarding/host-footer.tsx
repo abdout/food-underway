@@ -23,58 +23,18 @@ interface HostFooterProps {
   dictionary?: any;
 }
 
-// Define the step order for the hosting flow
+// Onboarding flow - 3 STEPS (one per stage)
 const HOSTING_STEPS = [
-  // Stage 1: Tell us about your place
-  'information',
-  // 'title',
-  // 'description',
-  // 'location',
-  // 'stand-out',
-
-  // Stage 2: Make it stand out
-  'capacity',
-  // 'branding',
-  // 'import',
-  // 'finish-setup',
-
-  // Stage 3: Finish up and publish
-  'join',
-  // 'visibility',
-  // 'price',
-  // 'discount',
-  // 'legal'
+  'title',        // Stage 1: Basic Information
+  'subdomain',    // Stage 2: Setup
+  'finish-setup', // Stage 3: Complete Setup
 ];
-
-// Original full steps (commented for future reactivation)
-// const HOSTING_STEPS = [
-//   'information',
-//   'title',
-//   'description',
-//   'location',
-//   'stand-out',
-//   'capacity',
-//   'branding',
-//   'import',
-//   'finish-setup',
-//   'join',
-//   'visibility',
-//   'price',
-//   'discount',
-//   'legal'
-// ];
 
 // Group steps into 3 main categories
 const STEP_GROUPS = {
-  // Simplified version - one step per stage
-  1: ['information'],
-  2: ['capacity'],
-  3: ['join']
-
-  // Original full grouping (commented for future reactivation)
-  // 1: ['information', 'title', 'description', 'location', 'stand-out'],
-  // 2: ['capacity', 'branding', 'import', 'finish-setup'],
-  // 3: ['join', 'visibility', 'price', 'discount', 'legal']
+  1: ['title'],
+  2: ['subdomain'],
+  3: ['finish-setup']
 };
 
 const HostFooter: React.FC<HostFooterProps> = ({
@@ -173,8 +133,8 @@ const HostFooter: React.FC<HostFooterProps> = ({
       return;
     }
     
-    // If we're on the last step (join in simplified, legal in full), navigate to dashboard
-    if (currentStepSlug === 'join' || currentStepSlug === 'legal') {
+    // If we're on the last step, navigate to dashboard
+    if (currentStepSlug === 'finish-setup') {
       console.log("🏁 [HOST FOOTER] Last step - navigating to dashboard");
       router.push('/dashboard');
       return;
@@ -216,7 +176,7 @@ const HostFooter: React.FC<HostFooterProps> = ({
   
   // Check if back/next are available
   const canGoBackActual = canGoBack && (currentStepIndex > 0);
-  const canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'join' || currentStepSlug === 'legal') && !nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled);
+  const canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'finish-setup') && !nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled);
   
   // Debug logging for next button state
   console.log("🔍 [HOST FOOTER] Next button state:", {
@@ -229,9 +189,9 @@ const HostFooter: React.FC<HostFooterProps> = ({
     currentStepIndex
   });
   
-  // Set the next button label based on current step (join is now last step in simplified mode)
+  // Set the next button label based on current step
   const actualBackLabel = backLabel || dict.back || "Back";
-  const actualNextLabel = (currentStepSlug === 'join' || currentStepSlug === 'legal') ? (dict.createSchool || 'Create school') : (nextLabel || dict.next || "Next");
+  const actualNextLabel = (currentStepSlug === 'finish-setup') ? (dict.createMerchant || 'Complete Setup') : (nextLabel || dict.next || "Next");
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 bg-white">

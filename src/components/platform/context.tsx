@@ -1,22 +1,22 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode } from "react";
-import type { School } from "@/components/site/types";
+import type { Merchant } from "@/components/site/types";
 
-interface SchoolContextValue {
-  school: School;
+interface MerchantContextValue {
+  merchant: Merchant;
 }
 
-const Context = createContext<SchoolContextValue | undefined>(undefined);
+const Context = createContext<MerchantContextValue | undefined>(undefined);
 
-interface SchoolProviderProps {
+interface MerchantProviderProps {
   children: ReactNode;
-  school: School;
+  merchant: Merchant;
 }
 
-export function SchoolProvider({ children, school }: SchoolProviderProps) {
-  const value: SchoolContextValue = {
-    school,
+export function MerchantProvider({ children, merchant }: MerchantProviderProps) {
+  const value: MerchantContextValue = {
+    merchant,
   };
 
   return (
@@ -26,10 +26,10 @@ export function SchoolProvider({ children, school }: SchoolProviderProps) {
   );
 }
 
-export function useSchool() {
+export function useMerchant() {
   const context = useContext(Context);
   if (context === undefined) {
-    throw new Error("useSchool must be used within a SchoolProvider");
+    throw new Error("useMerchant must be used within a MerchantProvider");
   }
   return context;
 }

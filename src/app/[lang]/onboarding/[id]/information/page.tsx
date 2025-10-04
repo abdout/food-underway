@@ -1,17 +1,15 @@
-import InformationContent from "@/components/onboarding/information/content";
-import { getDictionary } from "@/components/internationalization/dictionaries";
+import { redirect } from "next/navigation";
 import { type Locale } from "@/components/internationalization/config";
 
 export const metadata = {
-  title: "Information",
+  title: "Redirecting...",
 };
 
 interface InformationPageProps {
-  params: Promise<{ lang: Locale }>
+  params: Promise<{ lang: Locale; id: string }>;
 }
 
 export default async function Information({ params }: InformationPageProps) {
-  const { lang } = await params;
-  const dictionary = await getDictionary(lang);
-  return <InformationContent dictionary={dictionary.school} />;
+  const { lang, id } = await params;
+  redirect(`/${lang}/onboarding/${id}/title`);
 }

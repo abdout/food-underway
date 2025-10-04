@@ -12,9 +12,9 @@ import type {
 import { 
   getListing, 
   updateListing, 
-  getSchoolSetupStatus, 
+  getMerchantSetupStatus, 
   proceedToTitle,
-  getUserSchools 
+  getUserMerchants 
 } from './actions';
 import { validateStep } from './validation';
 import { ONBOARDING_STEPS, STEP_ORDER } from './constant';
@@ -31,7 +31,7 @@ export function useOnboarding(schoolId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const currentSchoolId = schoolId || (params?.id as string);
-  const currentStep = params?.step as OnboardingStep || 'information';
+  const currentStep = params?.step as OnboardingStep || 'title';
 
   // Load school data and progress
   const loadSchoolData = useCallback(async () => {
@@ -43,7 +43,7 @@ export function useOnboarding(schoolId?: string) {
 
       const [schoolResponse, statusResponse] = await Promise.all([
         getListing(currentSchoolId),
-        getSchoolSetupStatus(currentSchoolId)
+        getMerchantSetupStatus(currentSchoolId)
       ]);
 
       if (schoolResponse.success && schoolResponse.data) {
@@ -258,7 +258,7 @@ export function useUserSchools() {
       setIsLoading(true);
       setError(null);
       
-      const response = await getUserSchools();
+      const response = await getUserMerchants();
       
       if (response.success && response.data) {
         setSchools(response.data);
@@ -286,34 +286,20 @@ export function useUserSchools() {
   };
 }
 
-// Helper function to determine completed steps
+// Helper function to determine completed steps (simplified to 3 steps)
 function getCompletedSteps(statusData: SchoolWithStatus): OnboardingStep[] {
   const completedSteps: OnboardingStep[] = [];
   
-  // Check each step's completion based on data
-  if (statusData.name && statusData.name !== 'New School') {
+  // STEP 1: Title (merchant name)
+  if (statusData.name && statusData.name !== 'New Merchant' && statusData.name !== 'New School') {
     completedSteps.push('title');
   }
   
-  if (statusData.description) {
-    completedSteps.push('description');
-  }
+  // STEP 2: Subdomain (will be checked when subdomain reservation is implemented)
+  // For now, assume completed if name is done
+  // TODO: Check subdomain reservation status
   
-  if (statusData.address) {
-    completedSteps.push('location');
-  }
-  
-  if (statusData.maxStudents && statusData.maxTeachers) {
-    completedSteps.push('capacity');
-  }
-  
-  if (statusData.logo || statusData.primaryColor) {
-    completedSteps.push('branding');
-  }
-  
-  if (statusData.tuitionFee && statusData.currency) {
-    completedSteps.push('price');
-  }
+  // STEP 3: Finish setup (final step, always available after subdomain)
   
   return completedSteps;
 }

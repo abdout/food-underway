@@ -12,17 +12,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Bell, Mail } from "lucide-react";
-import { useBreadcrumbs } from "@/components/operator/hooks/use-breadcrumbs";
+// import { useBreadcrumbs } from "@/components/operator/hooks/use-breadcrumbs";
 
 export default function SaasHeader() {
-  const breadcrumbItems = useBreadcrumbs();
+  const breadcrumbItems: any[] = []; // useBreadcrumbs();
 
   return (
     <div className="sticky top-0 z-40 bg-background -mx-2">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b mx-2">
         <div className="flex items-center gap-2 ">
           <SidebarTrigger className="size-7 -ml-1.5" />
-          <div className="hidden md:flex items-center">
+          {/* <div className="hidden md:flex items-center">
             {breadcrumbItems.length > 0 && (
               <Breadcrumb>
                 <BreadcrumbList className="flex items-center space-x-1">
@@ -48,7 +48,7 @@ export default function SaasHeader() {
                 </BreadcrumbList>
               </Breadcrumb>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="ml-auto flex items-center gap-1.5">
           <Button variant="link" size="icon" className="size-7">

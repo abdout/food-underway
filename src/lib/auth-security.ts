@@ -7,7 +7,7 @@ import { UserRole } from "@prisma/client";
 
 export interface AuthContext {
   userId: string;
-  schoolId: string | null;
+  merchantId: string | null;
   role: UserRole;
   email: string | null;
 }
@@ -43,7 +43,7 @@ export async function getAuthContext(): Promise<AuthContext> {
     email: session?.user?.email,
     sessionKeys: session?.user ? Object.keys(session.user) : [],
     sessionUserType: session?.user ? typeof session.user : 'undefined',
-    sessionUserSchoolId: (session?.user as any)?.schoolId,
+    sessionUserMerchantId: (session?.user as any)?.merchantId,
     sessionUserRole: (session?.user as any)?.role,
     timestamp: new Date().toISOString()
   });
@@ -70,23 +70,23 @@ export async function getAuthContext(): Promise<AuthContext> {
   console.log("🔍 [DEBUG] Step 2: Creating auth context...");
   const authContext = {
     userId: session.user.id,
-    schoolId: (session.user as any).schoolId || null,
+    merchantId: (session.user as any).merchantId || null,
     role: (session.user as any).role || "USER",
     email: session.user.email,
   };
   
   console.log("✅ [DEBUG] Step 2 - AuthContext created:", {
     ...authContext,
-    sessionSchoolId: (session.user as any).schoolId,
+    sessionMerchantId: (session.user as any).merchantId,
     sessionRole: (session.user as any).role,
-    sessionHasSchoolId: 'schoolId' in (session.user as any),
+    sessionHasMerchantId: 'merchantId' in (session.user as any),
     sessionHasRole: 'role' in (session.user as any),
     contextCreationTimestamp: new Date().toISOString()
   });
   
   console.log("✅ [DEBUG] getAuthContext COMPLETE", {
     userId: authContext.userId,
-    schoolId: authContext.schoolId,
+    merchantId: authContext.merchantId,
     role: authContext.role,
     endTime: new Date().toISOString()
   });
@@ -95,74 +95,74 @@ export async function getAuthContext(): Promise<AuthContext> {
 }
 
 /**
- * Ensure user has access to specific school (multi-tenant safety)
+ * Ensure user has access to specific merchant (multi-tenant safety)
  */
-export async function requireSchoolAccess(targetSchoolId: string): Promise<AuthContext> {
+export async function requireMerchantAccess(targetMerchantId: string): Promise<AuthContext> {
   const authContext = await getAuthContext();
   
-  // DEVELOPER role can access any school
-  if (authContext.role === "DEVELOPER") {
+  // DEVELOPER role can access any merchant
+  if (authContext.role === "PLATFORM_ADMIN") {
     return authContext;
   }
   
-  // All other users must belong to the target school
-  if (!authContext.schoolId) {
-    throw new TenantError("User not assigned to any school", "NO_SCHOOL_ASSIGNMENT");
+  // All other users must belong to the target merchant
+  if (!authContext.merchantId) {
+    throw new TenantError("User not assigned to any merchant", "NO_MERCHANT_ASSIGNMENT");
   }
   
-  if (authContext.schoolId !== targetSchoolId) {
-    throw new TenantError("Access denied to this school", "CROSS_TENANT_ACCESS_DENIED");
+  if (authContext.merchantId !== targetMerchantId) {
+    throw new TenantError("Access denied to this merchant", "CROSS_TENANT_ACCESS_DENIED");
   }
   
   return authContext;
 }
 
 /**
- * For School model access (schools are the tenants, not nested under schoolId)
+ * For Merchant model access (merchants are the tenants, not nested under merchantId)
  */
-export async function requireSchoolOwnership(targetSchoolId: string): Promise<AuthContext> {
+export async function requireMerchantOwnership(targetMerchantId: string): Promise<AuthContext> {
   const authContext = await getAuthContext();
   
-  // Import school access functions
-  const { canUserAccessSchool, ensureUserSchool } = await import('@/lib/school-access');
+  // Import merchant access functions
+  const { canUserAccessMerchant, ensureUserMerchant } = await import('@/lib/merchant-access');
   
-  console.log("🔐 [SCHOOL OWNERSHIP CHECK] Starting:", {
+  console.log("🔐 [MERCHANT OWNERSHIP CHECK] Starting:", {
     userId: authContext.userId,
     role: authContext.role,
-    targetSchoolId,
-    userSchoolId: authContext.schoolId,
+    targetMerchantId,
+    userMerchantId: authContext.merchantId,
     timestamp: new Date().toISOString()
   });
   
-  // Check if user can access this school
-  const accessResult = await canUserAccessSchool(authContext.userId, targetSchoolId);
+  // Check if user can access this merchant
+  const accessResult = await canUserAccessMerchant(authContext.userId, targetMerchantId);
   
   if (!accessResult.hasAccess) {
-    // If user doesn't have access but is authenticated, try to create/ensure they have a school
-    if (!authContext.schoolId) {
-      console.log("🏫 [SCHOOL OWNERSHIP] User has no school, ensuring one exists");
-      const schoolResult = await ensureUserSchool(authContext.userId);
+    // If user doesn't have access but is authenticated, try to create/ensure they have a merchant
+    if (!authContext.merchantId) {
+      console.log("Merchant [MERCHANT OWNERSHIP] User has no merchant, ensuring one exists");
+      const merchantResult = await ensureUserMerchant(authContext.userId);
       
-      if (schoolResult.success && schoolResult.schoolId) {
-        // Update auth context with new school
-        authContext.schoolId = schoolResult.schoolId;
-        console.log("✅ [SCHOOL OWNERSHIP] School created/ensured for user:", {
+      if (merchantResult.success && merchantResult.merchantId) {
+        // Update auth context with new merchant
+        authContext.merchantId = merchantResult.merchantId;
+        console.log("✅ [MERCHANT OWNERSHIP] Merchant created/ensured for user:", {
           userId: authContext.userId,
-          schoolId: schoolResult.schoolId
+          merchantId: merchantResult.merchantId
         });
       }
     }
     
     // For onboarding, be permissive if user is authenticated
-    console.warn("⚠️ [SCHOOL OWNERSHIP] Access check failed but allowing for onboarding:", {
+    console.warn("⚠️ [MERCHANT OWNERSHIP] Access check failed but allowing for onboarding:", {
       reason: accessResult.reason,
       userId: authContext.userId,
-      targetSchoolId
+      targetMerchantId
     });
   } else {
-    console.log("✅ [SCHOOL OWNERSHIP] Access granted:", {
+    console.log("✅ [MERCHANT OWNERSHIP] Access granted:",  {
       userId: authContext.userId,
-      targetSchoolId,
+      targetMerchantId,
       reason: accessResult.reason,
       isOwner: accessResult.isOwner
     });
@@ -188,10 +188,10 @@ export async function requireRole(...allowedRoles: UserRole[]): Promise<AuthCont
 }
 
 /**
- * Ensure user has role AND school access (most common combination)
+ * Ensure user has role AND merchant access (most common combination)
  */
-export async function requireSchoolRole(schoolId: string, ...allowedRoles: UserRole[]): Promise<AuthContext> {
-  const authContext = await requireSchoolAccess(schoolId);
+export async function requireMerchantRole(merchantId: string, ...allowedRoles: UserRole[]): Promise<AuthContext> {
+  const authContext = await requireMerchantAccess(merchantId);
   
   if (!allowedRoles.includes(authContext.role)) {
     throw new AuthError(
@@ -208,12 +208,12 @@ export async function requireSchoolRole(schoolId: string, ...allowedRoles: UserR
  */
 export function createTenantSafeWhere<T extends Record<string, any>>(
   baseWhere: T,
-  schoolId: string | null
-): T & { schoolId?: string } {
-  if (schoolId) {
+  merchantId: string | null
+): T & { merchantId?: string } {
+  if (merchantId) {
     return {
       ...baseWhere,
-      schoolId,
+      merchantId,
     };
   }
   
@@ -223,20 +223,20 @@ export function createTenantSafeWhere<T extends Record<string, any>>(
 /**
  * Validate that a resource belongs to the user's school
  */
-export async function validateResourceAccess(resourceSchoolId: string): Promise<void> {
+export async function validateResourceAccess(resourceMerchantId: string): Promise<void> {
   const authContext = await getAuthContext();
   
   // DEVELOPER can access any resource
-  if (authContext.role === "DEVELOPER") {
+  if (authContext.role === "PLATFORM_ADMIN") {
     return;
   }
   
-  if (!authContext.schoolId) {
-    throw new TenantError("User not assigned to any school", "NO_SCHOOL_ASSIGNMENT");
+  if (!authContext.merchantId) {
+    throw new TenantError("User not assigned to any merchant", "NO_MERCHANT_ASSIGNMENT");
   }
   
-  if (authContext.schoolId !== resourceSchoolId) {
-    throw new TenantError("Resource belongs to different school", "CROSS_TENANT_ACCESS_DENIED");
+  if (authContext.merchantId !== resourceMerchantId) {
+    throw new TenantError("Resource belongs to different merchant", "CROSS_TENANT_ACCESS_DENIED");
   }
 }
 
@@ -397,4 +397,12 @@ export function createActionResponse<T>(
     success: true,
     data,
   };
+}
+
+/**
+ * Legacy alias for backward compatibility
+ * @deprecated Use requireMerchantOwnership instead
+ */
+export async function requireSchoolOwnership(targetMerchantId: string): Promise<AuthContext> {
+  return requireMerchantOwnership(targetMerchantId);
 }

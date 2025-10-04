@@ -1,151 +1,128 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { useHostValidation } from '@/components/onboarding/host-validation-context';
 import { useListing } from '@/components/onboarding/use-listing';
-import { useTitle } from './use-title';
-import { TitleForm, type TitleFormRef } from './form';
-import { TitleCard } from './card';
-import { FORM_LIMITS } from '@/components/onboarding/constants.client';
-import { generateSubdomain } from '@/components/platform/dashboard/subdomain';
-import { Badge } from '@/components/ui/badge';
-import { Globe } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useLocale } from '@/components/internationalization/use-locale';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Building } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface TitleContentProps {
-  dictionary?: any;
-}
+export default function TitleContent() {
+  const { enableNext, disableNext } = useHostValidation();
+  const { listing, updateListingData } = useListing();
+  const [merchantName, setMerchantName] = useState<string>('');
+  const [isValid, setIsValid] = useState<boolean>(false);
 
-export default function TitleContent({ dictionary }: TitleContentProps) {
-  const params = useParams();
-  const router = useRouter();
-  const schoolId = params.id as string;
-  const { isRTL } = useLocale();
-  const { enableNext, disableNext, setCustomNavigation } = useHostValidation();
-  const titleFormRef = useRef<TitleFormRef>(null);
-  const { listing } = useListing();
-  const { data: titleData, loading } = useTitle(schoolId);
-  const [generatedSubdomain, setGeneratedSubdomain] = useState<string>('');
-  const [currentFormTitle, setCurrentFormTitle] = useState<string>('');
-
-  const dict = dictionary?.onboarding || {};
-  const currentTitle = currentFormTitle || titleData?.title || listing?.name || '';
-
-  const handleTitleChange = useCallback((title: string) => {
-    setCurrentFormTitle(title);
-  }, []);
-
-  const onNext = useCallback(async () => {
-    console.log("🚀 [TITLE CONTENT] onNext called", {
-      schoolId,
-      hasFormRef: !!titleFormRef.current,
-      timestamp: new Date().toISOString()
-    });
-    
-    if (titleFormRef.current) {
-      try {
-        await titleFormRef.current.saveAndNext();
-        console.log("✅ [TITLE CONTENT] saveAndNext completed successfully");
-        
-        // Navigate to the next step after successful save
-        console.log("🦭 [TITLE CONTENT] Navigating to description step");
-        router.push(`/onboarding/${schoolId}/description`);
-      } catch (error) {
-        console.error("❌ [TITLE CONTENT] Error during saveAndNext:", error);
-      }
-    } else {
-      console.warn("⚠️ [TITLE CONTENT] No form ref available");
-    }
-  }, [schoolId]);
-
-  // Enable/disable next button based on title and set custom navigation
+  // Load existing name from listing
   useEffect(() => {
-    const trimmedLength = currentTitle.trim().length;
-    if (trimmedLength >= FORM_LIMITS.TITLE_MIN_LENGTH && trimmedLength <= FORM_LIMITS.TITLE_MAX_LENGTH) {
+    if (listing?.name) {
+      setMerchantName(listing.name);
+      setIsValid(listing.name.trim().length >= 2);
+    }
+  }, [listing]);
+
+  // Enable/disable next button based on validation
+  useEffect(() => {
+    if (isValid && merchantName.trim().length >= 2) {
       enableNext();
-      setCustomNavigation({
-        onNext
-      });
     } else {
       disableNext();
-      setCustomNavigation(undefined);
     }
-  }, [currentTitle, enableNext, disableNext, setCustomNavigation, onNext]);
+  }, [isValid, merchantName, enableNext, disableNext]);
 
-  // Generate subdomain preview
-  useEffect(() => {
-    if (currentTitle.trim().length >= FORM_LIMITS.TITLE_MIN_LENGTH) {
-      const subdomain = generateSubdomain(currentTitle);
-      setGeneratedSubdomain(subdomain);
-    } else {
-      setGeneratedSubdomain('');
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    setMerchantName(newValue);
+    setIsValid(newValue.trim().length >= 2 && newValue.trim().length <= 40);
+  };
+
+  const handleSave = async () => {
+    if (isValid && merchantName.trim().length >= 2 && listing?.id) {
+      try {
+        await updateListingData({
+          name: merchantName.trim()
+        });
+        toast.success('Merchant name saved successfully!');
+      } catch (error) {
+        console.error('Error saving merchant name:', error);
+        toast.error('Failed to save merchant name');
+      }
     }
-  }, [currentTitle]);
+  };
 
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
-          {/* Left side - Text content skeleton */}
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-96" />
-            </div>
-            
-            {/* Form skeleton */}
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-            
-            {/* Subdomain preview skeleton */}
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-8 w-48" />
-            </div>
-          </div>
-          
-          {/* Right side - Card skeleton */}
-          <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const getValidationMessage = () => {
+    if (!merchantName.trim()) return '';
+    if (merchantName.trim().length < 2) return 'Name must be at least 2 characters';
+    if (merchantName.trim().length > 40) return 'Name must be no more than 40 characters';
+    return 'Name is valid!';
+  };
 
   return (
-    <div className={`space-y-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className="">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
           {/* Left side - Text content */}
-          <div className={`space-y-3 sm:space-y-4 ${isRTL ? 'text-right' : 'text-left'}`}>
-            <h3>{dict.whatsYourSchoolName || "What's your school's name?"}</h3>
+          <div className="space-y-3 sm:space-y-4">
+            <h3>
+              What's the name of your
+              <br />
+              merchant?
+            </h3>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {dict.schoolNameDescription || "This will be your school's official name in the system."}
+              This will be the main name displayed throughout your merchant platform. You can always change it later.
             </p>
+            
+            {/* Name preview */}
+            {merchantName && (
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-2 text-sm">
+                  <Building className="w-4 h-4" />
+                  <span className="font-medium">
+                    {merchantName}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right side - Form */}
-          <div>
-            <TitleForm
-              ref={titleFormRef}
-              schoolId={schoolId}
-              initialData={{
-                title: currentTitle,
-                subdomain: titleData?.subdomain || ""
-              }}
-              onTitleChange={handleTitleChange}
-              dictionary={dictionary}
-            />
+          {/* Right side - Input */}
+          <div className="space-y-4">
+            {/* Name input */}
+            <div className="space-y-2">
+              <label htmlFor="merchantName" className="text-sm font-medium">
+                Merchant Name *
+              </label>
+              <Input
+                id="merchantName"
+                value={merchantName}
+                onChange={handleNameChange}
+                placeholder="Enter your merchant name"
+                className="text-lg"
+              />
+              
+              {/* Validation message */}
+              {merchantName.trim() && (
+                <p className={`text-xs ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+                  {getValidationMessage()}
+                </p>
+              )}
+              
+              {/* Character count */}
+              <div className="text-xs text-muted-foreground">
+                {merchantName.length}/40 characters
+              </div>
+            </div>
+
+            {/* Save button */}
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={!isValid}
+              className="w-full"
+            >
+              Save merchant name
+            </Button>
           </div>
         </div>
       </div>

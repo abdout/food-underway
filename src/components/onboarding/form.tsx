@@ -26,7 +26,7 @@ interface OnboardingFormProps {
 
 export function OnboardingForm({ 
   step, 
-  data, 
+  data,
   onSubmit, 
   onBack, 
   isSubmitting = false,
@@ -36,14 +36,10 @@ export function OnboardingForm({
     switch (step) {
       case 'title':
         return titleStepValidation;
-      case 'description':
-        return descriptionStepValidation;
-      case 'location':
-        return locationStepValidation;
-      case 'capacity':
-        return capacityStepValidation;
-      case 'price':
-        return priceStepValidation;
+      case 'subdomain':
+        return onboardingValidation.partial();
+      case 'finish-setup':
+        return onboardingValidation.partial();
       default:
         return onboardingValidation.partial();
     }
@@ -66,14 +62,10 @@ export function OnboardingForm({
     switch (step) {
       case 'title':
         return <TitleStepForm form={form} />;
-      case 'description':
-        return <DescriptionStepForm form={form} />;
-      case 'location':
-        return <LocationStepForm form={form} />;
-      case 'capacity':
-        return <CapacityStepForm form={form} />;
-      case 'price':
-        return <PriceStepForm form={form} />;
+      case 'subdomain':
+        return <div>Subdomain step - Coming soon</div>;
+      case 'finish-setup':
+        return <div>Finish setup - Coming soon</div>;
       default:
         return <div>Step content not implemented</div>;
     }
@@ -83,11 +75,9 @@ export function OnboardingForm({
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {step === 'title' && 'School Name'}
-          {step === 'description' && 'School Description'}
-          {step === 'location' && 'School Location'}
-          {step === 'capacity' && 'School Capacity'}
-          {step === 'price' && 'Pricing Setup'}
+          {step === 'title' && 'Merchant Name'}
+          {step === 'subdomain' && 'Merchant Domain'}
+          {step === 'finish-setup' && 'Complete Setup'}
         </CardTitle>
       </CardHeader>
       <CardContent>

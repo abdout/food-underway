@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { 
-  getOrCreateSchoolForOnboarding,
-  syncUserSchoolContext 
-} from '@/lib/school-access';
+  getOrCreateMerchantForOnboarding,
+  syncUserMerchantContext 
+} from '@/lib/merchant-access';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,46 +16,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { schoolId: requestedSchoolId } = await request.json();
+    const { schoolId: requestedMerchantId } = await request.json();
     const userId = session.user.id;
 
-    console.log("🔍 [API] Validating school access:", {
+    console.log(" [API] Validating merchant access:", {
       userId,
-      requestedSchoolId,
-      sessionSchoolId: (session.user as any).schoolId,
+      requestedMerchantId,
+      sessionMerchantId: (session.user as any).merchantId,
     });
 
-    // Get or create school for onboarding
-    const { schoolId, isNew, school } = await getOrCreateSchoolForOnboarding(
+    // Get or create merchant for onboarding
+    const { merchantId, isNew, merchant } = await getOrCreateMerchantForOnboarding(
       userId,
-      requestedSchoolId
+      requestedMerchantId
     );
 
-    // If the school ID doesn't match what was requested, return redirect
-    if (requestedSchoolId && requestedSchoolId !== schoolId) {
-      console.log("🔄 [API] School ID mismatch, suggesting redirect:", {
-        requested: requestedSchoolId,
-        actual: schoolId,
+    // If the merchant ID doesn't match what was requested, return redirect
+    if (requestedMerchantId && requestedMerchantId !== merchantId) {
+      console.log(" [API] Merchant ID mismatch, suggesting redirect:", {
+        requested: requestedMerchantId,
+        actual: merchantId,
       });
       
       return NextResponse.json({
         success: false,
-        redirectTo: `/onboarding/${schoolId}/title`,
+        redirectTo: `/onboarding/${merchantId}/title`,
       });
     }
 
-    // Sync the user's school context
-    await syncUserSchoolContext(userId);
+    // Sync the user's merchant context
+    await syncUserMerchantContext(userId);
 
     return NextResponse.json({
       success: true,
-      schoolId,
-      schoolName: school.name,
+      merchantId,
+      merchantName: merchant.name,
       isNew,
     });
 
   } catch (error) {
-    console.error("❌ [API] Error validating access:", error);
+    console.error(" [API] Error validating access:", error);
     
     return NextResponse.json(
       { 

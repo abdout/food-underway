@@ -61,7 +61,6 @@ export function calculateProgress(data: OnboardingSchoolData): number {
     !!data.schoolLevel,
     !!data.schoolType,
   ];
-  
   const completedChecks = checks.filter(Boolean).length;
   return Math.round((completedChecks / checks.length) * 100);
 }
@@ -69,34 +68,19 @@ export function calculateProgress(data: OnboardingSchoolData): number {
 export function getCompletedSteps(data: OnboardingSchoolData): OnboardingStep[] {
   const completed: OnboardingStep[] = [];
   
-  // Check title step
+  // Check title step (merchant name)
   if (data.name && data.name !== 'New School') {
     completed.push('title');
   }
   
-  // Check description step
-  if (data.description && data.schoolLevel && data.schoolType) {
-    completed.push('description');
+  // Check subdomain step
+  if (data.domain) {
+    completed.push('subdomain');
   }
   
-  // Check location step
-  if (data.address && data.city && data.state) {
-    completed.push('location');
-  }
-  
-  // Check capacity step
-  if (data.maxStudents && data.maxTeachers) {
-    completed.push('capacity');
-  }
-  
-  // Check branding step (optional)
-  if (data.logo || data.primaryColor) {
-    completed.push('branding');
-  }
-  
-  // Check pricing step
-  if (data.tuitionFee && data.currency && data.paymentSchedule) {
-    completed.push('price');
+  // Check finish-setup step (both title and subdomain complete)
+  if (data.name && data.domain) {
+    completed.push('finish-setup');
   }
   
   return completed;

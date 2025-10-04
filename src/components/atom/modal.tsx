@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from "react";
 import { Drawer } from "vaul";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useMediaQuery } from "@/components/marketing/pricing/hooks/use-media-query";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
 interface ModalProps {

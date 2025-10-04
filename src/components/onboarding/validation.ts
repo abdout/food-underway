@@ -253,26 +253,13 @@ export function validateStep(step: OnboardingStep, data: any): { isValid: boolea
       case 'title':
         titleStepValidation.parse(data);
         break;
-      case 'description':
-        descriptionStepValidation.parse(data);
+      case 'subdomain':
+        onboardingValidation.partial().parse(data);
         break;
-      case 'location':
-        locationStepValidation.parse(data);
-        break;
-      case 'capacity':
-        capacityStepValidation.parse(data);
-        break;
-      case 'branding':
-        brandingStepValidation.parse(data);
-        break;
-      case 'price':
-        priceStepValidation.parse(data);
-        break;
-      case 'legal':
-        legalStepValidation.parse(data);
+      case 'finish-setup':
+        onboardingValidation.partial().parse(data);
         break;
       default:
-        // For steps without specific validation, just validate the full schema partially
         onboardingValidation.partial().parse(data);
     }
     return { isValid: true, errors: {} };
@@ -291,19 +278,14 @@ export function validateStep(step: OnboardingStep, data: any): { isValid: boolea
 }
 
 export function getRequiredFieldsForStep(step: OnboardingStep): string[] {
+  // SIMPLIFIED: Only 3 active steps
   switch (step) {
     case 'title':
       return ['name'];
-    case 'description':
-      return ['description'];
-    case 'location':
-      return ['address', 'city', 'state'];
-    case 'capacity':
-      return ['maxStudents', 'maxTeachers'];
-    case 'price':
-      return ['tuitionFee', 'currency', 'paymentSchedule'];
-    case 'legal':
-      return ['termsAccepted', 'privacyAccepted', 'dataProcessingAccepted'];
+    case 'subdomain':
+      return ['domain'];
+    case 'finish-setup':
+      return [];
     default:
       return [];
   }
@@ -311,7 +293,6 @@ export function getRequiredFieldsForStep(step: OnboardingStep): string[] {
 
 // Export types inferred from schemas
 export type OnboardingValidationData = z.infer<typeof onboardingValidation>;
-export type TitleStepData = z.infer<typeof titleStepValidation>;
 export type DescriptionStepData = z.infer<typeof descriptionStepValidation>;
 export type LocationStepData = z.infer<typeof locationStepValidation>;
 export type CapacityStepData = z.infer<typeof capacityStepValidation>;

@@ -1,14 +1,14 @@
-import JoinContent from "@/components/onboarding/join/content";
+import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Join | Onboarding",
-  description: "Join your school community.",
+  title: "Redirecting...",
 };
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; lang: string }>;
 }
 
-export default function Join({ params }: PageProps) {
-  return <JoinContent params={params} />;
+export default async function Join({ params }: PageProps) {
+  const { id, lang } = await params;
+  redirect(`/${lang}/onboarding/${id}/title`);
 }

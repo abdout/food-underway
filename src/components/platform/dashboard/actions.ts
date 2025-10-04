@@ -25,7 +25,7 @@ export async function checkSubdomainAvailability(subdomain: string): Promise<{
     
     // Check if already exists
     const existingMerchant = await db.merchant.findUnique({
-      where: { domain: normalized },
+      where: { subdomain: normalized },
       select: { id: true, name: true }
     })
     
@@ -69,7 +69,7 @@ export async function reserveSubdomain(
     // Update the school with the reserved subdomain
     await db.merchant.update({
       where: { id: merchantId },
-      data: { domain: normalizeSubdomain(subdomain) }
+      data: { subdomain: normalizeSubdomain(subdomain) }
     })
     
     revalidatePath("/onboarding")
@@ -88,21 +88,21 @@ export async function reserveSubdomain(
  */
 export async function getAllSubdomains(): Promise<{
   success: boolean
-  data?: Array<{ id: string; name: string; domain: string; isActive: boolean }>
+  data?: Array<{ id: string; name: string; subdomain: string | null; subscriptionStatus: string }>
   error?: string
 }> {
   try {
-    const schools = await db.merchant.findMany({
+    const merchants = await db.merchant.findMany({
       select: {
         id: true,
         name: true,
-        domain: true,
-        isActive: true
+        subdomain: true,
+        subscriptionStatus: true
       },
       orderBy: { createdAt: 'desc' }
     })
     
-    return { success: true, data: schools }
+    return { success: true, data: merchants }
   } catch (error) {
     console.error('Error fetching subdomains:', error)
     return {
@@ -132,10 +132,10 @@ export async function updateSubdomain(
       }
     }
     
-    // Update the school
+    // Update the merchant
     await db.merchant.update({
       where: { id: merchantId },
-      data: { domain: normalizeSubdomain(newSubdomain) }
+      data: { subdomain: normalizeSubdomain(newSubdomain) }
     })
     
     revalidatePath("/operator/tenants")
@@ -161,21 +161,18 @@ export async function getMerchantBySubdomain(subdomain: string): Promise<{
     const normalized = normalizeSubdomain(subdomain)
     
     const merchant = await db.merchant.findUnique({
-      where: { domain: normalized },
+      where: { subdomain: normalized },
       select: {
         id: true,
         name: true,
-        domain: true,
-        logoUrl: true,
+        subdomain: true,
+        logo: true,
         address: true,
-        phoneNumber: true,
+        phone: true,
         email: true,
         website: true,
-        timezone: true,
-        planType: true,
-        maxStudents: true,
-        maxTeachers: true,
-        isActive: true,
+        subscriptionTier: true,
+        subscriptionStatus: true,
         createdAt: true,
         updatedAt: true
       }

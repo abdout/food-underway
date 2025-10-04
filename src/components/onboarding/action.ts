@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { 
   getAuthContext, 
-  requireSchoolAccess,
-  requireSchoolOwnership,
+  requireMerchantAccess,
+  requireMerchantOwnership,
   requireRole,
   createActionResponse,
   createTenantSafeWhere,
@@ -53,7 +53,6 @@ export interface ListingFormData {
   bedrooms?: number;
   bathrooms?: number;
   amenities?: string[];
-  // Status fields
   draft?: boolean;
   isPublished?: boolean;
 }
@@ -63,41 +62,28 @@ export async function createSchool(data: OnboardingSchoolData): Promise<ActionRe
   try {
     const authContext = await getAuthContext();
     
-    // Validate input data
-    const validationResult = onboardingValidation.parse(data);
+    // Validate input data (partial validation for now)
+    const validationResult = onboardingValidation.partial().parse(data);
     
-    // Sanitize and prepare data
-    const sanitizedData = {
-      ...validationResult,
-      name: validationResult.name?.trim() || "New School",
-      domain: validationResult.domain?.toLowerCase().trim() || `school-${Date.now()}`,
-      updatedAt: new Date(),
-      createdAt: new Date(),
-    };
-
-    // Validate domain uniqueness
-    if (sanitizedData.domain && !sanitizedData.domain.includes(`school-${Date.now()}`)) {
-      const existingDomain = await db.school.findFirst({
-        where: { domain: sanitizedData.domain },
-        select: { id: true }
-      });
-
-      if (existingDomain) {
-        return createActionResponse(undefined, {
-          message: "Domain already exists",
-          name: "ValidationError"
-        });
-      }
-    }
-
-    const school = await db.school.create({
-      data: sanitizedData,
+    // Create merchant with minimal required fields
+    const merchant = await db.merchant.create({
+      data: {
+        name: validationResult.name?.trim() || "New Merchant",
+        phone: "",  // Required field
+        address: validationResult.address?.trim() || "",
+        city: validationResult.city?.trim() || "",
+        description: validationResult.description,
+        website: validationResult.website,
+        owner: {
+          connect: { id: authContext.userId }
+        },
+      },
     });
 
     revalidatePath("/onboarding");
-    return createActionResponse(school);
+    return createActionResponse(merchant);
   } catch (error) {
-    console.error("Failed to create school:", error);
+    console.error("Failed to create merchant:", error);
     return createActionResponse(undefined, error);
   }
 }
@@ -109,7 +95,7 @@ export async function createListing(data: ListingFormData): Promise<ActionRespon
 
 export async function updateSchool(id: string, data: Partial<OnboardingSchoolData>): Promise<ActionResponse> {
   try {
-    await requireSchoolOwnership(id);
+    await requireMerchantOwnership(id);
 
     // Validate partial data if provided
     if (Object.keys(data).length > 0) {
@@ -123,7 +109,7 @@ export async function updateSchool(id: string, data: Partial<OnboardingSchoolDat
       }
     }
 
-    const school = await db.school.update({
+    const merchant = await db.merchant.update({
       where: { id },
       data: {
         ...data,
@@ -133,9 +119,9 @@ export async function updateSchool(id: string, data: Partial<OnboardingSchoolDat
 
     revalidatePath("/onboarding");
     revalidatePath(`/onboarding/${id}`);
-    return createActionResponse(school);
+    return createActionResponse(merchant);
   } catch (error) {
-    console.error(`Failed to update school ${id}:`, error);
+    console.error(`Failed to update merchant ${id}:`, error);
     return createActionResponse(undefined, error);
   }
 }
@@ -145,11 +131,11 @@ export async function updateListing(id: string, data: Partial<ListingFormData>):
   return updateSchool(id, data as Partial<OnboardingSchoolData>);
 }
 
-export async function getSchool(id: string): Promise<ActionResponse> {
+export async function getMerchant(id: string): Promise<ActionResponse> {
   try {
-    await requireSchoolOwnership(id);
+    await requireMerchantOwnership(id);
 
-    const school = await db.school.findUnique({
+    const merchant = await db.merchant.findUnique({
       where: { id },
       include: {
         // Include any related data needed for onboarding
@@ -158,106 +144,97 @@ export async function getSchool(id: string): Promise<ActionResponse> {
       },
     });
 
-    if (!school) {
+    if (!merchant) {
       return createActionResponse(undefined, {
-        message: "School not found",
+        message: "Merchant not found",
         name: "NotFoundError"
       });
     }
 
-    return createActionResponse(school);
+    return createActionResponse(merchant);
   } catch (error) {
-    console.error(`Failed to get school ${id}:`, error);
+    console.error(`Failed to get merchant ${id}:`, error);
     return createActionResponse(undefined, error);
   }
 }
 
 // Legacy function for backward compatibility
 export async function getListing(id: string): Promise<ActionResponse> {
-  return getSchool(id);
+  return getMerchant(id);
 }
 
-export async function getUserSchools(): Promise<ActionResponse> {
+export async function getUserMerchants(): Promise<ActionResponse> {
   try {
     const authContext = await getAuthContext();
 
-    // Get all schools associated with this user (drafts and completed)
-    const schools = await db.school.findMany({
+    // Get all merchants associated with this user (drafts and completed)
+    const merchants = await db.merchant.findMany({
       where: {
-        // Add user filtering when user-school relationship is available
+        // Add user filtering when user-merchant relationship is available
         // ownerId: authContext.userId,
       },
       select: {
         id: true,
         name: true,
-        domain: true,
         createdAt: true,
         updatedAt: true,
-        maxStudents: true,
-        maxTeachers: true,
-        planType: true,
-        address: true,
-        website: true,
         // Additional fields for better UX
-        logoUrl: true,
-        isActive: true,
+        logo: true,
       },
       orderBy: {
         updatedAt: 'desc'
       }
     });
 
-    return createActionResponse(schools);
+    return createActionResponse(merchants);
   } catch (error) {
-    console.error("Failed to get user schools:", error);
+    console.error("Failed to get user merchants:", error);
     return createActionResponse(undefined, error);
   }
 }
 
-export async function initializeSchoolSetup(): Promise<ActionResponse> {
+export async function initializeMerchantSetup(): Promise<ActionResponse> {
   try {
     const authContext = await getAuthContext();
 
-    // Create a new school draft for the authenticated user
-    const school = await db.school.create({
+    // Create a new merchant draft for the authenticated user
+    const merchant = await db.merchant.create({
       data: {
-        name: "New School",
-        domain: `school-${Date.now()}`, // Temporary domain
-        updatedAt: new Date(),
-        createdAt: new Date(),
-        // Set default values using available fields
-        maxStudents: 400,
-        maxTeachers: 10,
-        // Link to user when field is available
-        // ownerId: authContext.userId,
+        name: "New Merchant",
+        phone: "",  // Required field
+        address: "",  // Required field
+        city: "",  // Required field
+        owner: {
+          connect: { id: authContext.userId }
+        },
       },
     });
 
     revalidatePath("/onboarding");
     
-    return createActionResponse(school);
+    return createActionResponse(merchant);
   } catch (error) {
-    console.error("Failed to initialize school setup:", error);
+    console.error("Failed to initialize merchant setup:", error);
     return createActionResponse(undefined, error);
   }
 }
 
 /**
- * Reserve a subdomain for a school during onboarding
+ * Reserve a subdomain for a merchant during onboarding
  */
-export async function reserveSubdomainForSchool(
-  schoolId: string,
+export async function reserveSubdomainForMerchant(
+  merchantId: string,
   subdomain: string
 ): Promise<ActionResponse> {
   try {
-    // Validate user has ownership/access to this school
-    await requireSchoolOwnership(schoolId);
+    // Validate user has ownership/access to this merchant
+    await requireMerchantOwnership(merchantId);
 
     // Import the subdomain actions
     const { reserveSubdomain } = await import('@/components/platform/dashboard/actions');
     
     // Reserve the subdomain
-    const result = await reserveSubdomain(subdomain, schoolId);
+    const result = await reserveSubdomain(subdomain, merchantId);
     
     if (result.success) {
       revalidatePath("/onboarding");
@@ -269,94 +246,71 @@ export async function reserveSubdomainForSchool(
   }
 }
 
-export async function getSchoolSetupStatus(schoolId: string): Promise<ActionResponse> {
+export async function getMerchantSetupStatus(merchantId: string): Promise<ActionResponse> {
   try {
-    // Validate user has ownership/access to this school
-    await requireSchoolOwnership(schoolId);
+    // Validate user has ownership/access to this merchant
+    await requireMerchantOwnership(merchantId);
 
-    const school = await db.school.findUnique({
-      where: { id: schoolId },
+    const merchant = await db.merchant.findUnique({
+      where: { id: merchantId },
       select: {
         id: true,
         name: true,
-        address: true,
-        maxStudents: true,
-        maxTeachers: true,
-        planType: true,
-        website: true,
         createdAt: true,
         updatedAt: true,
-        logoUrl: true,
-        isActive: true,
-        domain: true,
+        logo: true,
       },
     });
 
-    if (!school) {
+    if (!merchant) {
       return createActionResponse(undefined, {
-        message: "School not found",
+        message: "Merchant not found",
         name: "NotFoundError"
       });
     }
 
-    // Calculate setup completion percentage
+    // Calculate setup completion percentage (simplified for merchant refactor)
     const checks = [
-      !!school.name && school.name !== "New School",
-      !!school.address,
-      !!school.website,
-      !!school.maxStudents && school.maxStudents > 0,
-      !!school.maxTeachers && school.maxTeachers > 0,
-      !!school.planType,
+      !!merchant.name && merchant.name !== "New Merchant",
+      // More checks will be added when we activate additional steps
     ];
     
     const completionPercentage = Math.round((checks.filter(Boolean).length / checks.length) * 100);
 
     return createActionResponse({
-      ...school,
+      ...merchant,
       completionPercentage,
-      nextStep: getNextStep(school),
+      nextStep: getNextStep(merchant),
     });
   } catch (error) {
-    console.error(`Failed to get school setup status for ${schoolId}:`, error);
+    console.error(`Failed to get merchant setup status for ${merchantId}:`, error);
     return createActionResponse(undefined, error);
   }
 }
 
-function getNextStep(school: any): OnboardingStep {
-  if (!school.name || school.name === "New School") {
+function getNextStep(merchant: any): OnboardingStep {
+  // Simplified to 3 steps only
+  if (!merchant.name || merchant.name === "New Merchant") {
     return "title";
   }
-  if (!school.website) {
-    return "description";
-  }
-  if (!school.address) {
-    return "location";
-  }
-  if (!school.maxStudents || !school.maxTeachers) {
-    return "capacity";
-  }
-  if (!school.logo) {
-    return "branding";
-  }
-  if (!school.planType) {
-    return "price";
-  }
-  return "finish-setup";
+  // Check if subdomain has been reserved (will be implemented)
+  // For now, just move to finish-setup after title
+  return "subdomain";
 }
 
-export async function proceedToNextStep(schoolId: string): Promise<void> {
+export async function proceedToNextStep(merchantId: string): Promise<void> {
   try {
-    // Validate user has ownership/access to this school
-    await requireSchoolOwnership(schoolId);
+    // Validate user has ownership/access to this merchant
+    await requireMerchantOwnership(merchantId);
 
-    const statusResponse = await getSchoolSetupStatus(schoolId);
+    const statusResponse = await getMerchantSetupStatus(merchantId);
     if (!statusResponse.success || !statusResponse.data) {
-      throw new Error("Failed to get school status");
+      throw new Error("Failed to get merchant status");
     }
 
     const nextStep = statusResponse.data.nextStep;
-    revalidatePath(`/onboarding/${schoolId}`);
-    redirect(`/onboarding/${schoolId}/${nextStep}`);
+    revalidatePath(`/onboarding/${merchantId}`);
+    redirect(`/onboarding/${merchantId}/${nextStep}`);
   } catch (error) {
     console.error("Error proceeding to next step:", error);
     throw error;
@@ -364,6 +318,6 @@ export async function proceedToNextStep(schoolId: string): Promise<void> {
 }
 
 // Legacy function for backward compatibility
-export async function proceedToTitle(schoolId: string): Promise<void> {
-  return proceedToNextStep(schoolId);
+export async function proceedToTitle(merchantId: string): Promise<void> {
+  return proceedToNextStep(merchantId);
 }

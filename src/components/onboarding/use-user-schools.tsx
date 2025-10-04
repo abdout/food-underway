@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { getUserSchools } from './actions'
+import { getUserMerchants } from './actions'
 
 interface School {
   id: string
@@ -32,7 +32,7 @@ export function useUserSchools(): UseUserSchoolsReturn {
     try {
       setLoading(true)
       setError(null)
-      const result = await getUserSchools()
+      const result = await getUserMerchants()
       
       if (result.success) {
         setSchools(result.data || [])

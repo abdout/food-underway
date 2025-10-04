@@ -271,14 +271,10 @@ export function StepCard({
     switch (step) {
       case 'title':
         return <Building className="h-4 w-4" />;
-      case 'description':
-        return <GraduationCap className="h-4 w-4" />;
-      case 'location':
+      case 'subdomain':
         return <MapPin className="h-4 w-4" />;
-      case 'capacity':
-        return <Users className="h-4 w-4" />;
-      case 'price':
-        return <DollarSign className="h-4 w-4" />;
+      case 'finish-setup':
+        return <GraduationCap className="h-4 w-4" />;
       default:
         return <Building className="h-4 w-4" />;
     }

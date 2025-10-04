@@ -1,56 +1,56 @@
 /**
  * Onboarding Route Handler
- * Ensures proper school context and access for onboarding flow
+ * Ensures proper merchant context and access for onboarding flow
  */
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { 
-  getOrCreateSchoolForOnboarding,
-  syncUserSchoolContext 
-} from "@/lib/school-access";
+  getOrCreateMerchantForOnboarding,
+  syncUserMerchantContext 
+} from "@/lib/merchant-access";
 
-export async function ensureOnboardingAccess(requestedSchoolId?: string) {
+export async function ensureOnboardingAccess(requestedMerchantId?: string) {
   const session = await auth();
   
   if (!session?.user?.id) {
-    console.log("🔒 [ONBOARDING] No authenticated user, redirecting to login");
+    console.log(" [ONBOARDING] No authenticated user, redirecting to login");
     redirect("/login");
   }
 
   const userId = session.user.id;
   
   try {
-    // Get or create school for onboarding
-    const { schoolId, isNew, school } = await getOrCreateSchoolForOnboarding(
+    // Get or create merchant for onboarding
+    const { merchantId, isNew, merchant } = await getOrCreateMerchantForOnboarding(
       userId,
-      requestedSchoolId
+      requestedMerchantId
     );
 
-    console.log("🎯 [ONBOARDING] School context established:", {
+    console.log(" [ONBOARDING] Merchant context established:", {
       userId,
-      schoolId,
+      merchantId,
       isNew,
-      schoolName: school.name,
-      requestedSchoolId,
-      sessionSchoolId: (session.user as any).schoolId,
+      merchantName: merchant.name,
+      requestedMerchantId,
+      sessionMerchantId: (session.user as any).merchantId,
     });
 
-    // If the school ID doesn't match what was requested, redirect to correct URL
-    if (requestedSchoolId && requestedSchoolId !== schoolId) {
-      console.log("🔄 [ONBOARDING] Redirecting to correct school:", {
-        from: requestedSchoolId,
-        to: schoolId,
+    // If the merchant ID doesn't match what was requested, redirect to correct URL
+    if (requestedMerchantId && requestedMerchantId !== merchantId) {
+      console.log(" [ONBOARDING] Redirecting to correct merchant:", {
+        from: requestedMerchantId,
+        to: merchantId,
       });
-      redirect(`/onboarding/${schoolId}`);
+      redirect(`/onboarding/${merchantId}`);
     }
 
-    // Sync the user's school context to ensure session consistency
-    await syncUserSchoolContext(userId);
+    // Sync the user's merchant context to ensure session consistency
+    await syncUserMerchantContext(userId);
 
     return {
-      schoolId,
-      school,
+      merchantId,
+      merchant,
       userId,
       isNew,
     };

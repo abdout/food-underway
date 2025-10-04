@@ -1,6 +1,19 @@
 import { UserRole } from "@prisma/client";
 
-import { SidebarNavItem } from "types";
+// Sidebar navigation types
+interface NavItem {
+  href: string;
+  icon?: string;
+  title: string;
+  authorizeOnly?: UserRole;
+  badge?: number;
+  disabled?: boolean;
+}
+
+interface SidebarNavItem {
+  title: string;
+  items: NavItem[];
+}
 
 export const sidebarLinks: SidebarNavItem[] = [
   {
@@ -10,7 +23,7 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/admin",
         icon: "laptop",
         title: "Admin Panel",
-        authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: UserRole.PLATFORM_ADMIN,
       },
       { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       {
@@ -25,7 +38,7 @@ export const sidebarLinks: SidebarNavItem[] = [
         icon: "package",
         title: "Orders",
         badge: 2,
-        authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: UserRole.PLATFORM_ADMIN,
       },
       {
         href: "#/dashboard/posts",

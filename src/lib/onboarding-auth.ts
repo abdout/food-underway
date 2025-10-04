@@ -5,50 +5,50 @@
 
 import { db } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { getAuthContext, TenantError } from "../../../restaurant/src/lib/auth-security";
+import { getAuthContext, TenantError } from "./auth-security";
 
 /**
- * Check if a user has access to a school during onboarding
- * This is more lenient than standard school ownership checks
- * to handle race conditions during school creation
+ * Check if a user has access to a merchant during onboarding
+ * This is more lenient than standard merchant ownership checks
+ * to handle race conditions during merchant creation
  */
 export async function checkOnboardingAccess(
   userId: string,
-  schoolId: string
+  merchantId: string
 ): Promise<boolean> {
   try {
-    // Check if user's schoolId matches
+    // Check if user has merchantId access
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { schoolId: true, createdAt: true }
+      select: { merchantId: true, createdAt: true }
     });
 
-    if (user?.schoolId === schoolId) {
-      logger.debug('User has matching schoolId', { userId, schoolId });
+    if (user?.merchantId === merchantId) {
+      logger.debug('User has matching merchantId', { userId, merchantId });
       return true;
     }
 
     // Check if this is a recent onboarding session (within 1 hour)
-    const school = await db.school.findUnique({
-      where: { id: schoolId },
+    const merchant = await db.merchant.findUnique({
+      where: { id: merchantId },
       select: { createdAt: true }
     });
 
-    if (!school) {
+    if (!merchant) {
       return false;
     }
 
-    // Allow access if both school and user were created recently
+    // Allow access if both merchant and user were created recently
     // This handles race conditions during onboarding
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const schoolIsRecent = school.createdAt > oneHourAgo;
+    const merchantIsRecent = merchant.createdAt > oneHourAgo;
     const userIsRecent = user && user.createdAt > oneHourAgo;
 
-    if (schoolIsRecent && userIsRecent) {
+    if (merchantIsRecent && userIsRecent) {
       logger.info('Allowing onboarding access for recent entities', {
         userId,
-        schoolId,
-        schoolAge: Date.now() - school.createdAt.getTime(),
+        merchantId,
+        merchantAge: Date.now() - merchant.createdAt.getTime(),
         userAge: user ? Date.now() - user.createdAt.getTime() : null
       });
       return true;
@@ -56,7 +56,7 @@ export async function checkOnboardingAccess(
 
     return false;
   } catch (error) {
-    logger.error('Error checking onboarding access', error, { userId, schoolId });
+    logger.error('Error checking onboarding access', error, { userId, schoolId: merchantId });
     return false;
   }
 }
@@ -77,63 +77,63 @@ export function isCrossTenantError(error: unknown): boolean {
 }
 
 /**
- * Get school data with onboarding fallback
+ * Get merchant data with onboarding fallback
  * Attempts standard auth first, falls back to onboarding checks if needed
  */
-export async function getSchoolWithOnboardingFallback(
-  schoolId: string,
+export async function getMerchantWithOnboardingFallback(
+  merchantId: string,
   requireOwnership: (id: string) => Promise<void>
 ) {
   try {
     // Try standard ownership check first
-    await requireOwnership(schoolId);
+    await requireOwnership(merchantId);
     
-    // If successful, fetch and return the school
-    const school = await db.school.findUnique({
-      where: { id: schoolId }
+    // If successful, fetch and return the merchant
+    const merchant = await db.merchant.findUnique({
+      where: { id: merchantId }
     });
 
-    if (!school) {
-      throw new Error("School not found");
+    if (!merchant) {
+      throw new Error("Merchant not found");
     }
 
-    return { school, fallbackUsed: false };
+    return { school: merchant, fallbackUsed: false };
   } catch (error) {
     // Only attempt fallback for cross-tenant errors during onboarding
     if (!isCrossTenantError(error)) {
       throw error;
     }
 
-    logger.debug('Standard auth failed, attempting onboarding fallback', { schoolId });
+    logger.debug('Standard auth failed, attempting onboarding fallback', { merchantId });
 
     // Get auth context for fallback check
     const authContext = await getAuthContext();
     
     // Check if user has onboarding access
-    const hasAccess = await checkOnboardingAccess(authContext.userId, schoolId);
+    const hasAccess = await checkOnboardingAccess(authContext.userId, merchantId);
     
     if (!hasAccess) {
       logger.warn('Onboarding access denied', { 
         userId: authContext.userId, 
-        schoolId 
+        merchantId 
       });
       throw error; // Re-throw original error
     }
 
-    // Fetch the school data
-    const school = await db.school.findUnique({
-      where: { id: schoolId }
+    // Fetch the merchant data
+    const merchant = await db.merchant.findUnique({
+      where: { id: merchantId }
     });
 
-    if (!school) {
-      throw new Error("School not found");
+    if (!merchant) {
+      throw new Error("Merchant not found");
     }
 
     logger.info('Onboarding fallback successful', {
       userId: authContext.userId,
-      schoolId
+      merchantId
     });
 
-    return { school, fallbackUsed: true };
+    return { school: merchant, fallbackUsed: true };
   }
 }

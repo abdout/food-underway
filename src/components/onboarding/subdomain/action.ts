@@ -22,15 +22,15 @@ export async function updateSchoolSubdomain(
     
     // Check subdomain availability
     if (validatedData.domain) {
-      const existingSchool = await db.school.findFirst({
+      const existingMerchant = await db.merchant.findFirst({
         where: { 
-          domain: validatedData.domain,
+          subdomain: validatedData.domain,
           id: { not: schoolId }
         },
         select: { id: true }
       });
 
-      if (existingSchool) {
+      if (existingMerchant) {
         return createActionResponse(undefined, {
           message: "This subdomain is already taken",
           name: "ValidationError"
@@ -38,17 +38,17 @@ export async function updateSchoolSubdomain(
       }
     }
     
-    // Update school subdomain
-    const school = await db.school.update({
+    // Update merchant subdomain
+    const merchant = await db.merchant.update({
       where: { id: schoolId },
       data: {
-        domain: validatedData.domain,
+        subdomain: validatedData.domain,
         updatedAt: new Date(),
       },
     });
 
     revalidatePath(`/onboarding/${schoolId}`);
-    return createActionResponse(school);
+    return createActionResponse(merchant);
   } catch (error) {
     console.error("Failed to update school subdomain:", error);
     return createActionResponse(undefined, error);
@@ -57,12 +57,12 @@ export async function updateSchoolSubdomain(
 
 export async function checkSubdomainAvailability(subdomain: string): Promise<ActionResponse> {
   try {
-    const existingSchool = await db.school.findFirst({
-      where: { domain: subdomain },
+    const existingMerchant = await db.merchant.findFirst({
+      where: { subdomain: subdomain },
       select: { id: true }
     });
 
-    const isAvailable = !existingSchool;
+    const isAvailable = !existingMerchant;
     
     return createActionResponse({
       subdomain,
@@ -87,18 +87,17 @@ export async function generateSubdomainSuggestions(
 
     const suggestions = [
       baseName,
-      `${baseName}school`,
-      `${baseName}academy`,
-      `${baseName}edu`,
-      `${baseName}learning`,
+      `${baseName}restaurant`,
+      `${baseName}cafe`,
+      `${baseName}menu`,
     ];
 
     // Check availability for each suggestion
     const availableSuggestions = [];
     
     for (const suggestion of suggestions) {
-      const existing = await db.school.findFirst({
-        where: { domain: suggestion },
+      const existing = await db.merchant.findFirst({
+        where: { subdomain: suggestion },
         select: { id: true }
       });
       
@@ -111,8 +110,8 @@ export async function generateSubdomainSuggestions(
     if (availableSuggestions.length === 0) {
       for (let i = 1; i <= 10; i++) {
         const numberedSuggestion = `${baseName}${i}`;
-        const existing = await db.school.findFirst({
-          where: { domain: numberedSuggestion },
+        const existing = await db.merchant.findFirst({
+          where: { subdomain: numberedSuggestion },
           select: { id: true }
         });
         

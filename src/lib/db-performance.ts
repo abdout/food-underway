@@ -4,8 +4,16 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { performanceMonitor } from './performance-monitor';
 import { logger } from './logger';
+
+// Stub performance monitor
+const performanceMonitor = {
+  recordMetric: (...args: any[]) => {},
+  trackDatabaseQuery: async (name: string, fn: any, context?: any) => fn(),
+  trackQuery: async (name: string, fn: any, context?: any) => fn(),
+  getSummary: (timeWindow?: number) => ({ metrics: [] as any[] }),
+  cleanup: (age: number) => {},
+};
 
 // Extend Prisma client with performance monitoring
 export function createPerformanceMonitoredPrisma(prisma: PrismaClient) {

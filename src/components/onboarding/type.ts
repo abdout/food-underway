@@ -1,24 +1,13 @@
-// Core onboarding types following standardized patterns
+// Core onboarding types - SIMPLIFIED: Only 3 steps (one per stage)
 
 export type OnboardingStep =
-  | 'title'
-  | 'description'
-  | 'location'
-  | 'capacity'
-  | 'branding'
-  | 'import'
-  | 'join'
-  | 'visibility'
-  | 'price'
-  | 'discount'
-  | 'legal'
-  | 'information'
-  | 'stand-out'
-  | 'finish-setup'
-  | 'subdomain';
+  | 'title'           // STAGE 1: Basic - Merchant Name
+  | 'subdomain'       // STAGE 2: Setup - Merchant Domain
+  | 'finish-setup';   // STAGE 3: Business - Complete Setup
 
 export type OnboardingStepGroup = 'basic' | 'setup' | 'business';
 
+// Type definitions
 export type SchoolType = 'primary' | 'secondary' | 'both';
 export type SchoolCategory = 'private' | 'public' | 'international' | 'technical' | 'special';
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD';

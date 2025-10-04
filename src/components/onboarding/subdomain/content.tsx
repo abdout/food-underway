@@ -5,7 +5,7 @@ import { useHostValidation } from '@/components/onboarding/host-validation-conte
 import { useListing } from '@/components/onboarding/use-listing';
 import { generateSubdomain, generateSubdomainSuggestions, isValidSubdomain, normalizeSubdomain } from '@/components/platform/dashboard/subdomain';
 import { checkSubdomainAvailability } from '@/components/platform/dashboard/actions';
-import { reserveSubdomainForSchool } from '@/components/onboarding/actions';
+import { reserveSubdomainForMerchant } from '@/components/onboarding/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -96,7 +96,7 @@ export default function SubdomainContent() {
   const handleSave = async () => {
     if (isValid && subdomain.trim().length > 0 && listing?.id) {
       try {
-        const result = await reserveSubdomainForSchool(
+        const result = await reserveSubdomainForMerchant(
           listing.id,
           normalizeSubdomain(subdomain)
         );

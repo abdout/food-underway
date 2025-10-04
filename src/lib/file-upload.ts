@@ -3,8 +3,8 @@
  * Handles file uploads for logos, avatars, and other assets
  */
 
-import { logger } from '@/lib/logger';
-import { performanceMonitor } from '@/lib/performance-monitor';
+import { logger } from '../../../hogwarts/src/lib/logger';
+import { performanceMonitor } from '../../../hogwarts/src/lib/performance-monitor';
 
 export interface UploadConfig {
   maxSize: number; // in bytes

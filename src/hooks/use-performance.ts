@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
-import { performanceMonitor } from '@/lib/performance-monitor';
+
+// Stub performance monitor until implemented
+const performanceMonitor = {
+  recordMetric: (...args: any[]) => {},
+  trackPageLoad: (...args: any[]) => {},
+  trackApiCall: async (name: string, fn: any, context?: any) => fn(),
+  startTimer: (...args: any[]) => {},
+  endTimer: (...args: any[]) => {},
+  trackWebVitals: (...args: any[]) => {},
+};
 
 /**
  * Hook for tracking component performance and user interactions

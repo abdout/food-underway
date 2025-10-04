@@ -1,0 +1,64 @@
+﻿
+> menu@0.1.0 build D:\repo\restaurant
+> prisma generate && next build
+
+node.exe : warn The configuration property 
+`package.json#prisma` is deprecated and will be 
+removed in Prisma 7. Please migrate to a Prisma 
+config file (e.g., `prisma.config.ts`).
+At C:\Users\pc\AppData\Roaming\npm\pnpm.ps1:24 char:5
++     & "node$exe"  
+"$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warn The 
+    config...ma.config.ts`).:String) [], RemoteExcep  
+  tion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+For more information, see: 
+https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma
+
+Γ£ö Generated Prisma Client (v6.14.0, engine=binary) to .\node_modules\.pnpm\@prisma+client@6.13.0_prism_bdfa0a116c809d1c1bb17854d7f9f700\node_modules\@prisma\client in 456ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+   Γû▓ Next.js 15.4.4
+   - Environments: .env
+   - Experiments (use with caution):
+     ┬╖ optimizePackageImports
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 11.0s
+   Skipping linting
+   Checking validity of types ...
+Failed to compile.
+
+./src/components/onboarding/subdomain/action.ts:25:39
+Type error: Property 'school' does not exist on type 
+'PrismaClient<PrismaClientOptions, never, 
+DefaultArgs>'.
+
+[0m [90m 23 |[39m     [90m// Check subdomain 
+availability[39m
+ [90m 24 |[39m     [36mif[39m 
+(validatedData[33m.[39mdomain) {
+[31m[1m>[22m[39m[90m 25 |[39m       
+[36mconst[39m existingSchool [33m=[39m 
+[36mawait[39m 
+db[33m.[39mschool[33m.[39mfindFirst({
+ [90m    |[39m                                      
+ [31m[1m^[22m[39m
+ [90m 26 |[39m         where[33m:[39m { 
+ [90m 27 |[39m           domain[33m:[39m 
+validatedData[33m.[39mdomain[33m,[39m
+ [90m 28 |[39m           id[33m:[39m { 
+not[33m:[39m schoolId }[0m
+Next.js build worker exited with code: 1 and signal: 
+null
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

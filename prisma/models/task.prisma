@@ -1,0 +1,36 @@
+// Task model stub (legacy - not used in merchant platform)
+// Kept for backward compatibility with existing table components
+
+model Task {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  status      TaskStatus @default(TODO)
+  label       TaskLabel @default(BUG)
+  priority    TaskPriority @default(LOW)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskLabel {
+  BUG
+  FEATURE
+  ENHANCEMENT
+  DOCUMENTATION
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}

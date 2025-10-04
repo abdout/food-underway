@@ -117,7 +117,7 @@ export async function middleware(req: NextRequest) {
     isLoggedIn,
     userId: session?.user?.id,
     userEmail: session?.user?.email,
-    restaurantId: session?.user?.restaurantId,
+    merchantId: session?.user?.merchantId,
     isAuthRoute: authRoutes.includes(pathnameWithoutLocale),
     isPublicRoute: publicRoutes.includes(pathnameWithoutLocale),
     isApiAuthRoute: url.pathname.startsWith(apiAuthPrefix),
@@ -149,7 +149,7 @@ export async function middleware(req: NextRequest) {
     referer,
     isBot: userAgent.includes('bot'),
     userId: session?.user?.id,
-    restaurantId: session?.user?.restaurantId
+    merchantId: session?.user?.merchantId
   });
 
   // Allow auth routes to be handled normally (don't rewrite for subdomains)
@@ -169,14 +169,13 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-  // Authentication protection for protected routes
   const isPublicRoute = publicRoutes.includes(pathnameWithoutLocale);
   const isOnboardingRoute = pathnameWithoutLocale.startsWith('/onboarding');
   const isDocsRoute = pathnameWithoutLocale.startsWith('/docs');
   const isDashboardRoute = pathnameWithoutLocale.startsWith('/dashboard');
 
-  // Check if user needs onboarding (new restaurant owner without restaurant)
-  const needsOnboarding = session?.user && !session.user.restaurantId && session.user.role !== 'PLATFORM_ADMIN';
+  // Check if user needs onboarding (new merchant owner without merchant)
+  const needsOnboarding = session?.user && !session.user.merchantId && session.user.role !== 'PLATFORM_ADMIN';
 
   // Redirect to login if accessing protected routes without authentication
   if (!isLoggedIn && !isPublicRoute && !isDocsRoute) {
@@ -198,31 +197,12 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-  // Special handling for onboarding routes - require authentication
-  if (isOnboardingRoute && !isLoggedIn) {
-    const callbackUrl = url.pathname + url.search;
-    logger.info('ONBOARDING ACCESS DENIED - Redirecting to login', {
-      ...baseContext,
-      pathnameWithoutLocale,
-      userId: session?.user?.id,
-      callbackUrl
-    });
-
-    const loginUrl = new URL(`/${currentLocale}/login`, req.url);
-    // Preserve the full onboarding path
-    loginUrl.searchParams.set('callbackUrl', callbackUrl);
-    loginUrl.searchParams.set('message', 'Please sign in to continue with restaurant setup');
-    const response = NextResponse.redirect(loginUrl);
-    response.headers.set('x-request-id', requestId);
-    return response;
-  }
-
   // Redirect to onboarding if user needs it and trying to access dashboard
   if (isLoggedIn && needsOnboarding && isDashboardRoute && !isOnboardingRoute) {
-    logger.info('USER NEEDS ONBOARDING - Redirecting to restaurant setup', {
+    logger.info('USER NEEDS ONBOARDING - Redirecting to merchant setup', {
       ...baseContext,
       userId: session?.user?.id,
-      hasRestaurant: !!session?.user?.restaurantId
+      hasMerchant: !!session?.user?.merchantId
     });
 
     const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import SchoolOnboardingDashboard from './overview/host-dashboard';
 import { useCurrentUser } from '@/components/auth/use-current-user';
 import { ErrorBoundary } from './error-boundary';
-import { getUserSchools, initializeSchoolSetup } from './actions';
+import { getUserMerchants, initializeMerchantSetup } from './actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Dictionary } from '@/components/internationalization/dictionaries';
 
@@ -27,7 +27,7 @@ export default function OnboardingContent({ dictionary }: OnboardingContentProps
 
   const loadUserSchools = async () => {
     try {
-      const response = await getUserSchools();
+      const response = await getUserMerchants();
       if (response.success) {
         const data = response.data || { schools: [], totalCount: 0 };
         setSchools(data.schools || []);
@@ -43,7 +43,7 @@ export default function OnboardingContent({ dictionary }: OnboardingContentProps
   };
 
   const handleSchoolClick = (id: string) => {
-    router.push(`/onboarding/${id}/information`);
+    router.push(`/onboarding/${id}/title`);
   };
 
   const handleCreateNew = async () => {
@@ -51,7 +51,7 @@ export default function OnboardingContent({ dictionary }: OnboardingContentProps
     
     setIsCreating(true);
     try {
-      const response = await initializeSchoolSetup();
+      const response = await initializeMerchantSetup();
       if (response.success && response.data) {
         // Store the school ID and navigate to overview page
         sessionStorage.setItem('currentSchoolId', response.data.id);

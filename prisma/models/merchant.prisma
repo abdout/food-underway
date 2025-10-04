@@ -1,4 +1,3 @@
-// Merchant Models for Menu Platform
 // Merchant represents any food service business (restaurant, cafe, coffee shop, bakery, etc.)
 
 model Merchant {
@@ -9,12 +8,11 @@ model Merchant {
   nameAr      String?  // Arabic name
   description String?
   descriptionAr String? // Arabic description
+  subdomain   String?  @unique // Merchant subdomain (e.g., "pizza-corner" for pizza-corner.databayt.org)
 
   // Merchant Type
   type        MerchantType @default(RESTAURANT)
   cuisine     String?  // e.g., "Saudi", "Italian", "Coffee"
-
-  // Contact Information
   phone       String
   email       String?
   website     String?

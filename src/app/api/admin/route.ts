@@ -11,9 +11,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Only allow ADMIN and DEVELOPER roles
-    await requireRole("ADMIN", "DEVELOPER");
+    await requireRole("PLATFORM_ADMIN", "OWNER");
 
-    return NextResponse.json({ message: "Admin access granted" }, { status: 200 });
+
+      return NextResponse.json({ message: "Admin access granted" }, { status: 200 });
   } catch (error) {
     console.error("Admin endpoint access denied:", error);
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });

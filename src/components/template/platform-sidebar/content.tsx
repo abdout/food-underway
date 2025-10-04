@@ -18,20 +18,20 @@ import { platformNav } from "@/components/template/platform-sidebar/constant";
 import type { Role } from "@/components/template/platform-sidebar/constant";
 import { Icons } from "@/components/template/platform-sidebar/icons";
 import { useCurrentRole } from "@/components/auth/use-current-role";
-import type { School } from "@/components/site/types";
+// import type { School } from "@/components/site/types";
 
 interface PlatformSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  school?: School;
+  // school?: School;
 }
 
-export default function PlatformSidebar({ school, ...props }: PlatformSidebarProps = {}) {
+export default function PlatformSidebar({ /* school, */ ...props }: PlatformSidebarProps = {}) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const role = useCurrentRole();
   const currentRole = (role as unknown as Role | undefined) ?? undefined;
 
-  // Use school name if available, otherwise use a default
-  const schoolName = school?.name || "Your School";
+  // Use merchant name if available, otherwise use a default
+  const merchantName = "Your Merchant"; // school?.name || "Your School";
 
   const handleLinkClick = React.useCallback(() => {
     setOpenMobile(false);
@@ -45,7 +45,7 @@ export default function PlatformSidebar({ school, ...props }: PlatformSidebarPro
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard" className="flex items-center" onClick={handleLinkClick}>
                 <div className="flex flex-col leading-none">
-                  <span className="font-medium text-foreground -ml-1">{schoolName}</span>
+                  <span className="font-medium text-foreground -ml-1">{merchantName}</span>
                 </div>
               </Link>
             </SidebarMenuButton>

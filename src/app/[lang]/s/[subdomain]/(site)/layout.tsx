@@ -1,5 +1,5 @@
 import SiteHeader from "@/components/template/site-header/content";
-import { getSchoolBySubdomain } from "@/components/platform/dashboard/actions";
+import {getMerchantBySubdomain} from "@/components/platform/dashboard/actions";
 import { notFound } from "next/navigation";
 
 // import { SiteFooter } from "@/components/site-footer";
@@ -14,17 +14,17 @@ export default async function SiteLayout({
   params,
 }: Readonly<SiteLayoutProps>) {
   const { subdomain } = await params;
-  const result = await getSchoolBySubdomain(subdomain);
+  const result = await getMerchantBySubdomain(subdomain);
 
   if (!result.success || !result.data) {
     notFound();
   }
 
-  const school = result.data;
+  const merchant = result.data;
 
   return (
     <div data-slot="site-layout">
-      <SiteHeader school={school} />
+      {/*<SiteHeader merchant={merchant} />*/}
       <main 
         data-slot="main-content"
         role="main"

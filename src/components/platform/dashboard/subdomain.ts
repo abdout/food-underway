@@ -351,13 +351,13 @@ export async function isSubdomainAvailable(subdomain: string): Promise<boolean> 
     const { db } = await import('@/lib/db')
     
     // Check if subdomain already exists
-    const existingSchool = await db.school.findUnique({
-      where: { domain: subdomain },
+    const existingMerchant = await db.merchant.findUnique({
+      where: { subdomain: subdomain },
       select: { id: true }
     })
     
-    // Return true if no school found with this subdomain
-    return !existingSchool
+    // Return true if no merchant found with this subdomain
+    return !existingMerchant
   } catch (error) {
     console.error('Error checking subdomain availability:', error)
     // If there's an error, assume unavailable for safety
