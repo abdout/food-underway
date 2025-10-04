@@ -29,7 +29,11 @@ export default function SubdomainContent() {
 
   // Load existing subdomain from listing
   useEffect(() => {
-    if (listing?.domain) {
+    if (listing?.subdomain) {
+      setSubdomain(listing.subdomain);
+      validateSubdomain(listing.subdomain);
+    } else if (listing?.domain) {
+      // Fallback to domain if subdomain is not set
       setSubdomain(listing.domain);
       validateSubdomain(listing.domain);
     }

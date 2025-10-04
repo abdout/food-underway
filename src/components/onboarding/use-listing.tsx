@@ -9,11 +9,17 @@ export interface Listing {
   id?: string
   name: string
   domain: string
+  logo?: string | null // Added for merchant logo
   logoUrl?: string | null
+  subdomain?: string | null // Added for merchant subdomain
   address?: string | null
   phoneNumber?: string | null
+  phone?: string | null // Added for merchant phone
   email?: string | null
   website?: string | null
+  location?: string | null // Added for merchant location
+  ownerName?: string | null // Added for merchant owner
+  type?: string | null // Added for merchant type (restaurant/cafe)
   timezone?: string
   planType?: string
   maxStudents?: number
@@ -79,11 +85,17 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
           id: result.data.id,
           name: result.data.name,
           domain: result.data.domain,
+          logo: result.data.logo,
           logoUrl: result.data.logoUrl,
+          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
+          phone: result.data.phone,
           email: result.data.email,
           website: result.data.website,
+          location: result.data.location,
+          ownerName: result.data.ownerName,
+          type: result.data.type,
           timezone: result.data.timezone,
           planType: result.data.planType,
           maxStudents: result.data.maxStudents,
@@ -121,11 +133,17 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
           id: result.data.id,
           name: result.data.name,
           domain: result.data.domain,
+          logo: result.data.logo,
           logoUrl: result.data.logoUrl,
+          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
+          phone: result.data.phone,
           email: result.data.email,
           website: result.data.website,
+          location: result.data.location,
+          ownerName: result.data.ownerName,
+          type: result.data.type,
           timezone: result.data.timezone,
           planType: result.data.planType,
           maxStudents: result.data.maxStudents,
@@ -247,11 +265,17 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
           id: result.data.id,
           name: result.data.name,
           domain: result.data.domain,
+          logo: result.data.logo,
           logoUrl: result.data.logoUrl,
+          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
+          phone: result.data.phone,
           email: result.data.email,
           website: result.data.website,
+          location: result.data.location,
+          ownerName: result.data.ownerName,
+          type: result.data.type,
           timezone: result.data.timezone,
           planType: result.data.planType,
           maxStudents: result.data.maxStudents,
