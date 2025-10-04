@@ -73,17 +73,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
     },
   },
   cookies: {
-    pkceCodeVerifier: {
-      name: `authjs.pkce.code_verifier`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 900, // 15 minutes
-        // Don't set domain - must match exact callback domain for PKCE
-      },
-    },
+    // Only customize session token for cross-subdomain support
+    // Let NextAuth handle all OAuth cookies (PKCE, state, nonce) with defaults
     sessionToken: {
       name: `authjs.session-token`,
       options: {
@@ -93,46 +84,6 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         secure: process.env.NODE_ENV === "production",
         domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
         maxAge: 24 * 60 * 60, // 24 hours
-      },
-    },
-    callbackUrl: {
-      name: `authjs.callback-url`,
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // Don't set domain for OAuth callback URL tracking
-      },
-    },
-    csrfToken: {
-      name: `authjs.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // Don't set domain for CSRF token
-      },
-    },
-    // Add explicit configuration for all NextAuth cookies
-    state: {
-      name: `authjs.state`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // Don't set domain - OAuth flow needs exact domain match
-      },
-    },
-    nonce: {
-      name: `authjs.nonce`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        // Don't set domain - OAuth flow needs exact domain match
       },
     },
   },

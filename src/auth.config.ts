@@ -49,7 +49,6 @@ if (googleClientId && googleClientSecret) {
           response_type: "code"
         }
       },
-      checks: ["state"], // Temporarily disable PKCE to test
       profile(profile) {
         console.log('=====================================');
         console.log('🔍 [Google OAuth] PROFILE CALLBACK START');
