@@ -41,7 +41,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
     error: "/error",
   },
   secret: process.env.AUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
+  debug: true, // Temporarily enable to see production OAuth errors
   events: {
     async signIn({ user, account, isNewUser }) {
       console.log('🎉 SIGN IN EVENT:', {
