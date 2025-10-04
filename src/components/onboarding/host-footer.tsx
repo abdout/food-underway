@@ -176,7 +176,10 @@ const HostFooter: React.FC<HostFooterProps> = ({
   
   // Check if back/next are available
   const canGoBackActual = canGoBack && (currentStepIndex > 0);
-  const canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'finish-setup') && !nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled);
+  // Special case for subdomain step - always allow proceeding
+  const isSubdomainStep = currentStepSlug === 'subdomain';
+  const canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'finish-setup') && 
+    (isSubdomainStep ? true : (!nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled)));
   
   // Debug logging for next button state
   console.log("🔍 [HOST FOOTER] Next button state:", {
@@ -186,7 +189,9 @@ const HostFooter: React.FC<HostFooterProps> = ({
     customNavigationDisabled: customNavigation?.nextDisabled,
     canGoNextActual,
     currentStepSlug,
-    currentStepIndex
+    currentStepIndex,
+    isSubdomainStep,
+    subdomainStepOverride: isSubdomainStep ? "ENABLED" : "NORMAL"
   });
   
   // Set the next button label based on current step

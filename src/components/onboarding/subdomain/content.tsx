@@ -19,6 +19,11 @@ export default function SubdomainContent() {
   const router = useRouter();
   const { enableNext, disableNext, setCustomNavigation } = useHostValidation();
   const { listing, updateListingData } = useListing();
+  
+  // Force enable the button immediately
+  React.useEffect(() => {
+    enableNext();
+  });
   const [subdomain, setSubdomain] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(false);
@@ -93,6 +98,7 @@ export default function SubdomainContent() {
   // Enable/disable next button and set custom navigation
   useEffect(() => {
     // Always enable next button - subdomain is optional for completion
+    console.log("🔧 [SUBDOMAIN] Enabling next button and setting custom navigation");
     enableNext();
     setCustomNavigation({
       onNext: handleCompleteSetup,
@@ -103,7 +109,13 @@ export default function SubdomainContent() {
       subdomain,
       hasSubdomain: subdomain.trim().length > 0
     });
-  }, [enableNext, setCustomNavigation, isCompleting, subdomain, handleCompleteSetup]);
+  }, [enableNext, setCustomNavigation, handleCompleteSetup]);
+
+  // Ensure button is always enabled on mount and when subdomain changes
+  useEffect(() => {
+    console.log("🔧 [SUBDOMAIN] Ensuring button is enabled on subdomain change");
+    enableNext();
+  }, [subdomain, enableNext]);
 
   const validateSubdomain = async (value: string) => {
     const normalized = normalizeSubdomain(value);
