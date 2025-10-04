@@ -24,6 +24,16 @@ export default function SubdomainContent() {
   React.useEffect(() => {
     enableNext();
   });
+
+  // Debug listing state
+  React.useEffect(() => {
+    console.log("📋 [SUBDOMAIN] Listing state:", {
+      listing,
+      listingId: listing?.id,
+      hasListing: !!listing,
+      listingKeys: listing ? Object.keys(listing) : []
+    });
+  }, [listing]);
   const [subdomain, setSubdomain] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(false);
@@ -61,35 +71,83 @@ export default function SubdomainContent() {
 
   // Define handleCompleteSetup function
   const handleCompleteSetup = useCallback(async () => {
+    console.log("🚀 [HANDLE COMPLETE SETUP] Starting...", {
+      isCompleting,
+      subdomain,
+      listingId: listing?.id,
+      hasUpdateListingData: !!updateListingData
+    });
+
     if (isCompleting) {
+      console.log("⏸️ [HANDLE COMPLETE SETUP] Already completing, skipping");
       return;
     }
 
     setIsCompleting(true);
+    console.log("🔄 [HANDLE COMPLETE SETUP] Set isCompleting to true");
 
     try {
       // Use a default subdomain if none is provided
       const normalizedSubdomain = subdomain.trim() ? normalizeSubdomain(subdomain) : `restaurant-${Date.now()}`;
+      console.log("🔧 [HANDLE COMPLETE SETUP] Normalized subdomain:", normalizedSubdomain);
 
       if (listing?.id) {
+        console.log("📝 [HANDLE COMPLETE SETUP] Updating listing data...");
         // Update local state with the subdomain
         await updateListingData({
           subdomain: normalizedSubdomain
         });
 
+        console.log("🎯 [HANDLE COMPLETE SETUP] Completing onboarding...");
         // Complete the onboarding process
         const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
+        console.log("✅ [HANDLE COMPLETE SETUP] Complete result:", completeResult);
 
          if (completeResult.success) {
+           console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
            // Show congratulations modal
            setShowCongratsModal(true);
          } else {
+          console.log("❌ [HANDLE COMPLETE SETUP] Failed:", completeResult.error);
           toast.error(completeResult.error || 'فشل إكمال الإعداد');
+          setIsCompleting(false);
+        }
+      } else {
+        console.log("⚠️ [HANDLE COMPLETE SETUP] No listing ID available, trying to get current merchant...");
+        
+        // Try to get current merchant as fallback
+        try {
+          const { getCurrentUserMerchant } = await import('@/components/onboarding/actions');
+          const merchantResult = await getCurrentUserMerchant();
+          
+          if (merchantResult.success && merchantResult.data?.merchantId) {
+            console.log("✅ [HANDLE COMPLETE SETUP] Found merchant ID:", merchantResult.data.merchantId);
+            
+            // Complete onboarding with the found merchant ID
+            const completeResult = await completeOnboarding(merchantResult.data.merchantId, normalizedSubdomain);
+            console.log("✅ [HANDLE COMPLETE SETUP] Complete result:", completeResult);
+
+            if (completeResult.success) {
+              console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
+              setShowCongratsModal(true);
+            } else {
+              console.log("❌ [HANDLE COMPLETE SETUP] Failed:", completeResult.error);
+              toast.error(completeResult.error || 'فشل إكمال الإعداد');
+              setIsCompleting(false);
+            }
+          } else {
+            console.log("❌ [HANDLE COMPLETE SETUP] No merchant found");
+            toast.error('معرف المطعم غير موجود');
+            setIsCompleting(false);
+          }
+        } catch (error) {
+          console.error("💥 [HANDLE COMPLETE SETUP] Error getting merchant:", error);
+          toast.error('حدث خطأ أثناء الحصول على معرف المطعم');
           setIsCompleting(false);
         }
       }
     } catch (error) {
-      console.error('Error completing setup:', error);
+      console.error('💥 [HANDLE COMPLETE SETUP] Error:', error);
       toast.error('حدث خطأ أثناء إكمال الإعداد');
       setIsCompleting(false);
     }
@@ -275,6 +333,27 @@ export default function SubdomainContent() {
               >
                 <RefreshCw className="w-4 h-4 ml-2" />
                 إنشاء تلقائي من اسم المطعم
+              </Button>
+            </div>
+
+            {/* Test button to debug */}
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="destructive"
+                size="lg"
+                onClick={() => {
+                  console.log("🧪 [TEST BUTTON] Clicked!", {
+                    subdomain,
+                    listing: listing?.id,
+                    isCompleting,
+                    hasHandleCompleteSetup: !!handleCompleteSetup
+                  });
+                  handleCompleteSetup();
+                }}
+                className="rounded-2xl px-8"
+              >
+                🧪 TEST CREATE BUTTON
               </Button>
             </div>
 
