@@ -27,6 +27,22 @@ export async function GET(req: NextRequest, context: RouteContext) {
     timestamp: new Date().toISOString()
   });
 
+  // Special logging for callback endpoints
+  if (params.nextauth?.includes('callback')) {
+    console.log('🔐 [OAUTH CALLBACK] Detected:', {
+      provider: params.nextauth[1],
+      query: Object.fromEntries(req.nextUrl.searchParams.entries()),
+      cookies: req.cookies.getAll().map(c => ({ 
+        name: c.name, 
+        hasValue: !!c.value,
+        valueLength: c.value?.length 
+      })),
+      hasPKCE: req.cookies.has('authjs.pkce.code_verifier'),
+      hasCode: req.nextUrl.searchParams.has('code'),
+      hasError: req.nextUrl.searchParams.has('error'),
+    });
+  }
+
   try {
     // Call the original AuthGET handler
     const response = await AuthGET(req);
@@ -34,11 +50,17 @@ export async function GET(req: NextRequest, context: RouteContext) {
       status: response.status,
       headers: Object.fromEntries(response.headers.entries()),
       hasSetCookie: response.headers.has('set-cookie'),
-      path: params.nextauth?.join('/')
+      path: params.nextauth?.join('/'),
+      location: response.headers.get('location')
     });
     return response;
   } catch (error) {
-    console.error('❌ [Auth API] GET Error:', error);
+    console.error('❌ [Auth API] GET Error:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      path: params.nextauth?.join('/')
+    });
     throw error;
   }
 }
