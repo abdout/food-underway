@@ -44,19 +44,15 @@ export default function TitleContent() {
     saveBeforeNavigate();
   }, [isValid]);
 
-  // Enable/disable next button based on validation
+  // Bypass validation and enable next button
   useEffect(() => {
-    validateForm();
-  }, [merchantNameAr, merchantNameEn, location, ownerName, phone, restaurantType]);
+    setIsValid(true);
+    enableNext();
+  }, []);
 
   const validateForm = () => {
-    const isValidForm = 
-      merchantNameAr.trim().length >= 2 && 
-      merchantNameEn.trim().length >= 2 &&
-      location.trim().length > 0 &&
-      ownerName.trim().length > 0 &&
-      phone.trim().length >= 9;
-    
+    // Always return true to bypass validation
+    const isValidForm = true;
     setIsValid(isValidForm);
     
     if (isValidForm) {

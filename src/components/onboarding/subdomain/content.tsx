@@ -1,25 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useHostValidation } from '@/components/onboarding/host-validation-context';
 import { useListing } from '@/components/onboarding/use-listing';
 import { generateSubdomain, generateSubdomainSuggestions, isValidSubdomain, normalizeSubdomain } from '@/components/platform/dashboard/subdomain';
 import { checkSubdomainAvailability } from '@/components/platform/dashboard/actions';
-import { reserveSubdomainForMerchant } from '@/components/onboarding/actions';
+import { reserveSubdomainForMerchant, completeOnboarding } from '@/components/onboarding/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, RefreshCw, Globe } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { CheckCircle, XCircle, RefreshCw, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import CongratsDialog from './congrats-dialog';
 
 export default function SubdomainContent() {
-  const { enableNext, disableNext } = useHostValidation();
+  const router = useRouter();
+  const { enableNext, disableNext, setCustomNavigation } = useHostValidation();
   const { listing, updateListingData } = useListing();
   const [subdomain, setSubdomain] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [isCompleting, setIsCompleting] = useState<boolean>(false);
+  const [showCongratsDialog, setShowCongratsDialog] = useState<boolean>(false);
 
   // Load existing subdomain from listing
   useEffect(() => {
@@ -44,14 +50,19 @@ export default function SubdomainContent() {
     }
   }, [listing?.name, subdomain]);
 
-  // Enable/disable next button based on validation
+  // Enable/disable next button and set custom navigation
   useEffect(() => {
     if (isValid && subdomain.trim().length > 0) {
       enableNext();
+      // Set custom navigation to handle completion
+      setCustomNavigation({
+        onNext: handleCompleteSetup,
+        nextDisabled: isCompleting
+      });
     } else {
       disableNext();
     }
-  }, [isValid, subdomain, enableNext, disableNext]);
+  }, [isValid, subdomain, isCompleting, enableNext, disableNext, setCustomNavigation]);
 
   const validateSubdomain = async (value: string) => {
     const normalized = normalizeSubdomain(value);
@@ -100,20 +111,60 @@ export default function SubdomainContent() {
           listing.id,
           normalizeSubdomain(subdomain)
         );
-        
+
         if (result.success) {
           // Update local state
           await updateListingData({
-            domain: normalizeSubdomain(subdomain)
+            subdomain: normalizeSubdomain(subdomain)
           });
-          toast.success('Subdomain reserved successfully!');
+          toast.success('تم حجز الرابط بنجاح!');
         } else {
-          toast.error(result.error || 'Failed to reserve subdomain');
+          toast.error(result.error || 'فشل حجز الرابط');
         }
       } catch (error) {
         console.error('Error reserving subdomain:', error);
-        toast.error('Failed to reserve subdomain');
+        toast.error('فشل حجز الرابط');
       }
+    }
+  };
+
+  const handleCompleteSetup = async () => {
+    if (!isValid || !subdomain.trim() || !listing?.id || isCompleting) {
+      return;
+    }
+
+    setIsCompleting(true);
+
+    try {
+      // First, reserve the subdomain
+      const normalizedSubdomain = normalizeSubdomain(subdomain);
+      const reserveResult = await reserveSubdomainForMerchant(listing.id, normalizedSubdomain);
+
+      if (!reserveResult.success) {
+        toast.error(reserveResult.error || 'فشل حجز الرابط');
+        setIsCompleting(false);
+        return;
+      }
+
+      // Update local state
+      await updateListingData({
+        subdomain: normalizedSubdomain
+      });
+
+      // Complete the onboarding process
+      const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
+
+      if (completeResult.success) {
+        // Show congratulations dialog
+        setShowCongratsDialog(true);
+      } else {
+        toast.error(completeResult.error || 'فشل إكمال الإعداد');
+        setIsCompleting(false);
+      }
+    } catch (error) {
+      console.error('Error completing setup:', error);
+      toast.error('حدث خطأ أثناء إكمال الإعداد');
+      setIsCompleting(false);
     }
   };
 
@@ -134,119 +185,122 @@ export default function SubdomainContent() {
   };
 
   return (
-    <div className="">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
-          {/* Left side - Text content */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3>
-              Choose your school's
-              <br />
-              subdomain
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              This will be your school's unique web address. Students and staff will access your school at{' '}
-              <span className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                {subdomain || 'yourschool'}.databayt.org
-              </span>
-            </p>
-            
-            {/* Subdomain preview */}
-            {subdomain && (
-              <div className="mt-4 p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 text-sm">
-                  <Globe className="w-4 h-4" />
-                  <span className="font-mono">
-                    {subdomain}.databayt.org
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
+    <>
+      <div className="">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
+            {/* Left side - Text content */}
+            <div className="space-y-3 sm:space-y-4">
+              <h3>
+                اختر رابط مطعمك
+              </h3>
+              <p className="text-sm sm:text-base text-muted-foreground text-right">
+                سيكون هذا هو عنوان الويب الفريد لمطعمك. سيتمكن عملاؤك من الوصول إلى مطعمك عبر{' '}
+              </p>
 
-          {/* Right side - Input and suggestions */}
-          <div className="space-y-4">
-            {/* Subdomain input */}
-            <div className="space-y-2">
-              <label htmlFor="subdomain" className="text-sm font-medium">
-                Subdomain
-              </label>
-              <div className="relative">
-                <Input
-                  id="subdomain"
-                  value={subdomain}
-                  onChange={handleSubdomainChange}
-                  placeholder="yourschool"
-                  className="pr-10"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {getValidationIcon()}
+              {/* Full URL preview */}
+              <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <div className="flex items-center gap-3 text-base font-mono" dir="ltr">
+                  <Globe className="w-5 h-5 text-primary flex-shrink-0" />
+                  <div className="flex items-center gap-1 overflow-hidden">
+                    <span className="text-muted-foreground">https://</span>
+                    <span className="text-primary font-bold truncate">
+                      {subdomain || 'yourrestaurant'}
+                    </span>
+                    <span className="text-muted-foreground">.databayt.org</span>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Validation message */}
-              {subdomain.trim() && (
-                <p className={`text-xs ${isValid ? 'text-green-600' : 'text-red-600'}`}>
-                  {getValidationMessage()}
-                </p>
-              )}
-              
-              {/* Character count */}
-              <div className="text-xs text-muted-foreground">
-                {subdomain.length}/63 characters
-              </div>
+              </Card>
             </div>
 
-            {/* Regenerate button */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerate}
-              className="w-full"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Regenerate from school name
-            </Button>
-
-            {/* Suggestions */}
-            {suggestions.length > 0 && (
+            {/* Right side - Input and suggestions */}
+            <div className="space-y-4">
+              {/* Subdomain input */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Suggestions</label>
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.map((suggestion, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                    >
-                      {suggestion}
-                    </Badge>
-                  ))}
+                <label htmlFor="subdomain" className="text-sm font-medium text-right block">
+                  اسم الرابط
+                </label>
+                <div className="relative">
+                  <Input
+                    id="subdomain"
+                    value={subdomain}
+                    onChange={handleSubdomainChange}
+                    placeholder="yourrestaurant"
+                    className="text-left pl-10"
+                    dir="ltr"
+                    disabled={isCompleting}
+                  />
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    {isChecking ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      getValidationIcon()
+                    )}
+                  </div>
+                </div>
+
+                {/* Validation message */}
+                {subdomain.trim() && (
+                  <p className={`text-xs text-right ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    {isValid ? '✓ الرابط متاح' : getValidationMessage()}
+                  </p>
+                )}
+
+                {/* Character count */}
+                <div className="text-xs text-muted-foreground text-right">
+                  {subdomain.length}/63 حرف
                 </div>
               </div>
-            )}
 
-            {/* Save button */}
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={!isValid || isChecking}
-              className="w-full"
-            >
-              {isChecking ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Checking availability...
-                </>
-              ) : (
-                'Save subdomain'
+              {/* Regenerate button */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerate}
+                className="w-full"
+                disabled={isCompleting}
+              >
+                <RefreshCw className="w-4 h-4 ml-2" />
+                إنشاء تلقائي من اسم المطعم
+              </Button>
+
+              {/* Suggestions */}
+              {suggestions.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-right block">اقتراحات</label>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {suggestions.map((suggestion, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        {suggestion}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Congratulations Dialog */}
+      {showCongratsDialog && (
+        <CongratsDialog
+          subdomain={subdomain}
+          onComplete={() => {
+            // Redirect to subdomain dashboard
+            const subdomainUrl = process.env.NODE_ENV === 'production'
+              ? `https://${subdomain}.databayt.org/dashboard`
+              : `http://${subdomain}.localhost:3000/dashboard`;
+            window.location.href = subdomainUrl;
+          }}
+        />
+      )}
+    </>
   );
 }

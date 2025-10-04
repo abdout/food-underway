@@ -25,16 +25,16 @@ interface HostFooterProps {
 
 // Onboarding flow - 3 STEPS (one per stage)
 const HOSTING_STEPS = [
-  'title',        // Stage 1: Basic Information
-  'subdomain',    // Stage 2: Setup
-  'finish-setup', // Stage 3: Complete Setup
+  'title',     // Stage 1: Basic Information (name, location, owner, phone)
+  'branding',  // Stage 2: Branding (logo upload with light/dark mode)
+  'subdomain', // Stage 3: Subdomain Configuration & Completion
 ];
 
 // Group steps into 3 main categories
 const STEP_GROUPS = {
   1: ['title'],
-  2: ['subdomain'],
-  3: ['finish-setup']
+  2: ['branding'],
+  3: ['subdomain']
 };
 
 const HostFooter: React.FC<HostFooterProps> = ({
@@ -133,10 +133,10 @@ const HostFooter: React.FC<HostFooterProps> = ({
       return;
     }
     
-    // If we're on the last step, navigate to dashboard
-    if (currentStepSlug === 'finish-setup') {
-      console.log("🏁 [HOST FOOTER] Last step - navigating to dashboard");
-      router.push('/dashboard');
+    // If we're on the last step (subdomain), the step component handles completion
+    if (currentStepSlug === 'subdomain') {
+      console.log("🏁 [HOST FOOTER] Last step - subdomain component will handle completion");
+      // The subdomain step component will show congrats dialog and redirect
       return;
     }
     
@@ -169,9 +169,9 @@ const HostFooter: React.FC<HostFooterProps> = ({
   const dict = dictionary?.onboarding || {};
 
   const stepLabels = [
-    dict.tellUsAboutYourPlace || "Tell us about your place",
-    dict.makeItStandOut || "Make it stand out",
-    dict.finishUpAndPublish || "Finish up and publish"
+    dict.tellUsAboutYourPlace || "أخبرنا عن مطعمك",
+    dict.makeItStandOut || "اجعلها مميزة",
+    dict.finishUpAndPublish || "اختر رابط مطعمك"
   ];
   
   // Check if back/next are available
@@ -191,7 +191,7 @@ const HostFooter: React.FC<HostFooterProps> = ({
   
   // Set the next button label based on current step
   const actualBackLabel = backLabel || dict.back || "Back";
-  const actualNextLabel = (currentStepSlug === 'finish-setup') ? (dict.createMerchant || 'Complete Setup') : (nextLabel || dict.next || "Next");
+  const actualNextLabel = (currentStepSlug === 'subdomain') ? (dict.createMerchant || 'إنشاء المطعم') : (nextLabel || dict.next || "Next");
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 bg-white px-32">

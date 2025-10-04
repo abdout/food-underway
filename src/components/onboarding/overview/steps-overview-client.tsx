@@ -31,20 +31,20 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
   const steps: Step[] = [
     {
       number: 1,
-      title: dictionary.steps.step1.title,
-      description: dictionary.steps.step1.description,
+      title: dictionary.steps?.step1?.title || "أخبرنا عن مطعمك",
+      description: dictionary.steps?.step1?.description || "معلومات المطعم الأساسية (الاسم، الموقع، المالك، رقم الجوال)",
       icon: UtensilsCrossed
     },
     {
       number: 2,
-      title: dictionary.steps.step2.title,
-      description: dictionary.steps.step2.description,
+      title: dictionary.steps?.step2?.title || "اجعلها مميزة",
+      description: dictionary.steps?.step2?.description || "أضف شعار مطعمك بالوضع النهاري والليلي",
       icon: ListPlus
     },
     {
       number: 3,
-      title: dictionary.steps.step3.title,
-      description: dictionary.steps.step3.description,
+      title: dictionary.steps?.step3?.title || "اختر رابط مطعمك",
+      description: dictionary.steps?.step3?.description || "اختر رابط فريد لمطعمك على الإنترنت",
       icon: Rocket
     }
   ];
@@ -122,8 +122,8 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
             redirectTimestamp: new Date().toISOString()
           });
 
-          // Force a full page refresh to ensure session is updated
-          window.location.href = `/${lang}/onboarding/${result.data.id}/information`;
+          // Force a full page refresh to ensure session is updated - navigate to title step
+          window.location.href = `/${lang}/onboarding/${result.data.id}/title`;
         } else {
           console.error('❌ [DEBUG] Failed to create school:', {
             error: result.error,
@@ -132,21 +132,21 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
             errorTimestamp: new Date().toISOString()
           });
 
-          // Fallback to temporary ID if school creation fails
+          // Fallback to temporary ID if merchant creation fails
           const tempId = `draft-${Date.now()}`;
           console.log('🔄 [DEBUG] Using fallback draft redirect:', {
             tempId,
-            redirectTarget: `/${lang}/onboarding/${tempId}/information`,
+            redirectTarget: `/${lang}/onboarding/${tempId}/title`,
             fallbackTimestamp: new Date().toISOString()
           });
-          router.push(`/${lang}/onboarding/${tempId}/information`);
+          router.push(`/${lang}/onboarding/${tempId}/title`);
         }
       } catch (error) {
         console.error('❌ [DEBUG] Exception in handleGetStarted:', error);
         // Fallback to temporary ID if there's an error
         const tempId = `draft-${Date.now()}`;
         console.log('🔄 [DEBUG] Exception fallback redirect to draft:', tempId);
-        router.push(`/${lang}/onboarding/${tempId}/information`);
+        router.push(`/${lang}/onboarding/${tempId}/title`);
       } finally {
         console.log('🏁 [DEBUG] Setting isCreating to false');
         setIsCreating(false);

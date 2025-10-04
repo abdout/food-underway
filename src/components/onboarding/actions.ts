@@ -373,6 +373,70 @@ export async function initializeSchoolSetup(): Promise<ActionResponse> {
 }
 
 /**
+ * Complete the merchant onboarding process
+ * This is called when the user finishes the subdomain step
+ */
+export async function completeOnboarding(
+  merchantId: string,
+  subdomain: string
+): Promise<ActionResponse> {
+  try {
+    logger.debug('completeOnboarding started', { merchantId, subdomain });
+
+    // Validate user has ownership/access to this merchant
+    await requireMerchantOwnership(merchantId);
+
+    const authContext = await getAuthContext();
+
+    // Update merchant: activate and set subdomain
+    const merchant = await db.merchant.update({
+      where: { id: merchantId },
+      data: {
+        subdomain: subdomain,
+        updatedAt: new Date(),
+      },
+    });
+
+    logger.debug('Merchant updated successfully', {
+      merchantId,
+      subdomain,
+      merchantName: merchant.name
+    });
+
+    // Update user: set merchantId and role to OWNER
+    await db.user.update({
+      where: { id: authContext.userId },
+      data: {
+        merchantId: merchantId,
+        role: 'OWNER',
+      },
+    });
+
+    logger.debug('User updated to OWNER role', {
+      userId: authContext.userId,
+      merchantId
+    });
+
+    // Revalidate paths
+    revalidatePath('/onboarding');
+    revalidatePath('/dashboard');
+
+    return createActionResponse({
+      success: true,
+      merchant,
+      subdomain,
+      message: 'Onboarding completed successfully'
+    });
+  } catch (error) {
+    logger.error('Failed to complete onboarding', error, {
+      merchantId,
+      subdomain
+    });
+    return createActionResponse(undefined, error);
+  }
+}
+
+/**
  * Legacy alias for backward compatibility
  * @deprecated Use getUserMerchants instead
  */
