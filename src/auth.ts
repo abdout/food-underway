@@ -852,8 +852,35 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
         // Check if we have a callback URL that points to onboarding
         if (callbackUrl && callbackUrl.includes('/onboarding')) {
-          console.log('🚀 Redirecting to onboarding:', callbackUrl);
+          console.log('🚀 Redirecting to onboarding (from callback URL):', callbackUrl);
           return callbackUrl;
+        }
+
+        // Check if this is an OAuth callback - new users should go to onboarding
+        if (isReturningFromOAuth) {
+          console.log('🆕 OAuth callback detected - checking user status for onboarding');
+          try {
+            // Get the current session to check if user needs onboarding
+            const session = await auth();
+            console.log('👤 User session check:', {
+              hasSession: !!session,
+              userId: session?.user?.id,
+              merchantId: (session?.user as any)?.merchantId,
+              needsOnboarding: (session?.user as any)?.needsOnboarding
+            });
+            
+            // If user has no merchantId, they need onboarding
+            if (session?.user && !(session.user as any)?.merchantId) {
+              const onboardingUrl = `${baseUrl}/onboarding`;
+              console.log('🚀 New OAuth user - redirecting to onboarding:', onboardingUrl);
+              console.log('=====================================');
+              console.log('🔄 REDIRECT CALLBACK END');
+              console.log('=====================================\n');
+              return onboardingUrl;
+            }
+          } catch (error) {
+            console.log('⚠️ Error checking user status:', error);
+          }
         }
 
         // Default to dashboard (middleware will handle onboarding redirect if needed)
