@@ -19,10 +19,19 @@ import {
 export interface ListingFormData {
   id?: string;
   name?: string;
+  nameAr?: string;
   description?: string;
+  descriptionAr?: string;
   propertyType?: string;
   address?: string;
+  addressAr?: string;
+  logo?: string; // Merchant logo
   logoUrl?: string;
+  subdomain?: string; // Merchant subdomain
+  phone?: string; // Merchant phone
+  location?: string; // Merchant location
+  ownerName?: string; // Merchant owner name
+  type?: string; // Merchant type (restaurant/cafe)
   maxStudents?: number;
   maxTeachers?: number;
   planType?: string;

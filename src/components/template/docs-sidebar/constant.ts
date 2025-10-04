@@ -61,11 +61,11 @@ export const docsConfig: DocsConfig = {
           href: "/docs/architecture",
           items: [],
         },
-        {
-          title: "Arrangements",
-          href: "/docs/arrangements",
-          items: [],
-        },
+        // {
+        //   title: "Arrangements",
+        //   href: "/docs/arrangements",
+        //   items: [],
+        // },
         {
           title: "Pattern",
           href: "/docs/pattern",
@@ -96,22 +96,22 @@ export const docsConfig: DocsConfig = {
           href: "/docs/awesome-shadcn",
           items: [],
         },
-        {
-          title: "Inspiration",
-          href: "/docs/inspiration",
-          items: [],
-        },
-        // Issues page can be added later if needed
-        {
-          title: "Changelog",
-          href: "/docs/changelog",
-          items: [],
-        },
-        {
-          title: "Issues",
-          href: "/docs/issues",
-          items: [],
-        },
+        // {
+        //   title: "Inspiration",
+        //   href: "/docs/inspiration",
+        //   items: [],
+        // },
+        // // Issues page can be added later if needed
+        // {
+        //   title: "Changelog",
+        //   href: "/docs/changelog",
+        //   items: [],
+        // },
+        // {
+        //   title: "Issues",
+        //   href: "/docs/issues",
+        //   items: [],
+        // },
         // Optional sections can be re-added later if needed
       ],
     },
@@ -130,27 +130,27 @@ export const docsConfig: DocsConfig = {
     //     },
     //   ],
     // },
-    {
-      title: "Contribute",
-      items: [
-        // { title: "Contribute", href: "/docs/contribute", items: [] },
-        // { title: "First PR Guide", href: "/docs/contribute/first-pr", items: [] },
-        { title: "ESLint", href: "/docs/eslint", items: [] },
-        { title: "Prettier", href: "/docs/prettier", items: [] },
-      ],
-    },
-    {
-      title: "Operations",
-      items: [
-        { title: "Domain & Subdomain", href: "/docs/domain", items: [] },
-        { title: "Internationalization", href: "/docs/internationalization", items: [] },
-        { title: "Authentication", href: "/docs/authantication", items: [] },
-        { title: "Onboarding", href: "/docs/onboarding", items: [] },
-        { title: "Dashboard", href: "/docs/dashboard", items: [] },
-        { title: "Table", href: "/docs/table", items: [] },
-       
-      ],
-    },
+    // {
+    //   title: "Contribute",
+    //   items: [
+    //     // { title: "Contribute", href: "/docs/contribute", items: [] },
+    //     // { title: "First PR Guide", href: "/docs/contribute/first-pr", items: [] },
+    //     { title: "ESLint", href: "/docs/eslint", items: [] },
+    //     { title: "Prettier", href: "/docs/prettier", items: [] },
+    //   ],
+    // },
+    // {
+    //   title: "Operations",
+    //   items: [
+    //     { title: "Domain & Subdomain", href: "/docs/domain", items: [] },
+    //     { title: "Internationalization", href: "/docs/internationalization", items: [] },
+    //     { title: "Authentication", href: "/docs/authantication", items: [] },
+    //     { title: "Onboarding", href: "/docs/onboarding", items: [] },
+    //     { title: "Dashboard", href: "/docs/dashboard", items: [] },
+    //     { title: "Table", href: "/docs/table", items: [] },
+    //
+    //   ],
+    // },
     // {
     //   title: "Governance",
     //   items: [
