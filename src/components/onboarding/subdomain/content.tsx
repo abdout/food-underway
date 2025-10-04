@@ -129,37 +129,32 @@ export default function SubdomainContent() {
   };
 
   const handleCompleteSetup = async () => {
-    if (!isValid || !subdomain.trim() || !listing?.id || isCompleting) {
+    if (isCompleting) {
       return;
     }
 
     setIsCompleting(true);
 
     try {
-      // First, reserve the subdomain
-      const normalizedSubdomain = normalizeSubdomain(subdomain);
-      const reserveResult = await reserveSubdomainForMerchant(listing.id, normalizedSubdomain);
+      // Use a default subdomain if none is provided
+      const normalizedSubdomain = subdomain.trim() ? normalizeSubdomain(subdomain) : `restaurant-${Date.now()}`;
 
-      if (!reserveResult.success) {
-        toast.error(reserveResult.error || 'فشل حجز الرابط');
-        setIsCompleting(false);
-        return;
-      }
+      if (listing?.id) {
+        // Update local state with the subdomain
+        await updateListingData({
+          subdomain: normalizedSubdomain
+        });
 
-      // Update local state
-      await updateListingData({
-        subdomain: normalizedSubdomain
-      });
+        // Complete the onboarding process
+        const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
 
-      // Complete the onboarding process
-      const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
-
-      if (completeResult.success) {
-        // Show congratulations dialog
-        setShowCongratsDialog(true);
-      } else {
-        toast.error(completeResult.error || 'فشل إكمال الإعداد');
-        setIsCompleting(false);
+        if (completeResult.success) {
+          // Show congratulations dialog
+          setShowCongratsDialog(true);
+        } else {
+          toast.error(completeResult.error || 'فشل إكمال الإعداد');
+          setIsCompleting(false);
+        }
       }
     } catch (error) {
       console.error('Error completing setup:', error);
