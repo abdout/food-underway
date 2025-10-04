@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, XCircle, RefreshCw, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import CongratsDialog from './congrats-dialog';
+import CongratsModal from './congrats-modal';
 
 export default function SubdomainContent() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function SubdomainContent() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isCompleting, setIsCompleting] = useState<boolean>(false);
-  const [showCongratsDialog, setShowCongratsDialog] = useState<boolean>(false);
+  const [showCongratsModal, setShowCongratsModal] = useState<boolean>(false);
 
   // Load existing subdomain from listing
   useEffect(() => {
@@ -148,10 +148,10 @@ export default function SubdomainContent() {
         // Complete the onboarding process
         const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
 
-        if (completeResult.success) {
-          // Show congratulations dialog
-          setShowCongratsDialog(true);
-        } else {
+         if (completeResult.success) {
+           // Show congratulations modal
+           setShowCongratsModal(true);
+         } else {
           toast.error(completeResult.error || 'فشل إكمال الإعداد');
           setIsCompleting(false);
         }
@@ -283,19 +283,19 @@ export default function SubdomainContent() {
         </div>
       </div>
 
-      {/* Congratulations Dialog */}
-      {showCongratsDialog && (
-        <CongratsDialog
-          subdomain={subdomain}
-          onComplete={() => {
-            // Redirect to subdomain dashboard
-            const subdomainUrl = process.env.NODE_ENV === 'production'
-              ? `https://${subdomain}.databayt.org/dashboard`
-              : `http://${subdomain}.localhost:3000/dashboard`;
-            window.location.href = subdomainUrl;
-          }}
-        />
-      )}
+      {/* Congratulations Modal */}
+      <CongratsModal
+        subdomain={subdomain}
+        isOpen={showCongratsModal}
+        onClose={() => setShowCongratsModal(false)}
+        onComplete={() => {
+          // Redirect to subdomain dashboard
+          const subdomainUrl = process.env.NODE_ENV === 'production'
+            ? `https://${subdomain}.databayt.org/dashboard`
+            : `http://${subdomain}.localhost:3000/dashboard`;
+          window.location.href = subdomainUrl;
+        }}
+      />
     </>
   );
 }
