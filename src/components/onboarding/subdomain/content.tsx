@@ -56,13 +56,15 @@ export default function SubdomainContent() {
 
   // Enable/disable next button and set custom navigation
   useEffect(() => {
-    // Always enable next button and set custom navigation
-    enableNext();
+    // Enable next button if we have a subdomain (even if not validated)
+    if (subdomain.trim().length > 0) {
+      enableNext();
+    }
     setCustomNavigation({
       onNext: handleCompleteSetup,
       nextDisabled: isCompleting
     });
-  }, [isCompleting, enableNext, setCustomNavigation]);
+  }, [subdomain, isCompleting, enableNext, setCustomNavigation]);
 
   const validateSubdomain = async (value: string) => {
     const normalized = normalizeSubdomain(value);
@@ -181,104 +183,103 @@ export default function SubdomainContent() {
 
   return (
     <>
-      <div className="">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
-            {/* Left side - Text content */}
-            <div className="space-y-3 sm:space-y-4">
-              <h3>
-                اختر رابط مطعمك
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground text-right">
-                سيكون هذا هو عنوان الويب الفريد لمطعمك. سيتمكن عملاؤك من الوصول إلى مطعمك عبر{' '}
-              </p>
+      <div className="max-w-2xl mx-auto">
+        <div className="space-y-8">
+          {/* Title */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold">اختر رابط مطعمك</h2>
+            <p className="text-muted-foreground">
+              سيكون هذا هو عنوان الويب الفريد لمطعمك
+            </p>
+          </div>
 
-              {/* Full URL preview */}
-              <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-                <div className="flex items-center gap-3 text-base font-mono" dir="ltr">
-                  <Globe className="w-5 h-5 text-primary flex-shrink-0" />
-                  <div className="flex items-center gap-1 overflow-hidden">
-                    <span className="text-muted-foreground">https://</span>
-                    <span className="text-primary font-bold truncate">
-                      {subdomain || 'yourrestaurant'}
-                    </span>
-                    <span className="text-muted-foreground">.databayt.org</span>
-                  </div>
+          {/* Domain Input Section */}
+          <div className="space-y-6">
+            {/* URL Preview */}
+            <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6">
+              <div className="flex items-center gap-3 text-lg font-mono" dir="ltr">
+                <Globe className="w-6 h-6 text-primary flex-shrink-0" />
+                <div className="flex items-center gap-1 overflow-hidden">
+                  <span className="text-muted-foreground">https://</span>
+                  <span className="text-primary font-bold truncate">
+                    {subdomain || 'yourrestaurant'}
+                  </span>
+                  <span className="text-muted-foreground">.databayt.org</span>
                 </div>
-              </Card>
+              </div>
             </div>
 
-            {/* Right side - Input and suggestions */}
+            {/* Input Field */}
             <div className="space-y-4">
-              {/* Subdomain input */}
-              <div className="space-y-2">
-                <label htmlFor="subdomain" className="text-sm font-medium text-right block">
-                  اسم الرابط
-                </label>
-                <div className="relative">
-                  <Input
-                    id="subdomain"
-                    value={subdomain}
-                    onChange={handleSubdomainChange}
-                    placeholder="yourrestaurant"
-                    className="text-left pl-10"
-                    dir="ltr"
-                    disabled={isCompleting}
-                  />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                    {isChecking ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                    ) : (
-                      getValidationIcon()
-                    )}
-                  </div>
-                </div>
-
-                {/* Validation message */}
-                {subdomain.trim() && (
-                  <p className={`text-xs text-right ${isValid ? 'text-green-600' : 'text-red-600'}`}>
-                    {isValid ? '✓ الرابط متاح' : getValidationMessage()}
-                  </p>
-                )}
-
-                {/* Character count */}
-                <div className="text-xs text-muted-foreground text-right">
-                  {subdomain.length}/63 حرف
+              <div className="relative">
+                <Input
+                  id="subdomain"
+                  value={subdomain}
+                  onChange={handleSubdomainChange}
+                  placeholder="yourrestaurant"
+                  className="text-left pl-12 pr-4 h-14 text-lg rounded-2xl border-2 focus:border-primary transition-colors"
+                  dir="ltr"
+                  disabled={isCompleting}
+                />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  {isChecking ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  ) : (
+                    getValidationIcon()
+                  )}
                 </div>
               </div>
 
-              {/* Regenerate button */}
+              {/* Validation message */}
+              {subdomain.trim() && (
+                <div className="text-center">
+                  <p className={`text-sm ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    {isValid ? '✓ الرابط متاح' : getValidationMessage()}
+                  </p>
+                </div>
+              )}
+
+              {/* Character count */}
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">
+                  {subdomain.length}/63 حرف
+                </div>
+              </div>
+            </div>
+
+            {/* Regenerate button */}
+            <div className="text-center">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={handleRegenerate}
-                className="w-full"
+                className="rounded-2xl px-8"
                 disabled={isCompleting}
               >
                 <RefreshCw className="w-4 h-4 ml-2" />
                 إنشاء تلقائي من اسم المطعم
               </Button>
-
-              {/* Suggestions */}
-              {suggestions.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-right block">اقتراحات</label>
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {suggestions.map((suggestion, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                      >
-                        {suggestion}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
+
+            {/* Suggestions */}
+            {suggestions.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-center block">اقتراحات</label>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {suggestions.map((suggestion, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors rounded-full px-4 py-2"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

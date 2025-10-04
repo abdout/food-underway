@@ -2,8 +2,9 @@
 
 export type OnboardingStep =
   | 'title'           // STAGE 1: Basic - Merchant Name
-  | 'subdomain'       // STAGE 2: Setup - Merchant Domain
-  | 'finish-setup';   // STAGE 3: Business - Complete Setup
+  | 'logo'            // STAGE 2: Basic - Merchant Logo
+  | 'subdomain'       // STAGE 3: Setup - Merchant Domain
+  | 'finish-setup';   // STAGE 4: Business - Complete Setup
 
 export type OnboardingStepGroup = 'basic' | 'setup' | 'business';
 

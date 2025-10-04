@@ -83,15 +83,18 @@ export async function createListing(data: ListingFormData): Promise<ActionRespon
       // ownerId: authContext.userId, // Uncomment if you have this field
     };
 
-    // Create merchant with minimal required fields  
+    // Create merchant with proper required fields  
     const listing = await db.merchant.create({
       data: {
         name: sanitizedData.name,
-        phone: "",  // Required field
-        address: "",  // Required field
-        city: "",  // Required field
+        phone: sanitizedData.phone || "",  // Required field
+        address: sanitizedData.address || "",  // Required field
+        city: sanitizedData.location || sanitizedData.city || "",  // Required field
         description: sanitizedData.description,
         website: sanitizedData.website,
+        type: sanitizedData.type ? sanitizedData.type.toUpperCase().replace('-', '_') as any : 'RESTAURANT',
+        subscriptionTier: 'STARTER',
+        subscriptionStatus: 'TRIALING',
         owner: {
           connect: { id: authContext.userId }
         },
@@ -129,8 +132,14 @@ export async function updateListing(id: string, data: Partial<ListingFormData>):
     if (data.website !== undefined) updateData.website = data.website;
     if (data.type !== undefined) {
       // Convert string type to MerchantType enum
-      const merchantType = data.type.toUpperCase().replace('-', '_');
+      const merchantType = data.type.toUpperCase().replace('-', '_') as any;
       updateData.type = merchantType;
+    }
+    if (data.location !== undefined) updateData.city = data.location; // Map location to city
+    if (data.ownerName !== undefined) {
+      // Update owner name if needed - this would require a separate user update
+      // For now, we'll just log it
+      logger.debug('Owner name provided but not updated', { ownerName: data.ownerName });
     }
 
     const listing = await db.merchant.update({
