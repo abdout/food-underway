@@ -56,17 +56,13 @@ export default function SubdomainContent() {
 
   // Enable/disable next button and set custom navigation
   useEffect(() => {
-    if (isValid && subdomain.trim().length > 0) {
-      enableNext();
-      // Set custom navigation to handle completion
-      setCustomNavigation({
-        onNext: handleCompleteSetup,
-        nextDisabled: isCompleting
-      });
-    } else {
-      disableNext();
-    }
-  }, [isValid, subdomain, isCompleting, enableNext, disableNext, setCustomNavigation]);
+    // Always enable next button and set custom navigation
+    enableNext();
+    setCustomNavigation({
+      onNext: handleCompleteSetup,
+      nextDisabled: isCompleting
+    });
+  }, [isCompleting, enableNext, setCustomNavigation]);
 
   const validateSubdomain = async (value: string) => {
     const normalized = normalizeSubdomain(value);
