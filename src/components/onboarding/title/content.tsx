@@ -34,15 +34,9 @@ export default function TitleContent() {
   }, [listing]);
 
   // Save data when form is valid and user navigates
-  useEffect(() => {
-    const saveBeforeNavigate = async () => {
-      if (isValid && listing?.id) {
-        await handleSave();
-      }
-    };
-    
-    saveBeforeNavigate();
-  }, [isValid]);
+  // Removed automatic save on isValid change to prevent multiple saves
+  // The save functionality should be triggered by explicit user action
+  // or when the component unmounts (cleanup function)
 
   // Bypass validation and enable next button
   useEffect(() => {
