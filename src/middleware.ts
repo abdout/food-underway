@@ -211,9 +211,26 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
-  // If user is logged in and accessing auth routes, redirect to dashboard
+  // If user is logged in and accessing auth routes, check if there's a callback URL
   if (isLoggedIn && authRoutes.includes(pathnameWithoutLocale)) {
-    logger.debug('ALREADY LOGGED IN - Redirecting to dashboard', {
+    // Check if there's a callback URL parameter that should be respected
+    const callbackUrl = url.searchParams.get('callbackUrl');
+    
+    if (callbackUrl) {
+      logger.debug('ALREADY LOGGED IN - Redirecting to callback URL', {
+        ...baseContext,
+        pathnameWithoutLocale,
+        callbackUrl,
+        userId: session?.user?.id
+      });
+      
+      // Redirect to the callback URL instead of dashboard
+      const response = NextResponse.redirect(new URL(callbackUrl, req.url));
+      response.headers.set('x-request-id', requestId);
+      return response;
+    }
+    
+    logger.debug('ALREADY LOGGED IN - Redirecting to dashboard (no callback URL)', {
       ...baseContext,
       pathnameWithoutLocale,
       userId: session?.user?.id
