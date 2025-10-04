@@ -1,5 +1,5 @@
-import DashboardContent from "@/components/platform/dashboard/content";
+import UnderProcess from "@/components/atom/under-process";
 
 export default function Dashboard() {
-  return <DashboardContent />;
+  return <UnderProcess title="Merchant Dashboard" />;
 }

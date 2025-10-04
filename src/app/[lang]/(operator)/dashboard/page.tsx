@@ -1,4 +1,4 @@
-import { DashboardContent } from '@/components/operator/dashboard/content';
+import UnderProcess from "@/components/atom/under-process";
 import { getDictionary } from "@/components/internationalization/dictionaries";
 import { type Locale } from "@/components/internationalization/config";
 
@@ -15,5 +15,5 @@ export default async function Dashboard({ params }: Props) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
 
-  return <DashboardContent />;
+  return <UnderProcess title="Operator Dashboard" />;
 }

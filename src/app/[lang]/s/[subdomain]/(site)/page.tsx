@@ -1,5 +1,5 @@
-export default function (){
-    return (
-        <h3>Merchant marketing page</h3>
-    )
+import UnderProcess from "@/components/atom/under-process";
+
+export default function MerchantMarketingPage() {
+  return <UnderProcess title="Merchant Marketing Page" />;
 }
