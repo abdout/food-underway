@@ -5,6 +5,7 @@ import { Modal } from '@/components/atom/modal';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
+import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface CongratsModalProps {
   subdomain: string;
@@ -27,6 +28,12 @@ export default function CongratsModal({
       desktopOnly={false}
     >
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10 p-8">
+        {/* Accessibility components - hidden but required */}
+        <DialogTitle className="sr-only">Congratulations! Your restaurant has been created successfully.</DialogTitle>
+        <DialogDescription className="sr-only">
+          Your restaurant {subdomain} is now ready to use. You can start managing your menu and orders.
+        </DialogDescription>
+        
         {/* Success Icon */}
         <div className="mb-8">
           <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mb-6">

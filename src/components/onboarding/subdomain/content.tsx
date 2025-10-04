@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useHostValidation } from '@/components/onboarding/host-validation-context';
 import { useListing } from '@/components/onboarding/use-listing';
@@ -41,6 +41,8 @@ export default function SubdomainContent() {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isCompleting, setIsCompleting] = useState<boolean>(false);
   const [showCongratsModal, setShowCongratsModal] = useState<boolean>(false);
+  const handleCompleteSetupRef = useRef<(() => Promise<void>) | null>(null);
+
 
   // Load existing subdomain from listing
   useEffect(() => {
@@ -107,6 +109,7 @@ export default function SubdomainContent() {
            console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
            // Show congratulations modal
            setShowCongratsModal(true);
+           console.log("🎉 [HANDLE COMPLETE SETUP] Modal state set to true");
          } else {
           console.log("❌ [HANDLE COMPLETE SETUP] Failed:", completeResult.error);
           toast.error(completeResult.error || 'فشل إكمال الإعداد');
@@ -153,19 +156,36 @@ export default function SubdomainContent() {
     }
   }, [isCompleting, subdomain, listing?.id, updateListingData]);
 
+  // Update ref when function changes
+  useEffect(() => {
+    handleCompleteSetupRef.current = handleCompleteSetup;
+    console.log("🔄 [SUBDOMAIN] handleCompleteSetup function updated");
+  }, [handleCompleteSetup]);
+
   // Enable/disable next button and set custom navigation
   useEffect(() => {
     // Always enable next button - subdomain is optional for completion
     console.log("🔧 [SUBDOMAIN] Enabling next button and setting custom navigation");
     enableNext();
-    setCustomNavigation({
+    const customNav = {
       onNext: handleCompleteSetup,
       nextDisabled: false // Always allow proceeding
-    });
+    };
+    console.log("🔧 [SUBDOMAIN] Setting custom navigation:", customNav);
+    setCustomNavigation(customNav);
     console.log("🔧 [SUBDOMAIN] Button state updated:", {
       isCompleting,
       subdomain,
       hasSubdomain: subdomain.trim().length > 0
+    });
+  }, [enableNext, setCustomNavigation, handleCompleteSetup]);
+
+  // Debug custom navigation changes
+  useEffect(() => {
+    console.log("🔧 [SUBDOMAIN] Custom navigation dependency changed:", {
+      enableNext: !!enableNext,
+      setCustomNavigation: !!setCustomNavigation,
+      handleCompleteSetup: !!handleCompleteSetup
     });
   }, [enableNext, setCustomNavigation, handleCompleteSetup]);
 
@@ -336,26 +356,22 @@ export default function SubdomainContent() {
               </Button>
             </div>
 
-            {/* Test button to debug */}
+            {/* Test button */}
             <div className="text-center">
               <Button
                 type="button"
                 variant="destructive"
                 size="lg"
                 onClick={() => {
-                  console.log("🧪 [TEST BUTTON] Clicked!", {
-                    subdomain,
-                    listing: listing?.id,
-                    isCompleting,
-                    hasHandleCompleteSetup: !!handleCompleteSetup
-                  });
+                  console.log("🧪 [TEST] Direct function call");
                   handleCompleteSetup();
                 }}
                 className="rounded-2xl px-8"
               >
-                🧪 TEST CREATE BUTTON
+                🧪 TEST CREATE
               </Button>
             </div>
+
 
             {/* Suggestions */}
             {suggestions.length > 0 && (

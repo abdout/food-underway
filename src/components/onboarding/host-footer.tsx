@@ -113,11 +113,9 @@ const HostFooter: React.FC<HostFooterProps> = ({
   const handleNext = () => {
     console.log("🔵 [HOST FOOTER] handleNext called", {
       hasCustomNavigation: !!customNavigation?.onNext,
-      hasOnNext: !!onNext,
+      customNavigation,
       currentStepSlug,
-      currentStepIndex,
-      schoolId: params.id,
-      timestamp: new Date().toISOString()
+      isSubdomainStep
     });
     
     // Use custom navigation if available
@@ -142,14 +140,8 @@ const HostFooter: React.FC<HostFooterProps> = ({
     
     if (currentStepIndex < HOSTING_STEPS.length - 1) {
       const nextStep = HOSTING_STEPS[currentStepIndex + 1];
-      console.log("➡️ [HOST FOOTER] Default navigation to next step", {
-        from: currentStepSlug,
-        to: nextStep,
-        url: `/onboarding/${params.id}/${nextStep}`
-      });
+      console.log("➡️ [HOST FOOTER] Default navigation to next step", nextStep);
       router.push(`/onboarding/${params.id}/${nextStep}`);
-    } else {
-      console.warn("⚠️ [HOST FOOTER] No navigation action taken");
     }
   };
   
@@ -178,21 +170,15 @@ const HostFooter: React.FC<HostFooterProps> = ({
   const canGoBackActual = canGoBack && (currentStepIndex > 0);
   // Special case for subdomain step - always allow proceeding
   const isSubdomainStep = currentStepSlug === 'subdomain';
-  const canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'finish-setup') && 
-    (isSubdomainStep ? true : (!nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled)));
   
-  // Debug logging for next button state
-  console.log("🔍 [HOST FOOTER] Next button state:", {
-    canGoNext,
-    nextDisabled,
-    contextNextDisabled,
-    customNavigationDisabled: customNavigation?.nextDisabled,
-    canGoNextActual,
-    currentStepSlug,
-    currentStepIndex,
-    isSubdomainStep,
-    subdomainStepOverride: isSubdomainStep ? "ENABLED" : "NORMAL"
-  });
+  // Force enable button for subdomain step
+  let canGoNextActual;
+  if (isSubdomainStep) {
+    canGoNextActual = true; // Always enabled for subdomain step
+  } else {
+    canGoNextActual = canGoNext && (currentStepIndex < HOSTING_STEPS.length - 1 || currentStepSlug === 'finish-setup') && !nextDisabled && !contextNextDisabled && !(customNavigation?.nextDisabled);
+  }
+  
   
   // Set the next button label based on current step
   const actualBackLabel = backLabel || dict.back || "Back";
