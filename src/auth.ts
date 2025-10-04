@@ -62,8 +62,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         path: "/",
         secure: process.env.NODE_ENV === "production",
         maxAge: 900, // 15 minutes
-        // Set domain in production to work across subdomains
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
+        // Don't set domain - must match exact callback domain for PKCE
       },
     },
     sessionToken: {
@@ -104,8 +103,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
-        // Set domain in production to work across subdomains
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
+        // Don't set domain - OAuth flow needs exact domain match
       },
     },
     nonce: {
@@ -115,8 +113,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
-        // Set domain in production to work across subdomains
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
+        // Don't set domain - OAuth flow needs exact domain match
       },
     },
   },
