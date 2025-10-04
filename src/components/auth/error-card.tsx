@@ -28,18 +28,14 @@ export const ErrorCard = () => {
   const errorMessage = error && errorMessages[error] ? errorMessages[error] : errorMessages.default;
 
   useEffect(() => {
-    // Enhanced error logging
-    console.log('=====================================');
-    console.log('❌ [ErrorCard] AUTH ERROR PAGE RENDERED');
-    console.log('=====================================');
-    console.log({
-      errorCode: error,
-      errorMessage,
-      allSearchParams: Object.fromEntries(searchParams.entries()),
-      currentUrl: typeof window !== 'undefined' ? window.location.href : 'server',
-      referrer: typeof document !== 'undefined' ? document.referrer : 'none',
-      timestamp: new Date().toISOString()
-    });
+    // Enhanced error logging - use multiple separate logs to avoid truncation
+    console.error('❌ [ErrorCard] ERROR PAGE RENDERED');
+    console.error('Error code:', error);
+    console.error('Error message:', errorMessage);
+    console.error('All URL params:', Object.fromEntries(searchParams.entries()));
+    console.error('Current URL:', typeof window !== 'undefined' ? window.location.href : 'server');
+    console.error('Referrer:', typeof document !== 'undefined' ? document.referrer : 'none');
+    console.error('Timestamp:', new Date().toISOString());
 
     // Log additional debugging info for specific errors
     if (error === "Configuration") {

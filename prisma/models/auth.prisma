@@ -13,7 +13,7 @@ enum UserRole {
 model User {
   id            String    @id @default(cuid())
   username      String?
-  email         String?
+  email         String?   @unique // Required for NextAuth OAuth
   emailVerified DateTime?
   image         String?
   password      String?
@@ -24,7 +24,7 @@ model User {
   phoneVerified Boolean   @default(false)
 
   // Multi-tenant fields
-  merchantId String? // null for PLATFORM_ADMIN
+  merchantId String? // null for PLATFORM_ADMIN or OAuth users before onboarding
   merchant   Merchant? @relation("MerchantUsers", fields: [merchantId], references: [id])
 
   // Owner relationship (for merchant owners)
@@ -46,7 +46,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([email, merchantId]) // Allow same email across different merchants
+  // Note: Removed compound unique constraint to support OAuth
+  // Email is now globally unique across all merchants
 }
 
 model Account {

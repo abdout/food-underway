@@ -55,21 +55,27 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
   },
   logger: {
     error(code, ...message) {
-      console.error('=====================================');
-      console.error('❌ [NextAuth ERROR]');
-      console.error('=====================================');
-      console.error('Error code:', code);
-      console.error('Error details:', message);
-      console.error('Timestamp:', new Date().toISOString());
-      console.error('=====================================\n');
+      console.error('❌ [NextAuth ERROR] Code:', code);
+      console.error('❌ [NextAuth ERROR] Message:', code instanceof Error ? code.message : code);
+      console.error('❌ [NextAuth ERROR] Stack:', code instanceof Error ? code.stack : 'No stack');
+      console.error('❌ [NextAuth ERROR] Cause:', code instanceof Error ? code.cause : 'No cause');
+      console.error('❌ [NextAuth ERROR] Details:', JSON.stringify(message));
+      console.error('❌ [NextAuth ERROR] Time:', new Date().toISOString());
+      
+      // If the error has a cause, log it too
+      if (code instanceof Error && code.cause) {
+        const cause = code.cause as any;
+        console.error('❌ [NextAuth ERROR CAUSE] Type:', typeof cause);
+        console.error('❌ [NextAuth ERROR CAUSE] Message:', cause.message || cause);
+        console.error('❌ [NextAuth ERROR CAUSE] Stack:', cause.stack || 'No stack');
+        console.error('❌ [NextAuth ERROR CAUSE] Full:', JSON.stringify(cause, Object.getOwnPropertyNames(cause)));
+      }
     },
     warn(code, ...message) {
       console.warn('⚠️ [NextAuth WARNING]:', code, message);
     },
     debug(code, ...message) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 [NextAuth DEBUG]:', code, message);
-      }
+      console.log('🔍 [NextAuth DEBUG]:', code, JSON.stringify(message).substring(0, 200));
     },
   },
   cookies: {

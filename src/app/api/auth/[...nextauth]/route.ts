@@ -29,25 +29,17 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   // Special logging for callback endpoints
   if (params.nextauth?.includes('callback')) {
-    console.log('=====================================');
-    console.log('🔐 [OAUTH CALLBACK] DETECTED');
-    console.log('=====================================');
-    console.log('Provider:', params.nextauth[1]);
-    console.log('Query params:', Object.fromEntries(req.nextUrl.searchParams.entries()));
-    console.log('Has code:', req.nextUrl.searchParams.has('code'));
-    console.log('Has error:', req.nextUrl.searchParams.has('error'));
-    console.log('Error param:', req.nextUrl.searchParams.get('error'));
-    console.log('Error description:', req.nextUrl.searchParams.get('error_description'));
+    console.error('🔐 [CALLBACK] Provider:', params.nextauth[1]);
+    console.error('🔐 [CALLBACK] Has code:', req.nextUrl.searchParams.has('code'));
+    console.error('🔐 [CALLBACK] Has error:', req.nextUrl.searchParams.has('error'));
+    console.error('🔐 [CALLBACK] Error:', req.nextUrl.searchParams.get('error'));
+    console.error('🔐 [CALLBACK] Error desc:', req.nextUrl.searchParams.get('error_description'));
     
     const allCookies = req.cookies.getAll();
-    console.log('All cookies:', allCookies.map(c => ({ 
-      name: c.name, 
-      hasValue: !!c.value,
-      valueLength: c.value?.length 
-    })));
-    console.log('Has PKCE cookie:', allCookies.some(c => c.name.includes('pkce')));
-    console.log('Has state cookie:', allCookies.some(c => c.name.includes('state')));
-    console.log('=====================================\n');
+    const cookieNames = allCookies.map(c => c.name).join(', ');
+    console.error('🔐 [CALLBACK] Cookie names:', cookieNames);
+    console.error('🔐 [CALLBACK] Has PKCE:', allCookies.some(c => c.name.includes('pkce')));
+    console.error('🔐 [CALLBACK] Has state:', allCookies.some(c => c.name.includes('state')));
   }
 
   try {
@@ -65,25 +57,22 @@ export async function GET(req: NextRequest, context: RouteContext) {
     // If redirecting to error, log the full URL
     const locationHeader = response.headers.get('location');
     if (locationHeader?.includes('/error')) {
-      console.error('=====================================');
-      console.error('❌ REDIRECTING TO ERROR PAGE');
-      console.error('=====================================');
-      console.error('Location:', locationHeader);
+      console.error('❌ [ERROR REDIRECT] Location:', locationHeader);
       
       // Parse error from location URL
       try {
         const errorUrl = new URL(locationHeader, 'https://me.databayt.org');
         const errorCode = errorUrl.searchParams.get('error');
-        console.error('Error code from URL:', errorCode);
-        console.error('All error URL params:', Object.fromEntries(errorUrl.searchParams.entries()));
+        console.error('❌ [ERROR REDIRECT] Error code:', errorCode);
+        const allParams = Object.fromEntries(errorUrl.searchParams.entries());
+        console.error('❌ [ERROR REDIRECT] Params:', JSON.stringify(allParams));
       } catch (e) {
-        console.error('Could not parse error URL:', e);
+        console.error('❌ [ERROR REDIRECT] Parse failed:', e);
       }
       
-      console.error('Request URL:', req.url);
-      console.error('Request query:', Object.fromEntries(req.nextUrl.searchParams.entries()));
-      console.error('Full headers:', Object.fromEntries(response.headers.entries()));
-      console.error('=====================================\n');
+      console.error('❌ [ERROR REDIRECT] Request URL:', req.url);
+      const reqParams = Object.fromEntries(req.nextUrl.searchParams.entries());
+      console.error('❌ [ERROR REDIRECT] Request params:', JSON.stringify(reqParams));
     }
     
     return response;
