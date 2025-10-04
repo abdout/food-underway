@@ -244,4 +244,3 @@ export type LocationStepData = z.infer<typeof locationStepValidation>;
 export type CapacityStepData = z.infer<typeof capacityStepValidation>;
 export type BrandingStepData = z.infer<typeof brandingStepValidation>;
 export type PriceStepData = z.infer<typeof priceStepValidation>;
-export type LegalStepData = z.infer<typeof legalStepValidation>;
