@@ -3,7 +3,7 @@ import { getDictionary } from "@/components/internationalization/dictionaries";
 import { type Locale } from "@/components/internationalization/config";
 
 export const metadata = {
-  title: "Merchant Name",
+  title: "اسم المطعم باللغة العربية",
 };
 
 interface TitlePageProps {

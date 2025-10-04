@@ -10,10 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Dictionary } from '@/components/internationalization/dictionaries';
 
 interface OnboardingContentProps {
-  dictionary?: Dictionary['school'];
+  dictionary?: Dictionary;
+  locale?: string;
 }
 
-export default function OnboardingContent({ dictionary }: OnboardingContentProps) {
+export default function OnboardingContent({ dictionary, locale }: OnboardingContentProps) {
   const router = useRouter();
   const user = useCurrentUser();
   const [isCreating, setIsCreating] = React.useState(false);
@@ -114,18 +115,19 @@ export default function OnboardingContent({ dictionary }: OnboardingContentProps
       <div className="min-h-screen flex items-center justify-center">
         <SchoolOnboardingDashboard 
           userName={user?.name || "Admin"}
-          schools={schools.map(school => ({
-            id: school.id!,
-            name: school.name || 'Unnamed School',
-            startDate: school.createdAt ? new Date(school.createdAt).toLocaleDateString() : 'Unknown',
-            status: school.isActive ? 'active' : 'draft' as const,
-            subdomain: school.domain,
+          schools={schools.map(merchant => ({
+            id: merchant.id!,
+            name: merchant.name || 'Unnamed Merchant',
+            startDate: merchant.createdAt ? new Date(merchant.createdAt).toLocaleDateString() : 'Unknown',
+            status: merchant.isActive ? 'active' : 'draft' as const,
+            subdomain: merchant.domain,
           }))}
           totalSchools={totalSchools}
           onSchoolClick={handleSchoolClick}
           onCreateNew={handleCreateNew}
           onCreateFromTemplate={handleCreateFromTemplate}
           dictionary={dictionary}
+          locale={locale}
         />
       </div>
     </ErrorBoundary>

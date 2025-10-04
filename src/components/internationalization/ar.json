@@ -414,6 +414,21 @@
     "nonFunctionalRequirements": "المتطلبات غير الوظيفية",
     "apiRequirements": "متطلبات API"
   },
+  "onboarding": {
+    "welcomeBack": "مرحبا بيك",
+    "completeSetup": "أكمل إعداد قائمتك",
+    "startNewMerchant": "ابدأ قائمة جديدة",
+    "createNewMerchant": "إنشاء قائمة جديدة",
+    "createNewMerchantDescription": "ابدأ من الصفر بإعداد أساسي",
+    "createFromTemplate": "إنشاء من قالب",
+    "createFromTemplateDescription": "ابدأ بإعدادات مهيأة مسبقاً",
+    "started": "بدأت",
+    "draftStatus": "مسودة",
+    "activeStatus": "نشط",
+    "pendingStatus": "قيد الانتظار",
+    "moreMerchants": "قائمة أخرى",
+    "moreMerchantsPlural": "قوائم أخرى"
+  },
   "errors": {
     "notFound": "الصفحة غير موجودة",
     "serverError": "حدث خطأ في الخادم",

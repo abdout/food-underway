@@ -103,7 +103,7 @@ function HostLayoutContent({ children }: HostLayoutProps) {
 
   return (
     <div className="px-4 sm:px-6 md:px-12 min-h-screen">
-      <main className="h-screen pt-16 ">
+      <main className="h-screen pt-16 px-40 ">
         {children}
       </main>
       <HostFooter dictionary={dictionary?.school} />

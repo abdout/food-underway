@@ -194,7 +194,7 @@ const HostFooter: React.FC<HostFooterProps> = ({
   const actualNextLabel = (currentStepSlug === 'finish-setup') ? (dict.createMerchant || 'Complete Setup') : (nextLabel || dict.next || "Next");
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white px-32">
       {/* Three separate progress bars - always LTR */}
       <div className="" dir="ltr">
         <div className="grid grid-cols-3 gap-1 sm:gap-2 px-4 sm:px-6 md:px-12 lg:px-20">

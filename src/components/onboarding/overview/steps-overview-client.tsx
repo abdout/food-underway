@@ -8,13 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLocale } from '@/components/internationalization/use-locale';
 import { type Locale } from '@/components/internationalization/config';
 import { type Dictionary } from '@/components/internationalization/dictionaries';
-import Image from 'next/image';
+import { UtensilsCrossed, ListPlus, Rocket, LucideIcon } from 'lucide-react';
 
 interface Step {
   number: number;
   title: string;
   description: string;
-  illustration: string;
+  icon: LucideIcon;
 }
 
 interface StepsOverviewClientProps {
@@ -33,19 +33,19 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
       number: 1,
       title: dictionary.steps.step1.title,
       description: dictionary.steps.step1.description,
-      illustration: "/site/tent.png"
+      icon: UtensilsCrossed
     },
     {
       number: 2,
       title: dictionary.steps.step2.title,
       description: dictionary.steps.step2.description,
-      illustration: "/site/light-bulb.png"
+      icon: ListPlus
     },
     {
       number: 3,
       title: dictionary.steps.step3.title,
       description: dictionary.steps.step3.description,
-      illustration: "/site/world.png"
+      icon: Rocket
     }
   ];
 
@@ -155,13 +155,13 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
   };
 
   return (
-    <div className={`h-full flex flex-col px-20 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`h-full flex flex-col px-40 ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="flex-1">
         <div className="h-full max-w-7xl mx-auto flex flex-col">
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-12 items-start py-12">
             {/* Left Side - Title */}
             <div>
-              <h2 className={`text-4xl font-bold ${isRTL ? 'text-right' : 'text-left'}`}>
+              <h2 className={`text-4xl font-bold ${isRTL ? 'text-right' : 'text-left'} whitespace-pre-line`}>
                 {dictionary.title}
               </h2>
             </div>
@@ -176,24 +176,18 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
                         {step.number}
                       </h4>
                     </div>
-                    <div className={isRTL ? 'text-right' : 'text-left'}>
+                    <div className={`${isRTL ? 'text-right' : 'text-left'} flex-1`}>
                       <h4 className="mb-1">
                         {step.title}
                       </h4>
-                      <p>
+                      <p className={isRTL ? 'text-right' : 'text-left'}>
                         {step.description}
                       </p>
                     </div>
                   </div>
                   <div className="flex-shrink-0 hidden md:block">
-                    <div className="relative w-24 h-24 overflow-hidden">
-                      <Image
-                        src={step.illustration}
-                        alt={step.title}
-                        fill
-                        sizes="96px"
-                        className="object-contain"
-                      />
+                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                      <step.icon className="w-8 h-8 text-primary" />
                     </div>
                   </div>
                 </div>

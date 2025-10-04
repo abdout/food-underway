@@ -32,8 +32,8 @@ export async function generateMetadata({
   const config = localeConfig[lang];
 
   return {
-    title: dictionary.metadata?.title || "Menu - Electronic menu on the fly",
-    description: dictionary.metadata?.description || "Electronic menu on the fly",
+    title: dictionary.marketing?.hero?.title || "Menu",
+    description: dictionary.metadata?.description || "Cloud-based menu on the fly",
     other: {
       'accept-language': lang,
     },

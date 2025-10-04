@@ -5,124 +5,171 @@ import { useHostValidation } from '@/components/onboarding/host-validation-conte
 import { useListing } from '@/components/onboarding/use-listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Building } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { MapPin, Phone, User, Utensils } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TitleContent() {
   const { enableNext, disableNext } = useHostValidation();
   const { listing, updateListingData } = useListing();
-  const [merchantName, setMerchantName] = useState<string>('');
+  const [merchantNameAr, setMerchantNameAr] = useState<string>('');
+  const [merchantNameEn, setMerchantNameEn] = useState<string>('');
+  const [location, setLocation] = useState<string>('');
+  const [ownerName, setOwnerName] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [restaurantType, setRestaurantType] = useState('restaurant');
   const [isValid, setIsValid] = useState<boolean>(false);
 
-  // Load existing name from listing
+  // Load existing data from listing
   useEffect(() => {
-    if (listing?.name) {
-      setMerchantName(listing.name);
-      setIsValid(listing.name.trim().length >= 2);
+    if (listing) {
+      setMerchantNameAr(listing.name || '');
+      setMerchantNameEn(listing.nameEn || '');
+      setLocation(listing.location || '');
+      setOwnerName(listing.ownerName || '');
+      setPhone(listing.phone || '');
+      setRestaurantType(listing.type || 'restaurant');
+      validateForm();
     }
   }, [listing]);
 
+  // Save data when form is valid and user navigates
+  useEffect(() => {
+    const saveBeforeNavigate = async () => {
+      if (isValid && listing?.id) {
+        await handleSave();
+      }
+    };
+    
+    saveBeforeNavigate();
+  }, [isValid]);
+
   // Enable/disable next button based on validation
   useEffect(() => {
-    if (isValid && merchantName.trim().length >= 2) {
+    validateForm();
+  }, [merchantNameAr, merchantNameEn, location, ownerName, phone, restaurantType]);
+
+  const validateForm = () => {
+    const isValidForm = 
+      merchantNameAr.trim().length >= 2 && 
+      merchantNameEn.trim().length >= 2 &&
+      location.trim().length > 0 &&
+      ownerName.trim().length > 0 &&
+      phone.trim().length >= 9;
+    
+    setIsValid(isValidForm);
+    
+    if (isValidForm) {
       enableNext();
     } else {
       disableNext();
     }
-  }, [isValid, merchantName, enableNext, disableNext]);
-
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setMerchantName(newValue);
-    setIsValid(newValue.trim().length >= 2 && newValue.trim().length <= 40);
   };
 
   const handleSave = async () => {
-    if (isValid && merchantName.trim().length >= 2 && listing?.id) {
+    if (isValid && listing?.id) {
       try {
         await updateListingData({
-          name: merchantName.trim()
+          name: merchantNameAr.trim(),
+          nameEn: merchantNameEn.trim(),
+          location: location.trim(),
+          ownerName: ownerName.trim(),
+          phone: phone.trim(),
+          type: restaurantType
         });
-        toast.success('Merchant name saved successfully!');
+        toast.success('تم حفظ البيانات بنجاح');
       } catch (error) {
-        console.error('Error saving merchant name:', error);
-        toast.error('Failed to save merchant name');
+        console.error('Error saving data:', error);
+        toast.error('حدث خطأ أثناء حفظ البيانات');
       }
     }
   };
 
-  const getValidationMessage = () => {
-    if (!merchantName.trim()) return '';
-    if (merchantName.trim().length < 2) return 'Name must be at least 2 characters';
-    if (merchantName.trim().length > 40) return 'Name must be no more than 40 characters';
-    return 'Name is valid!';
-  };
-
   return (
     <div className="">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20 items-start">
-          {/* Left side - Text content */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3>
-              What's the name of your
-              <br />
-              merchant?
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              This will be the main name displayed throughout your merchant platform. You can always change it later.
-            </p>
-            
-            {/* Name preview */}
-            {merchantName && (
-              <div className="mt-4 p-3 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 text-sm">
-                  <Building className="w-4 h-4" />
-                  <span className="font-medium">
-                    {merchantName}
-                  </span>
-                </div>
-              </div>
-            )}
+      <div className="flex justify-start mb-8">
+        <ToggleGroup 
+          type="single" 
+          value={restaurantType} 
+          onValueChange={(value) => setRestaurantType(value)} 
+          className=" bg-muted rounded-full"
+        >
+          <ToggleGroupItem value="cafe" className=" rounded-full data-[state=on]:bg-primary data-[state=on]:text-white data-[state=on]:rounded-full px-4 onhover:rounded-full">
+            مقهى
+          </ToggleGroupItem>
+          <ToggleGroupItem value="restaurant" className="rounded-full data-[state=on]:bg-primary data-[state=on]:text-white data-[state=on]:rounded-full px-4 onhover:rounded-full">
+            مطعم
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Right Column */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Input
+              id="merchantNameAr"
+              value={merchantNameAr}
+              onChange={(e) => setMerchantNameAr(e.target.value)}
+              placeholder="اسم المطعم بالعربية"
+              className="pr-10 text-right h-12"
+            />
+            <Utensils className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
+          <div className="relative">
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="موقع المطعم"
+              className="pr-10 text-right h-12"
+            />
+            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          </div>
+          <div className="relative">
+            <Input
+              id="ownerName"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="اسم المالك"
+              className="pr-10 text-right h-12"
+            />
+            <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          </div>
+        </div>
 
-          {/* Right side - Input */}
-          <div className="space-y-4">
-            {/* Name input */}
-            <div className="space-y-2">
-              <label htmlFor="merchantName" className="text-sm font-medium">
-                Merchant Name *
-              </label>
-              <Input
-                id="merchantName"
-                value={merchantName}
-                onChange={handleNameChange}
-                placeholder="Enter your merchant name"
-                className="text-lg"
-              />
-              
-              {/* Validation message */}
-              {merchantName.trim() && (
-                <p className={`text-xs ${isValid ? 'text-green-600' : 'text-red-600'}`}>
-                  {getValidationMessage()}
-                </p>
-              )}
-              
-              {/* Character count */}
-              <div className="text-xs text-muted-foreground">
-                {merchantName.length}/40 characters
-              </div>
-            </div>
-
-            {/* Save button */}
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={!isValid}
-              className="w-full"
-            >
-              Save merchant name
-            </Button>
+        {/* Left Column */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Input
+              id="merchantNameEn"
+              value={merchantNameEn}
+              onChange={(e) => setMerchantNameEn(e.target.value)}
+              placeholder="اسم المطعم بالانجليزية"
+              className="pr-10 text-right h-12"
+            />
+            <Utensils className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          </div>
+          <div className="relative">
+            <Input
+              id="siteCoordinates"
+              placeholder="احداثيات الموقع"
+              className="pr-10 text-right h-12"
+            />
+            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          </div>
+          <div className="relative">
+            <Input
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="رقم جوال المالك"
+              className="pr-10 text-right h-12"
+              dir="ltr"
+              maxLength={9}
+            />
+            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">+966</span>
           </div>
         </div>
       </div>

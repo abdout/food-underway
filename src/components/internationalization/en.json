@@ -824,6 +824,21 @@
     "nonFunctionalRequirements": "Non-Functional Requirements",
     "apiRequirements": "API Requirements"
   },
+  "onboarding": {
+    "welcomeBack": "Welcome back",
+    "completeSetup": "Complete your merchant setup",
+    "startNewMerchant": "Start a new merchant",
+    "createNewMerchant": "Create a new merchant",
+    "createNewMerchantDescription": "Start from scratch with basic setup",
+    "createFromTemplate": "Create from template",
+    "createFromTemplateDescription": "Start with pre-configured settings",
+    "started": "Started",
+    "draftStatus": "Draft",
+    "activeStatus": "Active",
+    "pendingStatus": "Pending",
+    "moreMerchants": "more merchant",
+    "moreMerchantsPlural": "more merchants"
+  },
   "errors": {
     "notFound": "Page Not Found",
     "serverError": "Something went wrong",

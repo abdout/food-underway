@@ -2,9 +2,9 @@
 
 import React from 'react';
 import SchoolCard from './school-card';
-import NewSchoolOptions from './new-school-options';
+import NewMerchantOptions from './new-merchant-options';
 
-interface School {
+interface Merchant {
   id: string;
   name: string;
   startDate: string;
@@ -14,12 +14,13 @@ interface School {
 
 interface SchoolOnboardingDashboardProps {
   userName?: string;
-  schools?: School[];
+  schools?: Merchant[];
   onSchoolClick?: (id: string) => void;
   onCreateNew?: () => void;
   onCreateFromTemplate?: () => void;
   totalSchools?: number; // Total number of schools available
   dictionary?: any;
+  locale?: string;
 }
 
 const SchoolOnboardingDashboard: React.FC<SchoolOnboardingDashboardProps> = ({
@@ -29,19 +30,21 @@ const SchoolOnboardingDashboard: React.FC<SchoolOnboardingDashboardProps> = ({
   onCreateNew,
   onCreateFromTemplate,
   totalSchools,
-  dictionary
+  dictionary,
+  locale
 }) => {
   const dict = dictionary?.onboarding || {};
-  const draftSchools = schools.filter(school => school.status === 'draft');
+  const isRTL = locale === 'ar';
+  const draftSchools = schools.filter(merchant => merchant.status === 'draft');
   const hasInProgressSchools = draftSchools.length > 0;
   const hasMoreSchools = totalSchools && totalSchools > schools.length;
 
   return (
-    <div className="w-full max-w-xl mx-auto px-3 sm:px-4 space-y-3 sm:space-y-4">
+    <div className={`w-full max-w-xl mx-auto px-3 sm:px-4 space-y-3 sm:space-y-4 ${isRTL ? 'rtl' : ''}`}>
       {/* Welcome Header */}
       <div>
         <h3 className="mb-3 sm:mb-4 text-lg sm:text-xl lg:text-2xl">
-          {dict.welcomeBack || 'Welcome back'}, {userName}
+          {isRTL ? dict.welcomeBack : `${dict.welcomeBack || 'Welcome back'}, ${userName}`}
         </h3>
       </div>
 
@@ -53,14 +56,14 @@ const SchoolOnboardingDashboard: React.FC<SchoolOnboardingDashboardProps> = ({
           </h5>
           
           <div className="space-y-2">
-            {draftSchools.map((school) => (
+            {draftSchools.map((merchant) => (
               <SchoolCard
-                key={school.id}
-                id={school.id}
-                name={school.name}
-                startDate={school.startDate}
-                status={school.status}
-                subdomain={school.subdomain}
+                key={merchant.id}
+                id={merchant.id}
+                name={merchant.name}
+                startDate={merchant.startDate}
+                status={merchant.status}
+                subdomain={merchant.subdomain}
                 onClick={onSchoolClick}
                 dictionary={dictionary}
               />
@@ -68,7 +71,7 @@ const SchoolOnboardingDashboard: React.FC<SchoolOnboardingDashboardProps> = ({
             {hasMoreSchools && (
               <div className="text-center py-2">
                 <p className="muted">
-                  +{totalSchools! - schools.length} {totalSchools! - schools.length > 1 ? (dict.moreSchoolsPlural || 'more schools') : (dict.moreSchools || 'more school')}
+                  +{totalSchools! - schools.length} {totalSchools! - schools.length > 1 ? (dict.moreMerchantsPlural || 'more merchants') : (dict.moreMerchants || 'more merchant')}
                 </p>
               </div>
             )}
@@ -76,11 +79,12 @@ const SchoolOnboardingDashboard: React.FC<SchoolOnboardingDashboardProps> = ({
         </div>
       )}
 
-      {/* Start a new school section */}
-      <NewSchoolOptions
+      {/* Start a new merchant section */}
+      <NewMerchantOptions
         onCreateNew={onCreateNew}
         onCreateFromTemplate={onCreateFromTemplate}
         dictionary={dictionary}
+        isRTL={isRTL}
       />
     </div>
   );
