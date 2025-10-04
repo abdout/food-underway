@@ -67,8 +67,7 @@ if (googleClientId && googleClientSecret) {
           image: profile.picture,
           emailVerified: new Date(),
         };
-      },
-      checks: [], // Disable PKCE temporarily
+      }
     })
   );
 } else {
@@ -107,8 +106,7 @@ if (facebookClientId && facebookClientSecret) {
           image: profile.picture?.data?.url || null,
           emailVerified: new Date(),
         };
-      },
-      checks: [], // Disable PKCE temporarily
+      }
     })
   );
 } else {
