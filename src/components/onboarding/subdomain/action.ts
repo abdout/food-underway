@@ -50,6 +50,14 @@ export async function updateSchoolSubdomain(
     revalidatePath(`/onboarding/${schoolId}`);
     return createActionResponse(merchant);
   } catch (error) {
+    // Handle Prisma unique constraint error (P2002)
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      return createActionResponse(undefined, {
+        message: "This subdomain is already taken",
+        name: "ValidationError",
+        code: 'P2002',
+      });
+    }
     console.error("Failed to update school subdomain:", error);
     return createActionResponse(undefined, error);
   }

@@ -22,7 +22,8 @@ export interface OnboardingSchoolData {
   name?: string;
   description?: string;
   address?: string;
-  domain?: string;
+  // Deprecated: Use subdomain instead
+  // domain?: string;
   website?: string;
   logo?: string;
   

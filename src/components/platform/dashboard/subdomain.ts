@@ -17,9 +17,14 @@ export function extractSubdomain(host: string, rootDomain?: string): SubdomainRe
     return { subdomain: null, isSpecialCase: false, reason: 'Missing host or rootDomain' }
   }
 
-  // Dev convenience: check for query param (you can remove this later)
+  // Handle localhost development environment
   if (host.includes('localhost')) {
-    return { subdomain: null, isSpecialCase: false, reason: 'Localhost environment' }
+    // For localhost, check if there's a subdomain before the dot
+    const parts = host.split('.');
+    if (parts.length > 1 && parts[0] !== 'localhost') {
+      return { subdomain: parts[0], isSpecialCase: false };
+    }
+    return { subdomain: null, isSpecialCase: false, reason: 'No subdomain in localhost URL' };
   }
 
   // Production subdomain detection

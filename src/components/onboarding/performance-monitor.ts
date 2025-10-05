@@ -4,6 +4,7 @@
  */
 
 import { useEffect } from 'react'
+import { logger } from "@/lib/logger";
 
 interface PerformanceMetric {
   name: string
@@ -214,3 +215,125 @@ export const useOnboardingPerformance = (stepName: string) => {
 
 // Export types for external usage
 export type { PerformanceMetric, OnboardingEvent }
+
+
+// Track onboarding start time
+const onboardingStartTimes = new Map<string, number>();
+
+// Track step completion times
+const stepCompletionTimes = new Map<string, Map<string, number>>();
+
+/**
+ * Start tracking onboarding session
+ */
+export function startOnboardingSession(merchantId: string) {
+  console.log('📊 [PERFORMANCE] Starting onboarding session:', {
+    merchantId,
+    timestamp: new Date().toISOString()
+  });
+  onboardingStartTimes.set(merchantId, Date.now());
+}
+
+/**
+ * Record step completion time
+ */
+export function recordStepCompletion(merchantId: string, step: string) {
+  console.log('📊 [PERFORMANCE] Recording step completion:', {
+    merchantId,
+    step,
+    timestamp: new Date().toISOString()
+  });
+
+  if (!stepCompletionTimes.has(merchantId)) {
+    stepCompletionTimes.set(merchantId, new Map());
+  }
+
+  const merchantSteps = stepCompletionTimes.get(merchantId)!;
+  merchantSteps.set(step, Date.now());
+
+  // Calculate time spent on step
+  const previousStep = getPreviousStep(step);
+  if (previousStep) {
+    const previousStepTime = merchantSteps.get(previousStep);
+    if (previousStepTime) {
+      const timeSpent = Date.now() - previousStepTime;
+      console.log('⏱️ [PERFORMANCE] Time spent on step:', {
+        merchantId,
+        step: previousStep,
+        timeSpentMs: timeSpent,
+        timeSpentSeconds: Math.round(timeSpent / 1000),
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+}
+
+/**
+ * Complete onboarding session and get metrics
+ */
+export function completeOnboardingSession(merchantId: string) {
+  console.log('📊 [PERFORMANCE] Completing onboarding session:', {
+    merchantId,
+    timestamp: new Date().toISOString()
+  });
+
+  const startTime = onboardingStartTimes.get(merchantId);
+  const steps = stepCompletionTimes.get(merchantId);
+
+  if (!startTime || !steps) {
+    console.warn('⚠️ [PERFORMANCE] No tracking data found for merchant:', {
+      merchantId,
+      timestamp: new Date().toISOString()
+    });
+    return null;
+  }
+
+  const totalTime = Date.now() - startTime;
+  const stepMetrics = Array.from(steps.entries()).map(([step, time]) => ({
+    step,
+    completionTime: time - startTime
+  }));
+
+  const metrics = {
+    merchantId,
+    totalTimeMs: totalTime,
+    totalTimeMinutes: Math.round(totalTime / (1000 * 60)),
+    steps: stepMetrics,
+    timestamp: new Date().toISOString()
+  };
+
+  console.log('📈 [PERFORMANCE] Onboarding completion metrics:', metrics);
+
+  // Clean up tracking data
+  onboardingStartTimes.delete(merchantId);
+  stepCompletionTimes.delete(merchantId);
+
+  return metrics;
+}
+
+/**
+ * Get previous step in onboarding flow
+ */
+function getPreviousStep(currentStep: string): string | null {
+  const steps = ['title', 'branding', 'subdomain'];
+  const currentIndex = steps.indexOf(currentStep);
+  
+  if (currentIndex <= 0) return null;
+  return steps[currentIndex - 1];
+}
+
+/**
+ * Get step completion time
+ */
+export function getStepCompletionTime(merchantId: string, step: string): number | null {
+  const steps = stepCompletionTimes.get(merchantId);
+  if (!steps) return null;
+  
+  const completionTime = steps.get(step);
+  if (!completionTime) return null;
+
+  const startTime = onboardingStartTimes.get(merchantId);
+  if (!startTime) return null;
+
+  return completionTime - startTime;
+}

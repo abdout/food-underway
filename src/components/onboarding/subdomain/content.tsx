@@ -71,6 +71,23 @@ export default function SubdomainContent() {
     }
   }, [listing?.name, subdomain]);
 
+  // Handle navigation to dashboard after successful onboarding
+  const handleNavigateToDashboard = useCallback(() => {
+    if (subdomain) {
+      // Close the modal first
+      setShowCongratsModal(false);
+      
+      // Then navigate to the dashboard with the new subdomain
+      // Using window.location to ensure full page reload with new subdomain
+      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+      const domain = process.env.NODE_ENV === 'production' 
+        ? `${subdomain}.databayt.org` 
+        : `${subdomain}.localhost:3000`;
+      
+      window.location.href = `${protocol}://${domain}/dashboard`;
+    }
+  }, [subdomain]);
+
   // Define handleCompleteSetup function
   const handleCompleteSetup = useCallback(async () => {
     console.log("🚀 [HANDLE COMPLETE SETUP] Starting...", {
@@ -105,12 +122,19 @@ export default function SubdomainContent() {
         const completeResult = await completeOnboarding(listing.id, normalizedSubdomain);
         console.log("✅ [HANDLE COMPLETE SETUP] Complete result:", completeResult);
 
-         if (completeResult.success) {
-           console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
-           // Show congratulations modal
-           setShowCongratsModal(true);
-           console.log("🎉 [HANDLE COMPLETE SETUP] Modal state set to true");
-         } else {
+        if (completeResult.success) {
+          console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
+          // Show congratulations modal
+          setShowCongratsModal(true);
+          // Set the subdomain in local storage for the redirect
+          localStorage.setItem('newSubdomain', normalizedSubdomain);
+          // Wait at least 2 seconds before redirecting
+          setTimeout(() => {
+            setShowCongratsModal(false);
+            handleNavigateToDashboard();
+          }, 2000);
+          console.log("🎉 [HANDLE COMPLETE SETUP] Modal state set to true");
+        } else {
           console.log("❌ [HANDLE COMPLETE SETUP] Failed:", completeResult.error);
           toast.error(completeResult.error || 'فشل إكمال الإعداد');
           setIsCompleting(false);
@@ -133,6 +157,10 @@ export default function SubdomainContent() {
             if (completeResult.success) {
               console.log("🎉 [HANDLE COMPLETE SETUP] Success! Showing congrats modal");
               setShowCongratsModal(true);
+              setTimeout(() => {
+                setShowCongratsModal(false);
+                handleNavigateToDashboard();
+              }, 2000);
             } else {
               console.log("❌ [HANDLE COMPLETE SETUP] Failed:", completeResult.error);
               toast.error(completeResult.error || 'فشل إكمال الإعداد');
@@ -154,7 +182,7 @@ export default function SubdomainContent() {
       toast.error('حدث خطأ أثناء إكمال الإعداد');
       setIsCompleting(false);
     }
-  }, [isCompleting, subdomain, listing?.id, updateListingData]);
+  }, [isCompleting, subdomain, listing?.id, updateListingData, handleNavigateToDashboard]);
 
   // Update ref when function changes
   useEffect(() => {
@@ -400,13 +428,7 @@ export default function SubdomainContent() {
         subdomain={subdomain}
         isOpen={showCongratsModal}
         onClose={() => setShowCongratsModal(false)}
-        onComplete={() => {
-          // Redirect to subdomain dashboard
-          const subdomainUrl = process.env.NODE_ENV === 'production'
-            ? `https://${subdomain}.databayt.org/dashboard`
-            : `http://${subdomain}.localhost:3000/dashboard`;
-          window.location.href = subdomainUrl;
-        }}
+        onComplete={handleNavigateToDashboard}
       />
     </>
   );

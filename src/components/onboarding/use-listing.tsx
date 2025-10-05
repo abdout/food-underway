@@ -8,10 +8,9 @@ import { ListingFormData, createListing, updateListing, getListing } from './act
 export interface Listing {
   id?: string
   name: string
-  domain: string
+  subdomain?: string | null // Merchant subdomain (standardized)
   logo?: string | null // Added for merchant logo
   logoUrl?: string | null
-  subdomain?: string | null // Added for merchant subdomain
   address?: string | null
   phoneNumber?: string | null
   phone?: string | null // Added for merchant phone
@@ -84,10 +83,9 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
         const newListing: Listing = {
           id: result.data.id,
           name: result.data.name,
-          domain: result.data.domain,
+          subdomain: result.data.subdomain,
           logo: result.data.logo,
           logoUrl: result.data.logoUrl,
-          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
           phone: result.data.phone,
@@ -132,10 +130,9 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
         const loadedListing: Listing = {
           id: result.data.id,
           name: result.data.name,
-          domain: result.data.domain,
+          subdomain: result.data.subdomain,
           logo: result.data.logo,
           logoUrl: result.data.logoUrl,
-          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
           phone: result.data.phone,
@@ -264,10 +261,9 @@ export function ListingProvider({ children, initialListing = null }: ListingProv
         const updatedListing: Listing = {
           id: result.data.id,
           name: result.data.name,
-          domain: result.data.domain,
+          subdomain: result.data.subdomain,
           logo: result.data.logo,
           logoUrl: result.data.logoUrl,
-          subdomain: result.data.subdomain,
           address: result.data.address,
           phoneNumber: result.data.phoneNumber,
           phone: result.data.phone,

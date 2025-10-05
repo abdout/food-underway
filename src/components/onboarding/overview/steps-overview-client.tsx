@@ -84,7 +84,7 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
     if (schoolId) {
       console.log('✅ [DEBUG] Using existing schoolId, redirecting...');
       // Use the real school ID that was just created
-      router.push(`/${lang}/onboarding/${schoolId}/information`);
+      router.push(`/${lang}/onboarding/${schoolId}/title`);
     } else {
       console.log('🏗️ [DEBUG] No schoolId, creating new school...');
       // Create a new school record first
@@ -108,7 +108,7 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
           console.log('✅ [DEBUG] School created successfully, preparing redirect:', {
             schoolId: result.data.id,
             schoolName: result.data.name,
-            redirectTarget: `/${lang}/onboarding/${result.data.id}/information`,
+            redirectTarget: `/${lang}/onboarding/${result.data.id}/title`,
             waitingBeforeRedirect: true,
             waitTime: '2000ms'
           });
@@ -117,7 +117,7 @@ const StepsOverviewClient: React.FC<StepsOverviewClientProps> = ({ dictionary, l
           await new Promise(resolve => setTimeout(resolve, 2000));
 
           console.log('🔄 [DEBUG] Executing redirect to information page:', {
-            targetUrl: `/${lang}/onboarding/${result.data.id}/information`,
+            targetUrl: `/${lang}/onboarding/${result.data.id}/title`,
             redirectMethod: 'window.location.href',
             redirectTimestamp: new Date().toISOString()
           });

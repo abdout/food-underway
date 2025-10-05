@@ -37,7 +37,8 @@ export interface ListingFormData {
   planType?: string;
   website?: string;
   pricePerNight?: number;
-  domain?: string;
+  // Deprecated: Use subdomain instead
+  // domain?: string;
   // Branding fields
   primaryColor?: string;
   borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -77,7 +78,7 @@ export async function createListing(data: ListingFormData): Promise<ActionRespon
     const sanitizedData = {
       ...data,
       name: data.name?.trim() || "New Merchant",
-      domain: data.domain?.toLowerCase().trim() || `merchant-${Date.now()}`,
+      subdomain: data.subdomain?.toLowerCase().trim() || `merchant-${Date.now()}`,
       updatedAt: new Date(),
       // Link to the authenticated user (ensure this field exists in your schema)
       // ownerId: authContext.userId, // Uncomment if you have this field
@@ -464,7 +465,15 @@ export async function completeOnboarding(
       subdomain,
       message: 'Onboarding completed successfully'
     });
-  } catch (error) {
+  } catch (error: any) {
+    // Handle Prisma unique constraint error (P2002)
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      return createActionResponse(undefined, {
+        message: "This subdomain is already taken",
+        name: "ValidationError",
+        code: 'P2002',
+      });
+    }
     logger.error('Failed to complete onboarding', error, {
       merchantId,
       subdomain
