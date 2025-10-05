@@ -9,7 +9,7 @@ import type { SubdomainData } from './type';
 
 interface SubdomainCardProps {
   data?: SubdomainData;
-  domain?: string;
+  subdomain?: string;
   isAvailable?: boolean;
   isChecking?: boolean;
   showPreview?: boolean;
@@ -17,14 +17,14 @@ interface SubdomainCardProps {
 
 export function SubdomainCard({ 
   data,
-  domain = data?.domain,
+  subdomain = data?.subdomain,
   isAvailable,
   isChecking = false,
   showPreview = true
 }: SubdomainCardProps) {
-  const fullDomain = domain ? `${domain}${SUBDOMAIN_CONSTANTS.DOMAIN_SUFFIX}` : null;
+  const fullSubdomain = subdomain ? `${subdomain}${SUBDOMAIN_CONSTANTS.DOMAIN_SUFFIX}` : null;
 
-  if (!showPreview || !domain) {
+  if (!showPreview || !subdomain) {
     return (
       <Card>
         <CardHeader className="text-center">
@@ -55,7 +55,7 @@ export function SubdomainCard({
         <div className="text-center space-y-4">
           <div className="p-4 bg-muted rounded-lg">
             <div className="text-lg font-mono">
-              {fullDomain}
+              {fullSubdomain}
             </div>
           </div>
           

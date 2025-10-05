@@ -17,15 +17,15 @@ export const paymentScheduleSchema = z.enum(['monthly', 'quarterly', 'semester',
 export const borderRadiusSchema = z.enum(['none', 'sm', 'md', 'lg', 'xl', 'full']);
 export const shadowSizeSchema = z.enum(['none', 'sm', 'md', 'lg', 'xl']);
 
-// Domain validation
-export const domainSchema = z
+// Subdomain validation
+export const subdomainSchema = z
   .string()
-  .min(3, "Domain must be at least 3 characters")
-  .max(63, "Domain must be less than 63 characters")
-  .regex(/^[a-z0-9-]+$/, "Domain can only contain lowercase letters, numbers, and hyphens")
-  .regex(/^[a-z0-9]/, "Domain must start with a letter or number")
-  .regex(/[a-z0-9]$/, "Domain must end with a letter or number")
-  .refine(val => !val.includes('--'), "Domain cannot contain consecutive hyphens");
+  .min(3, "Subdomain must be at least 3 characters")
+  .max(63, "Subdomain must be less than 63 characters")
+  .regex(/^[a-z0-9-]+$/, "Subdomain can only contain lowercase letters, numbers, and hyphens")
+  .regex(/^[a-z0-9]/, "Subdomain must start with a letter or number")
+  .regex(/[a-z0-9]$/, "Subdomain must end with a letter or number")
+  .refine(val => !val.includes('--'), "Subdomain cannot contain consecutive hyphens");
 
 // Email validation
 export const emailSchema = z
@@ -91,7 +91,7 @@ export const onboardingValidation = z.object({
     .trim()
     .optional(),
     
-  domain: domainSchema.optional(),
+  subdomain: subdomainSchema.optional(),
   website: urlSchema,
   
   // Contact information
@@ -229,7 +229,7 @@ export function getRequiredFieldsForStep(step: OnboardingStep): string[] {
     case 'title':
       return ['name'];
     case 'subdomain':
-      return ['domain'];
+      return ['subdomain'];
     case 'finish-setup':
       return [];
     default:

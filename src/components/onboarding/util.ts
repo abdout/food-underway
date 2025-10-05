@@ -74,12 +74,12 @@ export function getCompletedSteps(data: OnboardingSchoolData): OnboardingStep[] 
   }
   
   // Check subdomain step
-  if (data.domain) {
+  if (data.subdomain) {
     completed.push('subdomain');
   }
   
   // Check finish-setup step (both title and subdomain complete)
-  if (data.name && data.domain) {
+  if (data.name && data.subdomain) {
     completed.push('finish-setup');
   }
   
@@ -189,9 +189,9 @@ export function generateSchoolSlug(name: string): string {
     .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
-export function isValidDomain(domain: string): boolean {
-  const domainRegex = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
-  return domainRegex.test(domain);
+export function isValidSubdomain(subdomain: string): boolean {
+  const subdomainRegex = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
+  return subdomainRegex.test(subdomain);
 }
 
 // Step metadata utilities

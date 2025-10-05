@@ -21,10 +21,10 @@ export async function updateSchoolSubdomain(
     const validatedData = subdomainValidation.parse(data);
     
     // Check subdomain availability
-    if (validatedData.domain) {
+    if (validatedData.subdomain) {
       const existingMerchant = await db.merchant.findFirst({
         where: { 
-          subdomain: validatedData.domain,
+          subdomain: validatedData.subdomain,
           id: { not: schoolId }
         },
         select: { id: true }
@@ -42,7 +42,7 @@ export async function updateSchoolSubdomain(
     const merchant = await db.merchant.update({
       where: { id: schoolId },
       data: {
-        subdomain: validatedData.domain,
+        subdomain: validatedData.subdomain,
         updatedAt: new Date(),
       },
     });

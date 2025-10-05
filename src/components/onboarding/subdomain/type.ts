@@ -1,11 +1,11 @@
 // Subdomain step types
 
 export interface SubdomainFormData {
-  domain: string;
+  subdomain: string;
 }
 
 export interface SubdomainData {
-  domain?: string;
+  subdomain?: string;
   isCustom?: boolean;
 }
 

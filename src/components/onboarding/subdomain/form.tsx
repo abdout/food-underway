@@ -27,7 +27,7 @@ interface SubdomainFormProps {
 export function SubdomainForm({
   schoolId,
   schoolName,
-  initialData = { domain: '' },
+  initialData = { subdomain: '' },
   onSubmit,
   onBack,
   isSubmitting = false,
@@ -44,18 +44,18 @@ export function SubdomainForm({
     defaultValues: initialData,
   });
 
-  const currentDomain = form.watch('domain');
+  const currentSubdomain = form.watch('subdomain');
 
   // Debounced availability check
-  const checkAvailability = useCallback(async (domain: string) => {
-    if (!domain || domain.length < SUBDOMAIN_CONSTANTS.MIN_LENGTH) {
+  const checkAvailability = useCallback(async (subdomain: string) => {
+    if (!subdomain || subdomain.length < SUBDOMAIN_CONSTANTS.MIN_LENGTH) {
       setAvailabilityStatus(null);
       return;
     }
 
     setIsChecking(true);
     try {
-      const response = await checkSubdomainAvailability(domain);
+      const response = await checkSubdomainAvailability(subdomain);
       if (response.success) {
         setAvailabilityStatus({
           available: response.data.available,
@@ -85,20 +85,20 @@ export function SubdomainForm({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (currentDomain) {
-        checkAvailability(currentDomain);
+      if (currentSubdomain) {
+        checkAvailability(currentSubdomain);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [currentDomain, checkAvailability]);
+  }, [currentSubdomain, checkAvailability]);
 
   useEffect(() => {
     loadSuggestions();
   }, [loadSuggestions]);
 
   const handleSuggestionClick = (suggestion: string) => {
-    form.setValue('domain', suggestion);
+    form.setValue('subdomain', suggestion);
   };
 
   const isFormValid = form.formState.isValid && availabilityStatus?.available;
@@ -109,7 +109,7 @@ export function SubdomainForm({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Preview */}
           <SubdomainCard
-            domain={currentDomain}
+            subdomain={currentSubdomain}
             isAvailable={availabilityStatus?.available}
             isChecking={isChecking}
           />
@@ -125,7 +125,7 @@ export function SubdomainForm({
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="domain"
+                name="subdomain"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subdomain *</FormLabel>
@@ -151,7 +151,7 @@ export function SubdomainForm({
                     <FormMessage />
 
                     {/* Availability Status */}
-                    {currentDomain && (
+                    {currentSubdomain && (
                       <div className="mt-2">
                         {isChecking ? (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
