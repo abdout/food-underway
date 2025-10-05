@@ -139,7 +139,7 @@ export default function SchoolDetail({
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Domain</p>
                 <p className="text-sm font-mono">
-                  {school.domain || 'Not set'}
+                  {school.subdomain || 'Not set'}
                 </p>
               </div>
             </div>
