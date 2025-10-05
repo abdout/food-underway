@@ -76,11 +76,11 @@ export default function SubdomainContent() {
       // Then navigate to the dashboard with the new subdomain
       // Using window.location to ensure full page reload with new subdomain
       const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-      const domain = process.env.NODE_ENV === 'production' 
+      const targetHost = process.env.NODE_ENV === 'production' 
         ? `${subdomain}.databayt.org` 
         : `${subdomain}.localhost:3000`;
       
-      window.location.href = `${protocol}://${domain}/dashboard`;
+      window.location.href = `${protocol}://${targetHost}/dashboard`;
     }
   }, [subdomain]);
 
