@@ -49,10 +49,6 @@ export default function SubdomainContent() {
     if (listing?.subdomain) {
       setSubdomain(listing.subdomain);
       validateSubdomain(listing.subdomain);
-    } else if (listing?.domain) {
-      // Fallback to domain if subdomain is not set
-      setSubdomain(listing.domain);
-      validateSubdomain(listing.domain);
     }
   }, [listing]);
 
