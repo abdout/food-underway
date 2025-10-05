@@ -26,6 +26,7 @@ export interface OnboardingSchoolData {
   // domain?: string;
   website?: string;
   logo?: string;
+  subdomain?: string; // Add subdomain field
   
   // Capacity
   maxStudents?: number;
