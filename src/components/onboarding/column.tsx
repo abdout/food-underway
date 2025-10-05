@@ -26,8 +26,8 @@ export const schoolColumns: SchoolColumn[] = [
     render: (value, row) => (
       <div className="flex flex-col">
         <span className="font-medium">{value || 'Unnamed School'}</span>
-        {row.domain && (
-          <span className="text-xs text-muted-foreground">{row.domain}</span>
+        {row.subdomain && (
+          <span className="text-xs text-muted-foreground">{row.subdomain}</span>
         )}
       </div>
     ),
