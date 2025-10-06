@@ -16,13 +16,26 @@ export const login = async (
   values: z.infer<typeof LoginSchema>,
   callbackUrl?: string | null,
 ) => {
+  console.log('=====================================');
+  console.log('🔐 [LOGIN ACTION] START');
+  console.log('=====================================');
+  console.log('📋 Login parameters:', {
+    hasEmail: !!values.email,
+    hasPassword: !!values.password,
+    callbackUrl,
+    timestamp: new Date().toISOString()
+  });
+
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {
+    console.log('❌ [LOGIN ACTION] Validation failed:', validatedFields.error);
     return { error: "Invalid fields!" };
   }
 
   const { email, password, code } = validatedFields.data;
+
+  console.log('✅ [LOGIN ACTION] Fields validated for email:', email);
 
   const existingUser = await getUserByEmail(email);
 
@@ -94,6 +107,14 @@ export const login = async (
   }
 
   try {
+    console.log('🔑 [LOGIN ACTION] Attempting signIn with credentials');
+    console.log('📍 [LOGIN ACTION] Redirect configuration:', {
+      hasCallbackUrl: !!callbackUrl,
+      callbackUrl: callbackUrl,
+      willUseDefaultRedirect: !callbackUrl,
+      defaultRedirect: DEFAULT_LOGIN_REDIRECT
+    });
+
     // Don't specify redirectTo - let auth.ts redirect callback handle the redirect based on user state
     // The redirect callback will check merchantId and redirect appropriately:
     // - No merchantId -> /onboarding
@@ -105,7 +126,17 @@ export const login = async (
       // Only use callbackUrl if explicitly provided (e.g., from "Get Started" button)
       ...(callbackUrl ? { redirectTo: callbackUrl } : {}),
     })
+
+    console.log('✅ [LOGIN ACTION] signIn completed successfully');
+    console.log('=====================================');
+    console.log('🔐 [LOGIN ACTION] END');
+    console.log('=====================================');
   } catch (error) {
+    console.log('❌ [LOGIN ACTION] Error during signIn:', error);
+    console.log('=====================================');
+    console.log('🔐 [LOGIN ACTION] END (ERROR)');
+    console.log('=====================================');
+
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":

@@ -267,9 +267,26 @@ export async function middleware(req: NextRequest) {
 
   // If user is logged in and accessing auth routes, check if there's a callback URL
   if (isLoggedIn && authRoutes.includes(pathnameWithoutLocale)) {
+    console.log('=====================================');
+    console.log('🔐 [MIDDLEWARE] LOGGED IN USER ON AUTH ROUTE');
+    console.log('=====================================');
+    console.log('📍 Route info:', {
+      pathname: pathnameWithoutLocale,
+      fullUrl: url.toString(),
+      userId: session?.user?.id,
+      userRole: (session?.user as any)?.role,
+      merchantId: (session?.user as any)?.merchantId
+    });
+
     // Check if there's a callback URL parameter that should be respected
     const callbackUrl = url.searchParams.get('callbackUrl');
-    
+
+    console.log('🔍 [MIDDLEWARE] Callback URL check:', {
+      hasCallbackUrl: !!callbackUrl,
+      callbackUrl: callbackUrl,
+      allSearchParams: Object.fromEntries(url.searchParams.entries())
+    });
+
     if (callbackUrl) {
       logger.debug('ALREADY LOGGED IN - Redirecting to callback URL', {
         ...baseContext,
@@ -277,7 +294,9 @@ export async function middleware(req: NextRequest) {
         callbackUrl,
         userId: session?.user?.id
       });
-      
+
+      console.log('✅ [MIDDLEWARE] Redirecting to callback URL:', callbackUrl);
+
       // Redirect to the callback URL instead of dashboard
       const response = NextResponse.redirect(new URL(callbackUrl, req.url));
       response.headers.set('x-request-id', requestId);
@@ -289,18 +308,29 @@ export async function middleware(req: NextRequest) {
     const userMerchantId = (session?.user as any)?.merchantId;
     const userNeedsOnboarding = session?.user && !userMerchantId && userRole !== 'PLATFORM_ADMIN';
 
+    console.log('🔍 [MIDDLEWARE] User status:', {
+      userRole,
+      userMerchantId,
+      userNeedsOnboarding,
+      isPlatformAdmin: userRole === 'PLATFORM_ADMIN'
+    });
+
     if (userRole === 'PLATFORM_ADMIN') {
       // PLATFORM_ADMINs go to the operator dashboard
+      console.log('👑 [MIDDLEWARE] PLATFORM_ADMIN detected - redirecting to operator dashboard');
       logger.debug('PLATFORM_ADMIN LOGGED IN - Redirecting to operator dashboard', {
         ...baseContext,
         userId: session?.user?.id,
         userRole
       });
-      const response = NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, req.url));
+      const redirectUrl = `/${currentLocale}/dashboard`;
+      console.log('✅ [MIDDLEWARE] Redirect URL:', redirectUrl);
+      const response = NextResponse.redirect(new URL(redirectUrl, req.url));
       response.headers.set('x-request-id', requestId);
       return response;
     } else if (userNeedsOnboarding) {
       // Non-admin users who need onboarding go to the onboarding page
+      console.log('🚀 [MIDDLEWARE] User needs onboarding - redirecting to onboarding page');
       logger.debug('USER NEEDS ONBOARDING - Redirecting to onboarding', {
         ...baseContext,
         userId: session?.user?.id,
@@ -308,6 +338,7 @@ export async function middleware(req: NextRequest) {
         userMerchantId
       });
       const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
+      console.log('✅ [MIDDLEWARE] Redirect URL:', onboardingUrl.toString());
       const response = NextResponse.redirect(onboardingUrl);
       response.headers.set('x-request-id', requestId);
       return response;
