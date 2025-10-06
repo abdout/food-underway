@@ -94,10 +94,16 @@ export const login = async (
   }
 
   try {
+    // Don't specify redirectTo - let auth.ts redirect callback handle the redirect based on user state
+    // The redirect callback will check merchantId and redirect appropriately:
+    // - No merchantId -> /onboarding
+    // - PLATFORM_ADMIN -> /dashboard (operator)
+    // - Has merchantId -> subdomain dashboard
     await signIn("credentials", {
       email,
       password,
-      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
+      // Only use callbackUrl if explicitly provided (e.g., from "Get Started" button)
+      ...(callbackUrl ? { redirectTo: callbackUrl } : {}),
     })
   } catch (error) {
     if (error instanceof AuthError) {
