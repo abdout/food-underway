@@ -123,32 +123,38 @@ export const Social = () => {
     
     // If we have a tenant (either from subdomain or parameter), use custom OAuth flow
     if (tenantSubdomain) {
-      // Use appropriate URL based on environment
-      const dashboardUrl = process.env.NODE_ENV === 'production' 
-        ? `https://${tenantSubdomain}.databayt.org/dashboard`
-        : `http://${tenantSubdomain}.localhost:3000/dashboard`;
-      
-      console.log('🔗 TENANT OAUTH INITIATED:', { 
-        tenantSubdomain, 
+      // Detect locale from current page
+      const locale = typeof window !== 'undefined'
+        ? (window.location.pathname.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar')
+        : 'ar';
+
+      // Use appropriate URL based on environment with locale
+      const dashboardUrl = process.env.NODE_ENV === 'production'
+        ? `https://${tenantSubdomain}.databayt.org/${locale}/dashboard`
+        : `http://${tenantSubdomain}.localhost:3000/${locale}/dashboard`;
+
+      console.log('🔗 TENANT OAUTH INITIATED:', {
+        tenantSubdomain,
         provider,
         dashboardUrl,
+        locale,
         currentHost,
         environment: process.env.NODE_ENV,
         source: isSubdomain ? 'subdomain_detection' : 'url_parameter',
         isProdSubdomain,
         isDevSubdomain
       });
-      
+
       // Store tenant info for fallback
       if (typeof window !== 'undefined' && window.sessionStorage) {
         sessionStorage.setItem('oauth_tenant', tenantSubdomain);
         sessionStorage.setItem('oauth_callback_url', dashboardUrl);
-        console.log('💾 Stored OAuth context:', { 
-          tenant: tenantSubdomain, 
-          callbackUrl: dashboardUrl 
+        console.log('💾 Stored OAuth context:', {
+          tenant: tenantSubdomain,
+          callbackUrl: dashboardUrl
         });
       }
-      
+
       signIn(provider, {
         callbackUrl: `${dashboardUrl}?tenant=${tenantSubdomain}`,
       });

@@ -45,8 +45,8 @@ export default async function OperatorLayout({
 
       if (merchant?.subdomain) {
         const tenantDashboard = process.env.NODE_ENV === 'production'
-          ? `https://${merchant.subdomain}.databayt.org/dashboard`
-          : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+          ? `https://${merchant.subdomain}.databayt.org/${lang}/dashboard`
+          : `http://${merchant.subdomain}.localhost:3000/${lang}/dashboard`;
 
         redirect(tenantDashboard);
       }

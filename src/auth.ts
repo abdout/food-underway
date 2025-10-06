@@ -303,14 +303,15 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       return session
     },
     async redirect({ url, baseUrl }) {
-      console.log('=====================================');
-      console.log('🔄 REDIRECT CALLBACK START');
+      console.log('\n\n\n=====================================');
+      console.log('🚀🚀🚀 REDIRECT CALLBACK TRIGGERED 🚀🚀🚀');
       console.log('=====================================');
       console.log('📍 Input Parameters:', {
         url,
         baseUrl,
         urlLength: url?.length,
-        baseUrlLength: baseUrl?.length
+        baseUrlLength: baseUrl?.length,
+        timestamp: new Date().toISOString()
       });
       
       // Try to get callback URL from the original request if possible

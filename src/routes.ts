@@ -53,9 +53,11 @@ export const apiAuthPrefix = "/api/auth";
 
 /**
  * The default redirect path after logging in
+ * This redirects to homepage by default - middleware will add locale prefix and handle role-based routing
+ * Only "Get Started" button should explicitly redirect to /onboarding
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/dashboard";
+export const DEFAULT_LOGIN_REDIRECT = "/";
 
 /**
  * Routes that require PLATFORM_ADMIN role

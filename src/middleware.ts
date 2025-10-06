@@ -231,8 +231,8 @@ export async function middleware(req: NextRequest) {
 
         if (merchant?.subdomain) {
           const tenantDashboard = process.env.NODE_ENV === 'production'
-            ? `https://${merchant.subdomain}.databayt.org/dashboard`
-            : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+            ? `https://${merchant.subdomain}.databayt.org/${currentLocale}/dashboard`
+            : `http://${merchant.subdomain}.localhost:3000/${currentLocale}/dashboard`;
 
           const response = NextResponse.redirect(new URL(tenantDashboard));
           response.headers.set('x-request-id', requestId);
@@ -250,7 +250,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // If user is logged in and accessing auth routes, check if there's a callback URL
+  // If user is logged in and accessing auth routes, redirect based on role
   if (isLoggedIn && authRoutes.includes(pathnameWithoutLocale)) {
     console.log('=====================================');
     console.log('🔐 [MIDDLEWARE] LOGGED IN USER ON AUTH ROUTE');
@@ -263,7 +263,7 @@ export async function middleware(req: NextRequest) {
       merchantId: (session?.user as any)?.merchantId
     });
 
-    // Check if there's a callback URL parameter that should be respected
+    // PRIORITY 1: Check if there's a callback URL parameter that should be respected
     const callbackUrl = url.searchParams.get('callbackUrl');
 
     console.log('🔍 [MIDDLEWARE] Callback URL check:', {
@@ -272,6 +272,7 @@ export async function middleware(req: NextRequest) {
       allSearchParams: Object.fromEntries(url.searchParams.entries())
     });
 
+    // If there's a callbackUrl, ALWAYS use it (from "Get Started" button or other sources)
     if (callbackUrl) {
       logger.debug('ALREADY LOGGED IN - Redirecting to callback URL', {
         ...baseContext,
@@ -282,21 +283,19 @@ export async function middleware(req: NextRequest) {
 
       console.log('✅ [MIDDLEWARE] Redirecting to callback URL:', callbackUrl);
 
-      // Redirect to the callback URL instead of dashboard
+      // Redirect to the callback URL instead of role-based redirect
       const response = NextResponse.redirect(new URL(callbackUrl, req.url));
       response.headers.set('x-request-id', requestId);
       return response;
     }
-    
-    // If no callback URL, determine redirect based on user role and onboarding status
+
+    // PRIORITY 2: No callback URL - redirect based on user role
     const userRole = (session?.user as any)?.role;
     const userMerchantId = (session?.user as any)?.merchantId;
-    const userNeedsOnboarding = session?.user && !userMerchantId && userRole !== 'PLATFORM_ADMIN';
 
-    console.log('🔍 [MIDDLEWARE] User status:', {
+    console.log('🔍 [MIDDLEWARE] User status (no callbackUrl):', {
       userRole,
       userMerchantId,
-      userNeedsOnboarding,
       isPlatformAdmin: userRole === 'PLATFORM_ADMIN'
     });
 
@@ -313,23 +312,8 @@ export async function middleware(req: NextRequest) {
       const response = NextResponse.redirect(new URL(redirectUrl, req.url));
       response.headers.set('x-request-id', requestId);
       return response;
-    } else if (userNeedsOnboarding) {
-      // Non-admin users who need onboarding go to the onboarding page
-      console.log('🚀 [MIDDLEWARE] User needs onboarding - redirecting to onboarding page');
-      logger.debug('USER NEEDS ONBOARDING - Redirecting to onboarding', {
-        ...baseContext,
-        userId: session?.user?.id,
-        userRole,
-        userMerchantId
-      });
-      const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
-      console.log('✅ [MIDDLEWARE] Redirect URL:', onboardingUrl.toString());
-      const response = NextResponse.redirect(onboardingUrl);
-      response.headers.set('x-request-id', requestId);
-      return response;
     } else if (userMerchantId) {
-      // Users who have completed onboarding and have a merchantId
-      // Redirect them to their specific subdomain dashboard
+      // Merchant owners go to their subdomain dashboard
       logger.debug('TENANT USER LOGGED IN - Redirecting to subdomain dashboard', {
         ...baseContext,
         userId: session?.user?.id,
@@ -345,37 +329,36 @@ export async function middleware(req: NextRequest) {
 
         if (merchant?.subdomain) {
           const tenantDashboardUrl = process.env.NODE_ENV === "production"
-            ? `https://${merchant.subdomain}.databayt.org/dashboard`
-            : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+            ? `https://${merchant.subdomain}.databayt.org/${currentLocale}/dashboard`
+            : `http://${merchant.subdomain}.localhost:3000/${currentLocale}/dashboard`;
 
-          logger.info('🚀 Redirecting to tenant subdomain dashboard', { tenantDashboardUrl, userMerchantId });
+          logger.info('🚀 Redirecting to tenant subdomain dashboard', { tenantDashboardUrl, userMerchantId, locale: currentLocale });
           const response = NextResponse.redirect(new URL(tenantDashboardUrl));
           response.headers.set('x-request-id', requestId);
           return response;
         } else {
-          logger.warn('⚠️ Merchant found but no subdomain defined, redirecting to onboarding', { userMerchantId });
-          const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
-          const response = NextResponse.redirect(onboardingUrl);
+          logger.warn('⚠️ Merchant found but no subdomain defined, redirecting to homepage', { userMerchantId });
+          const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url));
           response.headers.set('x-request-id', requestId);
           return response;
         }
       } catch (error) {
         logger.error('❌ Error fetching merchant subdomain', { error, userId: session?.user?.id });
-        // Fallback to onboarding if error occurs
-        const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
-        const response = NextResponse.redirect(onboardingUrl);
+        // Fallback to homepage if error occurs
+        const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url));
         response.headers.set('x-request-id', requestId);
         return response;
       }
     } else {
-      // Fallback for any other logged-in user without a specific role or merchantId to a safe default
-      logger.debug('UNHANDLED LOGGED IN USER - Redirecting to home page (fallback)', {
+      // Users without merchantId or specific role - redirect to homepage
+      // They can use "Get Started" to begin onboarding
+      logger.debug('USER WITHOUT MERCHANT - Redirecting to homepage', {
         ...baseContext,
         userId: session?.user?.id,
         userRole,
         userMerchantId
       });
-      const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url)); // Redirect to home page or a generic logged-in landing
+      const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url));
       response.headers.set('x-request-id', requestId);
       return response;
     }
