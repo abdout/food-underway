@@ -923,10 +923,19 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           console.log('⚠️ Error checking user status in redirect:', error);
         }
 
+        // Check if we have a callbackUrl to use as fallback
+        if (callbackUrl) {
+          console.log('📍 Using callback URL as fallback:', callbackUrl);
+          console.log('=====================================');
+          console.log('🔄 REDIRECT CALLBACK END');
+          console.log('=====================================\n');
+          return callbackUrl;
+        }
+
         // Fallback to marketing page if no specific redirect determined
         const fallbackUrl = `${baseUrl}`;
         console.log('📍 Fallback redirect to marketing page:', {
-          reason: 'No specific redirect determined',
+          reason: 'No specific redirect determined and no callbackUrl',
           originalUrl: url,
           fallbackUrl
         });
@@ -985,6 +994,15 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           console.error('❌ Error in same-origin redirect:', error);
         }
 
+        // Check if we have a callbackUrl to use as fallback
+        if (callbackUrl) {
+          console.log('📍 Same origin - using callback URL as fallback:', callbackUrl);
+          console.log('=====================================');
+          console.log('🔄 REDIRECT CALLBACK END');
+          console.log('=====================================\n');
+          return callbackUrl;
+        }
+
         // Fallback to marketing page
         console.log('📍 Same origin - fallback to marketing page');
         console.log('=====================================');
@@ -993,9 +1011,18 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         return baseUrl;
       }
 
+      // Check if we have a callbackUrl to use as fallback for external URLs
+      if (callbackUrl) {
+        console.log('📍 External URL - using callback URL:', callbackUrl);
+        console.log('=====================================');
+        console.log('🔄 REDIRECT CALLBACK END');
+        console.log('=====================================\n');
+        return callbackUrl;
+      }
+
       // External URL - fallback to marketing page
       console.log('📍 External URL - fallback to marketing page:', {
-        reason: 'External URL',
+        reason: 'External URL and no callbackUrl',
         originalUrl: url,
         fallbackUrl: baseUrl
       });
