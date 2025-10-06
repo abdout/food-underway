@@ -823,17 +823,6 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         console.log('❌ Error page detected, investigating...');
       }
 
-      // Final redirect decision
-      console.log('\n🎯 FINAL REDIRECT DECISION');
-      console.log('Current state:', {
-        hasCallbackUrl: !!callbackUrl,
-        callbackUrl,
-        url,
-        baseUrl,
-        urlStartsWithSlash: url.startsWith("/"),
-        isSameOrigin: url.startsWith("http") ? new URL(url).origin === baseUrl : false
-      });
-      
       // Default behavior - check if user needs onboarding
       if (url.startsWith("/")) {
         // Special case: if URL is exactly "/" (home page), respect it (for logout)
@@ -866,20 +855,49 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
               hasSession: !!session,
               userId: session?.user?.id,
               merchantId: (session?.user as any)?.merchantId,
-              needsOnboarding: (session?.user as any)?.needsOnboarding
+              needsOnboarding: (session?.user as any)?.needsOnboarding,
+              userRole: (session?.user as any)?.role
             });
             
-            // If user has no merchantId, they need onboarding
-            if (session?.user && !(session.user as any)?.merchantId) {
+            // If user has no merchantId and is not a PLATFORM_ADMIN, they need onboarding
+            if (session?.user && !(session.user as any)?.merchantId && (session.user as any)?.role !== 'PLATFORM_ADMIN') {
               const onboardingUrl = `${baseUrl}/onboarding`;
-              console.log('🚀 New OAuth user - redirecting to onboarding:', onboardingUrl);
+              console.log('🚀 New/Unonboarded user - redirecting to onboarding:', onboardingUrl);
               console.log('=====================================');
               console.log('🔄 REDIRECT CALLBACK END');
               console.log('=====================================\n');
               return onboardingUrl;
             }
+            
+            // If user has a merchantId and is on the main domain (not a subdomain host already),
+            // redirect them to their specific subdomain dashboard.
+            if (session?.user && (session.user as any)?.merchantId && originalHost === 'me.databayt.org') {
+              console.log('🏢 LOGGED IN USER ON MAIN DOMAIN with MERCHANT_ID - Attempting to find subdomain for redirection');
+              try {
+                const merchant = await db.merchant.findUnique({
+                  where: { id: (session.user as any).merchantId },
+                  select: { subdomain: true },
+                });
+
+                if (merchant?.subdomain) {
+                  const tenantDashboardUrl = process.env.NODE_ENV === "production"
+                    ? `https://${merchant.subdomain}.databayt.org/dashboard`
+                    : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+                  console.log('🚀 Redirecting to specific tenant subdomain dashboard:', tenantDashboardUrl);
+                  console.log('=====================================');
+                  console.log('🔄 REDIRECT CALLBACK END');
+                  console.log('=====================================\n');
+                  return tenantDashboardUrl;
+                } else {
+                  console.log('⚠️ Merchant found but no subdomain defined, falling back to generic dashboard');
+                }
+              } catch (error) {
+                console.error('❌ Error fetching merchant subdomain during redirect:', error);
+              }
+            }
+
           } catch (error) {
-            console.log('⚠️ Error checking user status:', error);
+            console.log('⚠️ Error checking user status in OAuth callback:', error);
           }
         }
 

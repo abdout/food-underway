@@ -56,3 +56,12 @@ export const apiAuthPrefix = "/api/auth";
  * @type {string}
  */
 export const DEFAULT_LOGIN_REDIRECT = "/dashboard";
+
+/**
+ * Routes that require PLATFORM_ADMIN role
+ * These routes are only accessible to platform administrators
+ * @type {string[]}
+ */
+export const operatorRoutes = [
+  "/dashboard", // Main operator dashboard (not subdomain)
+];

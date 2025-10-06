@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { authRoutes, publicRoutes, apiAuthPrefix } from "@/routes";
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
 import { i18n, type Locale } from "@/components/internationalization/config";
@@ -211,6 +212,59 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
+  // Block non-admin users from accessing operator routes
+  const isOperatorRoute = pathnameWithoutLocale.startsWith('/dashboard') &&
+                         !url.pathname.includes('/s/'); // Not a subdomain route
+
+  if (isLoggedIn && isOperatorRoute) {
+    const userRole = (session?.user as any)?.role;
+
+    if (userRole !== 'PLATFORM_ADMIN') {
+      logger.warn('UNAUTHORIZED OPERATOR ACCESS ATTEMPT', {
+        ...baseContext,
+        userId: session?.user?.id,
+        userRole,
+        attemptedPath: pathnameWithoutLocale
+      });
+
+      const userMerchantId = (session?.user as any)?.merchantId;
+
+      // Redirect to appropriate destination
+      if (!userMerchantId) {
+        const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
+        const response = NextResponse.redirect(onboardingUrl);
+        response.headers.set('x-request-id', requestId);
+        return response;
+      }
+
+      // Fetch user's merchant subdomain and redirect
+      try {
+        const merchant = await db.merchant.findUnique({
+          where: { id: userMerchantId },
+          select: { subdomain: true }
+        });
+
+        if (merchant?.subdomain) {
+          const tenantDashboard = process.env.NODE_ENV === 'production'
+            ? `https://${merchant.subdomain}.databayt.org/dashboard`
+            : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+
+          const response = NextResponse.redirect(new URL(tenantDashboard));
+          response.headers.set('x-request-id', requestId);
+          return response;
+        }
+      } catch (error) {
+        logger.error('Error fetching merchant for redirect', { error, userId: session?.user?.id });
+      }
+
+      // Fallback: redirect to home
+      const homeUrl = new URL(`/${currentLocale}`, req.url);
+      const response = NextResponse.redirect(homeUrl);
+      response.headers.set('x-request-id', requestId);
+      return response;
+    }
+  }
+
   // If user is logged in and accessing auth routes, check if there's a callback URL
   if (isLoggedIn && authRoutes.includes(pathnameWithoutLocale)) {
     // Check if there's a callback URL parameter that should be respected
@@ -230,14 +284,85 @@ export async function middleware(req: NextRequest) {
       return response;
     }
     
-    logger.debug('ALREADY LOGGED IN - Redirecting to dashboard (no callback URL)', {
-      ...baseContext,
-      pathnameWithoutLocale,
-      userId: session?.user?.id
-    });
-    const response = NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, req.url));
-    response.headers.set('x-request-id', requestId);
-    return response;
+    // If no callback URL, determine redirect based on user role and onboarding status
+    const userRole = (session?.user as any)?.role;
+    const userMerchantId = (session?.user as any)?.merchantId;
+    const userNeedsOnboarding = session?.user && !userMerchantId && userRole !== 'PLATFORM_ADMIN';
+
+    if (userRole === 'PLATFORM_ADMIN') {
+      // PLATFORM_ADMINs go to the operator dashboard
+      logger.debug('PLATFORM_ADMIN LOGGED IN - Redirecting to operator dashboard', {
+        ...baseContext,
+        userId: session?.user?.id,
+        userRole
+      });
+      const response = NextResponse.redirect(new URL(`/${currentLocale}/dashboard`, req.url));
+      response.headers.set('x-request-id', requestId);
+      return response;
+    } else if (userNeedsOnboarding) {
+      // Non-admin users who need onboarding go to the onboarding page
+      logger.debug('USER NEEDS ONBOARDING - Redirecting to onboarding', {
+        ...baseContext,
+        userId: session?.user?.id,
+        userRole,
+        userMerchantId
+      });
+      const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
+      const response = NextResponse.redirect(onboardingUrl);
+      response.headers.set('x-request-id', requestId);
+      return response;
+    } else if (userMerchantId) {
+      // Users who have completed onboarding and have a merchantId
+      // Redirect them to their specific subdomain dashboard
+      logger.debug('TENANT USER LOGGED IN - Redirecting to subdomain dashboard', {
+        ...baseContext,
+        userId: session?.user?.id,
+        userRole,
+        userMerchantId
+      });
+
+      try {
+        const merchant = await db.merchant.findUnique({
+          where: { id: userMerchantId },
+          select: { subdomain: true },
+        });
+
+        if (merchant?.subdomain) {
+          const tenantDashboardUrl = process.env.NODE_ENV === "production"
+            ? `https://${merchant.subdomain}.databayt.org/dashboard`
+            : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+
+          logger.info('🚀 Redirecting to tenant subdomain dashboard', { tenantDashboardUrl, userMerchantId });
+          const response = NextResponse.redirect(new URL(tenantDashboardUrl));
+          response.headers.set('x-request-id', requestId);
+          return response;
+        } else {
+          logger.warn('⚠️ Merchant found but no subdomain defined, redirecting to onboarding', { userMerchantId });
+          const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
+          const response = NextResponse.redirect(onboardingUrl);
+          response.headers.set('x-request-id', requestId);
+          return response;
+        }
+      } catch (error) {
+        logger.error('❌ Error fetching merchant subdomain', { error, userId: session?.user?.id });
+        // Fallback to onboarding if error occurs
+        const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
+        const response = NextResponse.redirect(onboardingUrl);
+        response.headers.set('x-request-id', requestId);
+        return response;
+      }
+    } else {
+      // Fallback for any other logged-in user without a specific role or merchantId to a safe default
+      logger.debug('UNHANDLED LOGGED IN USER - Redirecting to home page (fallback)', {
+        ...baseContext,
+        userId: session?.user?.id,
+        userRole,
+        userMerchantId
+      });
+      const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url)); // Redirect to home page or a generic logged-in landing
+      response.headers.set('x-request-id', requestId);
+      return response;
+    }
   }
 
   // Case 1: Main marketing domain (me.databayt.org) - handle i18n for marketing pages
