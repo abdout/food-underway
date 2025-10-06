@@ -1,16 +1,26 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
-  const params = useParams();
-  const locale = params?.lang || 'ar';
-
   const handleGetStarted = () => {
+    // Detect locale from current pathname
+    const locale = typeof window !== 'undefined'
+      ? (window.location.pathname.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar')
+      : 'ar';
+
+    const targetUrl = `/${locale}/login?callbackUrl=/${locale}/onboarding`;
+
+    console.log('🎯 [HERO] Get Started clicked:', {
+      currentPathname: window.location.pathname,
+      detectedLocale: locale,
+      targetUrl,
+      callbackUrl: `/${locale}/onboarding`
+    });
+
     // Redirect to login with callbackUrl pointing to onboarding
     // This ensures OAuth flow knows to redirect to onboarding after login
-    window.location.href = `/${locale}/login?callbackUrl=/${locale}/onboarding`;
+    window.location.href = targetUrl;
   };
 
   return (
