@@ -517,9 +517,42 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         console.log('\n📋 CALLBACK URL RESOLUTION SUMMARY:', {
           found: !!callbackUrl,
           value: callbackUrl,
-          type: typeof callbackUrl
+          type: typeof callbackUrl,
+          isOAuthCallback: url.includes('/api/auth/callback/')
         });
-        
+
+        // CRITICAL: If this is an OAuth callback and we don't have a callbackUrl,
+        // we should check user status and redirect to onboarding if needed
+        if (!callbackUrl && url.includes('/api/auth/callback/')) {
+          console.log('\n⚠️ OAuth callback without callbackUrl - checking user status...');
+          try {
+            const session = await auth();
+            const userMerchantId = (session?.user as any)?.merchantId;
+            const userRole = (session?.user as any)?.role;
+            const needsOnboarding = session?.user && !userMerchantId && userRole !== 'PLATFORM_ADMIN';
+
+            console.log('👤 User status after OAuth:', {
+              hasSession: !!session,
+              userId: session?.user?.id,
+              merchantId: userMerchantId,
+              role: userRole,
+              needsOnboarding
+            });
+
+            if (needsOnboarding) {
+              const locale = url.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar';
+              const onboardingUrl = `${baseUrl}/${locale}/onboarding`;
+              console.log('🚀 User needs onboarding after OAuth - redirecting:', onboardingUrl);
+              console.log('=====================================');
+              console.log('🔄 REDIRECT CALLBACK END');
+              console.log('=====================================\n');
+              return onboardingUrl;
+            }
+          } catch (error) {
+            console.log('❌ Error checking user status after OAuth:', error);
+          }
+        }
+
         if (callbackUrl) {
           console.log('\n✅ CALLBACK URL FOUND!');
           console.log('🎯 Attempting redirect to:', callbackUrl);
