@@ -4,7 +4,7 @@ import { SUBDOMAIN_CONSTANTS, RESERVED_SUBDOMAINS } from './constant';
 const subdomainRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 
 export const subdomainValidation = z.object({
-  domain: z
+  subdomain: z
     .string()
     .min(SUBDOMAIN_CONSTANTS.MIN_LENGTH, `Subdomain must be at least ${SUBDOMAIN_CONSTANTS.MIN_LENGTH} characters`)
     .max(SUBDOMAIN_CONSTANTS.MAX_LENGTH, `Subdomain must be less than ${SUBDOMAIN_CONSTANTS.MAX_LENGTH} characters`)

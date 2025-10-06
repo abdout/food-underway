@@ -21,8 +21,8 @@ export interface SubdomainSuggestions {
 }
 
 export interface SubdomainProps {
-  schoolId: string;
-  schoolName?: string;
+  merchantId: string;
+  merchantName?: string;
   initialData?: SubdomainData;
   onSubmit?: (data: SubdomainFormData) => Promise<void>;
   onBack?: () => void;

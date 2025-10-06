@@ -3,29 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { 
-  requireSchoolOwnership,
+  requireMerchantOwnership,
   createActionResponse,
   type ActionResponse 
 } from "@/lib/auth-security";
 import { subdomainValidation } from './validation';
 import type { SubdomainFormData } from './type';
 
-export async function updateSchoolSubdomain(
-  schoolId: string, 
+export async function updateMerchantSubdomain(
+  merchantId: string, 
   data: SubdomainFormData
 ): Promise<ActionResponse> {
   try {
-    await requireSchoolOwnership(schoolId);
-    
+    await requireMerchantOwnership(merchantId);
+
     // Validate input data
     const validatedData = subdomainValidation.parse(data);
     
     // Check subdomain availability
-    if (validatedData.domain) {
+    if (validatedData.subdomain) {
       const existingMerchant = await db.merchant.findFirst({
         where: { 
-          subdomain: validatedData.domain,
-          id: { not: schoolId }
+          subdomain: validatedData.subdomain,
+          id: { not: merchantId }
         },
         select: { id: true }
       });
@@ -40,14 +40,14 @@ export async function updateSchoolSubdomain(
     
     // Update merchant subdomain
     const merchant = await db.merchant.update({
-      where: { id: schoolId },
+      where: { id: merchantId },
       data: {
-        subdomain: validatedData.domain,
+        subdomain: validatedData.subdomain,
         updatedAt: new Date(),
       },
     });
 
-    revalidatePath(`/onboarding/${schoolId}`);
+    revalidatePath(`/onboarding/${merchantId}`);
     return createActionResponse(merchant);
   } catch (error) {
     // Handle Prisma unique constraint error (P2002)
@@ -58,7 +58,7 @@ export async function updateSchoolSubdomain(
         code: 'P2002',
       });
     }
-    console.error("Failed to update school subdomain:", error);
+    console.error("Failed to update merchant subdomain:", error);
     return createActionResponse(undefined, error);
   }
 }
@@ -84,11 +84,11 @@ export async function checkSubdomainAvailability(subdomain: string): Promise<Act
 }
 
 export async function generateSubdomainSuggestions(
-  schoolName: string
+  merchantName: string
 ): Promise<ActionResponse> {
   try {
-    // Generate suggestions based on school name
-    const baseName = schoolName
+    // Generate suggestions based on merchant name
+    const baseName = merchantName
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
       .substring(0, 20);

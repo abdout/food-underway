@@ -16,8 +16,8 @@ import { SubdomainCard } from './card';
 import type { SubdomainFormData } from './type';
 
 interface SubdomainFormProps {
-  schoolId: string;
-  schoolName?: string;
+  merchantId: string;
+  merchantName?: string;
   initialData?: SubdomainFormData;
   onSubmit: (data: SubdomainFormData) => Promise<void>;
   onBack?: () => void;
@@ -25,8 +25,8 @@ interface SubdomainFormProps {
 }
 
 export function SubdomainForm({
-  schoolId,
-  schoolName,
+  merchantId,
+  merchantName,
   initialData = { subdomain: '' },
   onSubmit,
   onBack,
@@ -71,17 +71,17 @@ export function SubdomainForm({
 
   // Load suggestions
   const loadSuggestions = useCallback(async () => {
-    if (!schoolName) return;
+    if (!merchantName) return;
 
     try {
-      const response = await generateSubdomainSuggestions(schoolName);
+      const response = await generateSubdomainSuggestions(merchantName);
       if (response.success) {
         setSuggestions(response.data.suggestions);
       }
     } catch (error) {
       console.error('Failed to load suggestions:', error);
     }
-  }, [schoolName]);
+  }, [merchantName]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -119,7 +119,7 @@ export function SubdomainForm({
             <CardHeader>
               <CardTitle>Choose Your Subdomain</CardTitle>
               <CardDescription>
-                This will be part of your school's web address
+                This will be part of your merchant's web address
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -132,7 +132,7 @@ export function SubdomainForm({
                     <FormControl>
                       <div className="flex items-center">
                         <Input
-                          placeholder="your-school-name"
+                          placeholder="your-merchant-name"
                           {...field}
                           className="rounded-r-none"
                           onChange={(e) => {
@@ -187,7 +187,7 @@ export function SubdomainForm({
                   Suggestions
                 </CardTitle>
                 <CardDescription>
-                  Based on your school name
+                  Based on your merchant name
                 </CardDescription>
               </CardHeader>
               <CardContent>
