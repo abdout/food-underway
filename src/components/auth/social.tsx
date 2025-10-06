@@ -157,77 +157,80 @@ export const Social = () => {
     
     // Default OAuth flow for main domain
     // IMPORTANT: Preserve the original callbackUrl from the login page
-    const finalCallbackUrl = callbackUrl || DEFAULT_LOGIN_REDIRECT;
-    
+    // If no callbackUrl, use /ar/onboarding as default for new users (with locale)
+    const locale = typeof window !== 'undefined'
+      ? (window.location.pathname.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar')
+      : 'ar';
+    const finalCallbackUrl = callbackUrl || `/${locale}/onboarding`;
+
     console.log('\n🌐 MAIN DOMAIN OAUTH FLOW');
     console.log('📊 OAuth Configuration:', {
       provider,
       callbackUrl: finalCallbackUrl,
       originalCallbackUrl: callbackUrl,
-      DEFAULT_LOGIN_REDIRECT,
+      willUseOnboardingDefault: !callbackUrl,
+      locale,
       currentHost,
       searchParamsString: searchParams.toString(),
       allSearchParams: Object.fromEntries(searchParams.entries())
     });
     
-    // Store the callback URL server-side AND client-side
-    if (callbackUrl) {
-      console.log('\n💾 STORING CALLBACK URL...');
-      
-      // Store server-side via API (most reliable)
-      try {
-        console.log('📡 Calling store-callback API...');
-        const response = await fetch('/api/auth/store-callback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ callbackUrl })
-        });
-        
-        const responseData = await response.json();
-        console.log('📡 Store-callback API response:', {
-          status: response.status,
-          ok: response.ok,
-          data: responseData,
-          headers: {
-            'content-type': response.headers.get('content-type'),
-            'set-cookie': response.headers.get('set-cookie')
-          }
-        });
-        
-        if (response.ok) {
-          console.log('✅ Callback URL stored server-side via API');
-        } else {
-          console.log('⚠️ Failed to store callback URL server-side:', responseData);
+    // ALWAYS store the finalCallbackUrl (even if it's the default /ar/onboarding)
+    // This ensures OAuth callback knows where to redirect
+    console.log('\n💾 STORING CALLBACK URL...');
+    console.log('📋 Storing:', finalCallbackUrl);
+
+    // Store server-side via API (most reliable)
+    try {
+      console.log('📡 Calling store-callback API...');
+      const response = await fetch('/api/auth/store-callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callbackUrl: finalCallbackUrl })
+      });
+
+      const responseData = await response.json();
+      console.log('📡 Store-callback API response:', {
+        status: response.status,
+        ok: response.ok,
+        data: responseData,
+        headers: {
+          'content-type': response.headers.get('content-type'),
+          'set-cookie': response.headers.get('set-cookie')
         }
-      } catch (error) {
-        console.log('❌ Error calling store-callback API:', error);
-        console.log('Stack:', error instanceof Error ? error.stack : 'No stack');
+      });
+
+      if (response.ok) {
+        console.log('✅ Callback URL stored server-side via API');
+      } else {
+        console.log('⚠️ Failed to store callback URL server-side:', responseData);
       }
-      
-      // Also store client-side as backup
-      if (typeof window !== 'undefined') {
-        // Store in session storage
-        if (window.sessionStorage) {
-          sessionStorage.setItem('oauth_callback_intended', callbackUrl);
-          console.log('✅ Stored in session storage:', {
-            key: 'oauth_callback_intended',
-            value: callbackUrl,
-            verified: sessionStorage.getItem('oauth_callback_intended') === callbackUrl
-          });
-        }
-        
-        // Store as a cookie with proper domain settings
-        const cookieDomain = process.env.NODE_ENV === 'production' ? '.databayt.org' : '';
-        const cookieString = `oauth_callback_intended=${encodeURIComponent(callbackUrl)}; path=/; max-age=900; SameSite=Lax${cookieDomain ? `; Domain=${cookieDomain}` : ''}`;
-        document.cookie = cookieString;
-        console.log('🍪 Stored in client cookie:', {
+    } catch (error) {
+      console.log('❌ Error calling store-callback API:', error);
+      console.log('Stack:', error instanceof Error ? error.stack : 'No stack');
+    }
+
+    // Also store client-side as backup
+    if (typeof window !== 'undefined') {
+      // Store in session storage
+      if (window.sessionStorage) {
+        sessionStorage.setItem('oauth_callback_intended', finalCallbackUrl);
+        console.log('✅ Stored in session storage:', {
           key: 'oauth_callback_intended',
-          value: callbackUrl,
-          cookie: document.cookie.includes('oauth_callback_intended')
+          value: finalCallbackUrl,
+          verified: sessionStorage.getItem('oauth_callback_intended') === finalCallbackUrl
         });
       }
-    } else {
-      console.log('⚠️ No callback URL to store');
+
+      // Store as a cookie with proper domain settings
+      const cookieDomain = process.env.NODE_ENV === 'production' ? '.databayt.org' : '';
+      const cookieString = `oauth_callback_intended=${encodeURIComponent(finalCallbackUrl)}; path=/; max-age=900; SameSite=Lax${cookieDomain ? `; Domain=${cookieDomain}` : ''}`;
+      document.cookie = cookieString;
+      console.log('🍪 Stored in client cookie:', {
+        key: 'oauth_callback_intended',
+        value: finalCallbackUrl,
+        cookie: document.cookie.includes('oauth_callback_intended')
+      });
     }
     
     console.log('\n🔐 CALLING NEXTAUTH SIGNIN...');
@@ -261,9 +264,9 @@ export const Social = () => {
     console.log('🚀 INITIATING OAUTH REDIRECT NOW...');
     
     // Approach 1: Standard NextAuth way with explicit redirect parameter
-    // Also try passing it as state for OAuth providers
+    // ALWAYS pass redirectTo to ensure our redirect callback is used
     const signInOptions: any = {
-      callbackUrl: finalCallbackUrl,
+      redirectTo: finalCallbackUrl,  // Changed from callbackUrl to redirectTo
       redirect: true,
     };
     
