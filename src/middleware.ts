@@ -350,26 +350,16 @@ export async function middleware(req: NextRequest) {
         return response;
       }
     } else {
-      // Users without merchantId - NEW users need onboarding
-      // After OAuth, they come to "/" as auth route, should go to onboarding
-      logger.debug('USER WITHOUT MERCHANT - Redirecting to onboarding', {
+      // Users without merchantId - redirect to homepage
+      // They can use "Get Started" to begin onboarding
+      // OR if they came from OAuth with redirectTo=/onboarding, NextAuth will handle that
+      logger.debug('USER WITHOUT MERCHANT - Redirecting to homepage', {
         ...baseContext,
         userId: session?.user?.id,
         userRole,
-        userMerchantId,
-        currentPath: pathnameWithoutLocale,
-        isAuthRoute: authRoutes.includes(pathnameWithoutLocale)
+        userMerchantId
       });
-
-      // New users from OAuth (or any auth flow) should go to onboarding to create merchant
-      logger.info('NEW USER - Redirecting to onboarding', {
-        ...baseContext,
-        userId: session?.user?.id,
-        fromRoute: pathnameWithoutLocale
-      });
-
-      const onboardingUrl = new URL(`/${currentLocale}/onboarding`, req.url);
-      const response = NextResponse.redirect(onboardingUrl);
+      const response = NextResponse.redirect(new URL(`/${currentLocale}`, req.url));
       response.headers.set('x-request-id', requestId);
       return response;
     }
