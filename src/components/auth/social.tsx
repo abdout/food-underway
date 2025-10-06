@@ -193,21 +193,111 @@ export const Social = () => {
       allSearchParams: Object.fromEntries(searchParams.entries())
     });
     
+    // Store the callback URL in cookies AND sessionStorage (multi-layered approach)
+    if (callbackUrl) {
+      console.log('\n💾 STORING CALLBACK URL...');
+
+      // Store server-side via API (most reliable)
+      try {
+        console.log('📡 Calling store-callback API...');
+        const response = await fetch('/api/auth/store-callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callbackUrl })
+        });
+
+        const responseData = await response.json();
+        console.log('📡 Store-callback API response:', {
+          status: response.status,
+          ok: response.ok,
+          data: responseData
+        });
+
+        if (response.ok) {
+          console.log('✅ Callback URL stored server-side via API');
+        } else {
+          console.log('⚠️ Failed to store callback URL server-side:', responseData);
+        }
+      } catch (error) {
+        console.log('❌ Error calling store-callback API:', error);
+      }
+
+      // Store client-side as backup
+      if (typeof window !== 'undefined') {
+        // Store in session storage
+        if (window.sessionStorage) {
+          sessionStorage.setItem('oauth_callback_intended', callbackUrl);
+          console.log('✅ Stored in session storage:', {
+            key: 'oauth_callback_intended',
+            value: callbackUrl,
+            verified: sessionStorage.getItem('oauth_callback_intended') === callbackUrl
+          });
+        }
+
+        // Store as a cookie with proper domain settings
+        const cookieDomain = process.env.NODE_ENV === 'production' ? '.databayt.org' : '';
+        const cookieString = `oauth_callback_intended=${encodeURIComponent(callbackUrl)}; path=/; max-age=900; SameSite=Lax${cookieDomain ? `; Domain=${cookieDomain}` : ''}`;
+        document.cookie = cookieString;
+        console.log('🍪 Stored in client cookie:', {
+          key: 'oauth_callback_intended',
+          value: callbackUrl,
+          cookie: document.cookie.includes('oauth_callback_intended')
+        });
+      }
+    } else {
+      console.log('⚠️ No callback URL to store');
+    }
+
     console.log('\n🔐 CALLING NEXTAUTH SIGNIN...');
-    console.log('📋 OAuth Configuration:', {
+    console.log('📋 Final configuration:', {
       provider,
-      redirectTo: finalCallbackUrl,
+      callbackUrl: finalCallbackUrl,
       redirect: true,
       timestamp: new Date().toISOString()
     });
 
-    // NextAuth v5 uses "redirectTo" parameter to preserve callback URL through OAuth
-    signIn(provider, {
-      redirectTo: finalCallbackUrl,
-      redirect: true,
-    });
+    // Check all storage mechanisms right before redirect
+    console.log('🔍 Pre-redirect storage check:');
+    if (typeof window !== 'undefined') {
+      // Check sessionStorage
+      console.log('  Session Storage:', {
+        oauth_callback_intended: sessionStorage.getItem('oauth_callback_intended'),
+        oauth_tenant: sessionStorage.getItem('oauth_tenant'),
+        oauth_callback_url: sessionStorage.getItem('oauth_callback_url')
+      });
 
-    console.log('✅ SignIn called with redirectTo - OAuth flow initiated');
+      // Check cookies
+      console.log('  Document cookies:', document.cookie.split(';').filter(c =>
+        c.includes('oauth') || c.includes('callback')
+      ));
+    }
+
+    console.log('🚀 INITIATING OAUTH REDIRECT NOW...');
+
+    // Use callbackUrl parameter (NOT redirectTo) - matching hogwarts implementation
+    const signInOptions: any = {
+      callbackUrl: finalCallbackUrl,
+      redirect: true,
+    };
+
+    // For OAuth providers, also try to use the state parameter
+    if (provider === 'google' || provider === 'facebook') {
+      // Add state parameter to preserve callback through OAuth flow
+      signInOptions.state = btoa(JSON.stringify({
+        callbackUrl: finalCallbackUrl,
+        timestamp: Date.now()
+      }));
+      console.log('📦 Added state parameter for OAuth:', signInOptions.state);
+    }
+
+    console.log('🎯 Final signIn options:', signInOptions);
+
+    signIn(provider, signInOptions);
+
+    console.log('✅ SignIn called - redirect should happen now');
+
+    // Note: If the above doesn't work, we're also storing in cookie and sessionStorage
+    // The redirect callback will check those as fallback
   }
 
   return (

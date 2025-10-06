@@ -18,7 +18,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "WebSearch",
-      "WebFetch(domain:authjs.dev)"
+      "WebFetch(domain:authjs.dev)",
+      "Read(//d/repo/hogwarts/src/components/auth/**)",
+      "Read(//d/repo/hogwarts/src/**)"
     ],
     "deny": [],
     "ask": []

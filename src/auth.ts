@@ -386,43 +386,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       const isReturningFromOAuth = url.includes('/api/auth/callback/');
       console.log('🔐 OAuth return check:', { isReturningFromOAuth, url });
       
-      // Method 0: Check server-side cookies using Next.js cookies helper
-      if (!callbackUrl) {
-        try {
-          console.log('🔍 Method 0 - Checking server-side cookies...');
-          const cookieStore = await cookies();
-          
-          // List ALL server-side cookies for debugging
-          const allCookies = cookieStore.getAll();
-          console.log('🍪 ALL SERVER-SIDE COOKIES:', {
-            count: allCookies.length,
-            cookies: allCookies.map(c => ({ name: c.name, value: c.value?.substring(0, 50) + '...' }))
-          });
-          
-          const oauthCallbackCookie = cookieStore.get('oauth_callback_intended');
-          if (oauthCallbackCookie) {
-            callbackUrl = oauthCallbackCookie.value;
-            console.log('✅ Method 0 - Server-side cookie FOUND:', {
-              callbackUrl,
-              cookieName: 'oauth_callback_intended',
-              fullValue: oauthCallbackCookie.value
-            });
-            // Clear the cookie after use
-            cookieStore.delete('oauth_callback_intended');
-            console.log('🗑️ Deleted oauth_callback_intended cookie');
-          } else {
-            console.log('❌ Method 0 - No oauth_callback_intended cookie found');
-            // Check if any cookies start with oauth
-            const oauthRelatedCookies = allCookies.filter(c => c.name.toLowerCase().includes('oauth') || c.name.toLowerCase().includes('callback'));
-            console.log('🔍 OAuth-related cookies found:', oauthRelatedCookies.length > 0 ? oauthRelatedCookies : 'NONE');
-          }
-        } catch (error) {
-          console.log('⚠️ Could not check server-side cookies:', error);
-        }
-      }
-      
       try {
-        // Method 1: Parse as URL and check searchParams
+        // Method 1: Parse as URL and check searchParams first
         const urlObj = new URL(url, baseUrl);
         console.log('📊 URL Object Analysis:', {
           href: urlObj.href,
