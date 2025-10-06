@@ -49,6 +49,7 @@ if (googleClientId && googleClientSecret) {
           response_type: "code"
         }
       },
+      checks: [], // Disable PKCE to match hogwarts working implementation
       profile(profile) {
         console.log('=====================================');
         console.log('🔍 [Google OAuth] PROFILE CALLBACK START');
@@ -116,6 +117,7 @@ if (facebookClientId && facebookClientSecret) {
           scope: 'email',
         }
       },
+      checks: [], // Disable PKCE to match hogwarts working implementation
       profile(profile) {
         console.log('🔍 [Facebook OAuth] Profile received:', {
           id: profile.id,
