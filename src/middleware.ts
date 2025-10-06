@@ -183,6 +183,36 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
+  // CRITICAL: Check for stored OAuth callback URL (from social login)
+  // This must be checked BEFORE any role-based redirects
+  if (isLoggedIn) {
+    // Check if there's a callback URL in cookies (stored during OAuth flow)
+    const oauthCallbackCookie = req.cookies.get('oauth_callback_intended');
+
+    if (oauthCallbackCookie?.value) {
+      const storedCallbackUrl = decodeURIComponent(oauthCallbackCookie.value);
+
+      logger.info('OAUTH CALLBACK URL FOUND - Redirecting to stored callback', {
+        ...baseContext,
+        storedCallbackUrl,
+        userId: session?.user?.id,
+        currentPath: pathnameWithoutLocale
+      });
+
+      console.log('🎯 [MIDDLEWARE] OAuth callback URL found in cookie:', {
+        storedCallbackUrl,
+        userId: session?.user?.id,
+        currentPath: pathnameWithoutLocale
+      });
+
+      // Clear the cookie and redirect
+      const response = NextResponse.redirect(new URL(storedCallbackUrl, req.url));
+      response.headers.set('x-request-id', requestId);
+      response.cookies.delete('oauth_callback_intended'); // Clear the cookie
+      return response;
+    }
+  }
+
   // Redirect to onboarding if user needs it and trying to access dashboard
   if (isLoggedIn && needsOnboarding && isDashboardRoute && !isOnboardingRoute) {
     logger.info('USER NEEDS ONBOARDING - Redirecting to merchant setup', {
