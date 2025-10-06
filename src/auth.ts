@@ -825,11 +825,13 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
       // Default behavior - check if user needs onboarding
       if (url.startsWith("/")) {
-        // Special case: if URL is exactly "/" (home page), respect it (for logout)
-        if (url === "/") {
-          const homeUrl = baseUrl; // Just the base URL without any path
+        // Special case: if URL is exactly "/" or "/{locale}" (home page), respect it (for logout)
+        const isHomePage = url === "/" || url === "/ar" || url === "/en" || url === "/ar/" || url === "/en/";
+        if (isHomePage) {
+          // For logout, redirect to the locale-specific home page
+          const homeUrl = url === "/" ? baseUrl : `${baseUrl}${url.replace(/\/$/, '')}`;
           console.log('🏠 Redirecting to home page (logout):', {
-            reason: 'URL is exactly /',
+            reason: 'URL is home page',
             originalUrl: url,
             finalUrl: homeUrl
           });
