@@ -11,7 +11,8 @@
       "mcp__figma-dev-mode-mcp-server__get_screenshot",
       "mcp__figma-dev-mode-mcp-server__get_code",
       "Bash(curl -s http://127.0.0.1:3845/mcp/health)",
-      "WebFetch(domain:yallaqrcodes.com)"
+      "WebFetch(domain:yallaqrcodes.com)",
+      "Bash(pnpm tsc:*)"
     ],
     "deny": [],
     "ask": []
