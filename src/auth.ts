@@ -78,70 +78,9 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       console.log('🔍 [NextAuth DEBUG]:', code, JSON.stringify(message).substring(0, 200));
     },
   },
-  cookies: {
-    // Configure ALL NextAuth cookies with proper domain for cross-subdomain OAuth
-    sessionToken: {
-      name: `authjs.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-        maxAge: 24 * 60 * 60, // 24 hours
-      },
-    },
-    callbackUrl: {
-      name: `authjs.callback-url`,
-      options: {
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-      },
-    },
-    csrfToken: {
-      name: `authjs.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-      },
-    },
-    pkceCodeVerifier: {
-      name: `authjs.pkce.code_verifier`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 900, // 15 minutes
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-      },
-    },
-    state: {
-      name: `authjs.state`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-      },
-    },
-    nonce: {
-      name: `authjs.nonce`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? '.databayt.org' : undefined,
-      },
-    },
-  },
+  // Note: NextAuth v5 doesn't support custom cookie configuration in the same way as v4
+  // The cookies are managed automatically by the framework
+  // For cross-subdomain support, ensure NEXTAUTH_URL is set correctly
   callbacks: {
     async jwt({ token, user, account, trigger }) {
       // Only log in development
