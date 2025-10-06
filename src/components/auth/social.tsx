@@ -264,9 +264,9 @@ export const Social = () => {
     console.log('🚀 INITIATING OAUTH REDIRECT NOW...');
     
     // Approach 1: Standard NextAuth way with explicit redirect parameter
-    // ALWAYS pass redirectTo to ensure our redirect callback is used
+    // ALWAYS pass callbackUrl to ensure our redirect callback is used
     const signInOptions: any = {
-      redirectTo: finalCallbackUrl,  // Changed from callbackUrl to redirectTo
+      callbackUrl: finalCallbackUrl,
       redirect: true,
     };
     
