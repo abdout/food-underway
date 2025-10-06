@@ -843,6 +843,15 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
         // Check if we have a callback URL that points to onboarding
         if (callbackUrl && callbackUrl.includes('/onboarding')) {
+          // Ensure the callback URL has a locale
+          const localeFromCallback = callbackUrl.match(/^\/(ar|en)(\/|$)/);
+          if (!localeFromCallback) {
+            // Add locale to callbackUrl if missing
+            const locale = url.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar';
+            const localizedCallbackUrl = `${baseUrl}/${locale}${callbackUrl.startsWith('/') ? callbackUrl : `/${callbackUrl}`}`;
+            console.log('🚀 Redirecting to onboarding (from callback URL with locale added):', localizedCallbackUrl);
+            return localizedCallbackUrl;
+          }
           console.log('🚀 Redirecting to onboarding (from callback URL):', callbackUrl);
           return callbackUrl;
         }
@@ -925,6 +934,17 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
         // Check if we have a callbackUrl to use as fallback
         if (callbackUrl) {
+          // Ensure callback URL has locale
+          const localeFromCallback = callbackUrl.match(/^\/(ar|en)(\/|$)/);
+          if (!localeFromCallback) {
+            const locale = url.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar';
+            const localizedCallbackUrl = `${baseUrl}/${locale}${callbackUrl.startsWith('/') ? callbackUrl : `/${callbackUrl}`}`;
+            console.log('📍 Using callback URL as fallback (with locale added):', localizedCallbackUrl);
+            console.log('=====================================');
+            console.log('🔄 REDIRECT CALLBACK END');
+            console.log('=====================================\n');
+            return localizedCallbackUrl;
+          }
           console.log('📍 Using callback URL as fallback:', callbackUrl);
           console.log('=====================================');
           console.log('🔄 REDIRECT CALLBACK END');
@@ -996,6 +1016,17 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
         // Check if we have a callbackUrl to use as fallback
         if (callbackUrl) {
+          // Ensure callback URL has locale
+          const localeFromCallback = callbackUrl.match(/^\/(ar|en)(\/|$)/);
+          const locale = localeFromUrl?.[1] || 'ar';
+          if (!localeFromCallback) {
+            const localizedCallbackUrl = `${baseUrl}/${locale}${callbackUrl.startsWith('/') ? callbackUrl : `/${callbackUrl}`}`;
+            console.log('📍 Same origin - using callback URL as fallback (with locale added):', localizedCallbackUrl);
+            console.log('=====================================');
+            console.log('🔄 REDIRECT CALLBACK END');
+            console.log('=====================================\n');
+            return localizedCallbackUrl;
+          }
           console.log('📍 Same origin - using callback URL as fallback:', callbackUrl);
           console.log('=====================================');
           console.log('🔄 REDIRECT CALLBACK END');
@@ -1013,6 +1044,17 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
       // Check if we have a callbackUrl to use as fallback for external URLs
       if (callbackUrl) {
+        // Ensure callback URL has locale
+        const localeFromCallback = callbackUrl.match(/^\/(ar|en)(\/|$)/);
+        if (!localeFromCallback) {
+          const locale = url.match(/^\/(ar|en)(\/|$)/)?.[1] || 'ar';
+          const localizedCallbackUrl = `${baseUrl}/${locale}${callbackUrl.startsWith('/') ? callbackUrl : `/${callbackUrl}`}`;
+          console.log('📍 External URL - using callback URL (with locale added):', localizedCallbackUrl);
+          console.log('=====================================');
+          console.log('🔄 REDIRECT CALLBACK END');
+          console.log('=====================================\n');
+          return localizedCallbackUrl;
+        }
         console.log('📍 External URL - using callback URL:', callbackUrl);
         console.log('=====================================');
         console.log('🔄 REDIRECT CALLBACK END');

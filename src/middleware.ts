@@ -63,25 +63,10 @@ export async function middleware(req: NextRequest) {
     (locale) => url.pathname.startsWith(`/${locale}/`) || url.pathname === `/${locale}`
   );
 
-  // Special handling for root paths - always default to Arabic
-  // This includes both "/" and "/en" to ensure Arabic is truly the default
-  // Check if user is accessing root or /en without a specific page
-  const isRootOrEnglishRoot = url.pathname === '/' ||
-                              url.pathname === '/en' ||
-                              url.pathname === '/en/';
-
-  if (isRootOrEnglishRoot) {
-    // Check if there's an existing cookie set to 'en'
-    const existingCookie = req.cookies.get('NEXT_LOCALE')?.value;
-
-    // Force redirect to Arabic and update cookie
-    const response = NextResponse.redirect(new URL('/ar', req.url));
-    // Always set Arabic as the preferred language in cookie
-    response.cookies.set('NEXT_LOCALE', 'ar', {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    });
+  // Handle root path - redirect to locale-prefixed path
+  if (url.pathname === '/') {
+    const locale = getLocale(req);
+    const response = NextResponse.redirect(new URL(`/${locale}`, req.url));
     response.headers.set('x-request-id', requestId);
     return response;
   }
