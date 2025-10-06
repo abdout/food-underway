@@ -1,24 +1,25 @@
 "use server";
 
 import { signOut } from "@/auth";
-import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 export const logout = async () => {
   console.log('🚪 LOGOUT ACTION TRIGGERED');
 
-  // Get the current URL to determine locale
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || headersList.get('referer') || '/';
+  // Get the locale from cookies
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get('NEXT_LOCALE');
+  const locale = localeCookie?.value || 'ar'; // Default to Arabic
 
-  // Extract locale from pathname (e.g., /ar/... or /en/...)
-  const localeMatch = pathname.match(/^\/(ar|en)(\/|$)/);
-  const locale = localeMatch ? localeMatch[1] : 'ar'; // Default to Arabic
+  console.log('🚪 LOGOUT - Locale from cookie:', locale);
 
-  console.log('🚪 LOGOUT - Current locale:', locale, 'from pathname:', pathname);
-
-  // Sign out and redirect to home page with locale
+  // Sign out without redirect (we'll handle it manually)
   await signOut({
-    redirectTo: `/${locale}`,
-    redirect: true
+    redirect: false
   });
+
+  // Manually redirect to home page with locale
+  console.log('🚪 LOGOUT - Redirecting to:', `/${locale}`);
+  redirect(`/${locale}`);
 };

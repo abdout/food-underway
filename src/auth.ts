@@ -862,7 +862,10 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
           // If user has no merchantId and is not a PLATFORM_ADMIN, they need onboarding
           if (session?.user && !(session.user as any)?.merchantId && (session.user as any)?.role !== 'PLATFORM_ADMIN') {
-            const onboardingUrl = `${baseUrl}/onboarding`;
+            // Extract locale from baseUrl or default to 'ar'
+            const localeFromUrl = url.match(/^\/(ar|en)(\/|$)/);
+            const locale = localeFromUrl ? localeFromUrl[1] : 'ar';
+            const onboardingUrl = `${baseUrl}/${locale}/onboarding`;
             console.log('🚀 User needs onboarding - redirecting:', onboardingUrl);
             console.log('=====================================');
             console.log('🔄 REDIRECT CALLBACK END');
@@ -872,7 +875,9 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
           // If user is PLATFORM_ADMIN, redirect to operator dashboard
           if (session?.user && (session.user as any)?.role === 'PLATFORM_ADMIN') {
-            const operatorDashboard = `${baseUrl}/dashboard`;
+            const localeFromUrl = url.match(/^\/(ar|en)(\/|$)/);
+            const locale = localeFromUrl ? localeFromUrl[1] : 'ar';
+            const operatorDashboard = `${baseUrl}/${locale}/dashboard`;
             console.log('👑 PLATFORM_ADMIN - redirecting to operator dashboard:', operatorDashboard);
             console.log('=====================================');
             console.log('🔄 REDIRECT CALLBACK END');
@@ -883,6 +888,9 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           // If user has a merchantId, redirect to their subdomain dashboard
           if (session?.user && (session.user as any)?.merchantId) {
             console.log('🏢 User has merchant - attempting to find subdomain for redirection');
+            const localeFromUrl = url.match(/^\/(ar|en)(\/|$)/);
+            const locale = localeFromUrl ? localeFromUrl[1] : 'ar';
+
             try {
               const merchant = await db.merchant.findUnique({
                 where: { id: (session.user as any).merchantId },
@@ -891,8 +899,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
               if (merchant?.subdomain) {
                 const tenantDashboardUrl = process.env.NODE_ENV === "production"
-                  ? `https://${merchant.subdomain}.databayt.org/dashboard`
-                  : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+                  ? `https://${merchant.subdomain}.databayt.org/${locale}/dashboard`
+                  : `http://${merchant.subdomain}.localhost:3000/${locale}/dashboard`;
                 console.log('🚀 Redirecting to tenant subdomain dashboard:', tenantDashboardUrl);
                 console.log('=====================================');
                 console.log('🔄 REDIRECT CALLBACK END');
@@ -900,7 +908,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
                 return tenantDashboardUrl;
               } else {
                 console.log('⚠️ Merchant found but no subdomain defined, redirecting to onboarding');
-                const onboardingUrl = `${baseUrl}/onboarding`;
+                const onboardingUrl = `${baseUrl}/${locale}/onboarding`;
                 console.log('=====================================');
                 console.log('🔄 REDIRECT CALLBACK END');
                 console.log('=====================================\n');
@@ -929,12 +937,15 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       }
       else if (new URL(url).origin === baseUrl) {
         // Same origin - check user status and redirect appropriately
+        const localeFromUrl = url.match(/^\/(ar|en)(\/|$)/);
+        const locale = localeFromUrl ? localeFromUrl[1] : 'ar';
+
         try {
           const session = await auth();
 
           // If user has no merchantId and is not a PLATFORM_ADMIN, they need onboarding
           if (session?.user && !(session.user as any)?.merchantId && (session.user as any)?.role !== 'PLATFORM_ADMIN') {
-            const onboardingUrl = `${baseUrl}/onboarding`;
+            const onboardingUrl = `${baseUrl}/${locale}/onboarding`;
             console.log('📍 Same origin - user needs onboarding:', onboardingUrl);
             console.log('=====================================');
             console.log('🔄 REDIRECT CALLBACK END');
@@ -944,7 +955,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
           // If user is PLATFORM_ADMIN, redirect to operator dashboard
           if (session?.user && (session.user as any)?.role === 'PLATFORM_ADMIN') {
-            const operatorDashboard = `${baseUrl}/dashboard`;
+            const operatorDashboard = `${baseUrl}/${locale}/dashboard`;
             console.log('📍 Same origin - PLATFORM_ADMIN to operator dashboard:', operatorDashboard);
             console.log('=====================================');
             console.log('🔄 REDIRECT CALLBACK END');
@@ -961,8 +972,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
 
             if (merchant?.subdomain) {
               const tenantDashboardUrl = process.env.NODE_ENV === "production"
-                ? `https://${merchant.subdomain}.databayt.org/dashboard`
-                : `http://${merchant.subdomain}.localhost:3000/dashboard`;
+                ? `https://${merchant.subdomain}.databayt.org/${locale}/dashboard`
+                : `http://${merchant.subdomain}.localhost:3000/${locale}/dashboard`;
               console.log('📍 Same origin - redirecting to tenant dashboard:', tenantDashboardUrl);
               console.log('=====================================');
               console.log('🔄 REDIRECT CALLBACK END');
