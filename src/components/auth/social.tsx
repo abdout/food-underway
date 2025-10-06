@@ -25,14 +25,25 @@ export const Social = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
   const tenant = searchParams.get("tenant");
-  
-  console.log('🚀 Social component loaded on:', {
+
+  console.log('=====================================');
+  console.log('🔐 [SOCIAL] Component Loaded');
+  console.log('=====================================');
+  console.log('📍 [SOCIAL] Location & Params:', {
     hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
-    href: typeof window !== 'undefined' ? window.location.href : 'server'
+    href: typeof window !== 'undefined' ? window.location.href : 'server',
+    pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
+    search: typeof window !== 'undefined' ? window.location.search : 'server',
+    callbackUrlFromParams: callbackUrl,
+    tenantFromParams: tenant,
+    allSearchParams: Object.fromEntries(searchParams.entries()),
+    timestamp: new Date().toISOString()
   });
-  
+  console.log('=====================================\n');
+
   // Clean URL hash on component mount - this will handle Facebook redirects
   useEffect(() => {
+    console.log('🔄 [SOCIAL] useEffect triggered - cleaning URL hash');
     cleanUrlHash();
     
     // Debug: Log component mount
@@ -66,8 +77,9 @@ export const Social = () => {
   }, []);
 
   const onClick = async (provider: "google" | "facebook") => {
-    console.log('=====================================');
-    console.log(`🚀 OAuth ${provider.toUpperCase()} INITIATED`);
+    console.log('\n\n\n=====================================');
+    console.log(`🚀🚀🚀 [SOCIAL] GOOGLE BUTTON CLICKED! 🚀🚀🚀`);
+    console.log(`🔐 OAuth Provider: ${provider.toUpperCase()}`);
     console.log('=====================================');
     
     // Ensure we're on client side

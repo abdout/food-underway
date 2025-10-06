@@ -313,6 +313,21 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
         baseUrlLength: baseUrl?.length,
         timestamp: new Date().toISOString()
       });
+
+      // CRITICAL: Log the full URL to see what NextAuth is passing
+      console.log('🔍 CRITICAL - Full redirect URL analysis:', {
+        fullUrl: url,
+        fullBaseUrl: baseUrl,
+        urlType: typeof url,
+        baseUrlType: typeof baseUrl,
+        urlIncludes: {
+          callback: url.includes('callback'),
+          onboarding: url.includes('onboarding'),
+          dashboard: url.includes('dashboard'),
+          ar: url.includes('/ar'),
+          en: url.includes('/en')
+        }
+      });
       
       // Try to get callback URL from the original request if possible
       // This is a workaround for NextAuth not properly passing callbackUrl through OAuth
